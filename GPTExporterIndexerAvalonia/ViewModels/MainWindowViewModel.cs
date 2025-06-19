@@ -1,8 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPTExporterIndexerAvalonia.Helpers;
+using CodexEngine.Parsing;
+using CodexEngine.Parsing.Models;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -31,6 +36,14 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private SearchResult? _selectedResult;
+
+    [ObservableProperty]
+    private string _parseFilePath = string.Empty;
+
+    [ObservableProperty]
+    private string _parseStatus = string.Empty;
+
+    public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
 
     public ObservableCollection<SearchResult> Results { get; } = new();
 
@@ -78,5 +91,37 @@ public partial class MainWindowViewModel : ObservableObject
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
         catch { }
+    }
+
+    [RelayCommand]
+    private void ParseFile()
+    {
+        ParsedEntries.Clear();
+        if (string.IsNullOrWhiteSpace(ParseFilePath) || !File.Exists(ParseFilePath))
+        {
+            ParseStatus = "Select a valid file";
+            return;
+        }
+        var text = File.ReadAllText(ParseFilePath);
+        List<BaseMapEntry> entries = ParseFilePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+            ? new AmandamapJsonParser().Parse(text)
+            : new AmandamapParser().Parse(text);
+
+        foreach (var e in entries) ParsedEntries.Add(e);
+        ParseStatus = $"Parsed {entries.Count} entries";
+    }
+
+    [RelayCommand]
+    private void ExportSummary()
+    {
+        if (ParsedEntries.Count == 0)
+        {
+            ParseStatus = "Nothing to export";
+            return;
+        }
+        var path = Path.ChangeExtension(ParseFilePath, ".summary.md");
+        var exporter = new MarkdownExporter();
+        File.WriteAllText(path, exporter.Export(ParsedEntries.ToList()));
+        ParseStatus = $"Summary saved to {path}";
     }
 }
