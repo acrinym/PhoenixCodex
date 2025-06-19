@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
 namespace GPTExporterIndexerAvalonia.Views;
 
@@ -8,4 +9,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
+    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 }
