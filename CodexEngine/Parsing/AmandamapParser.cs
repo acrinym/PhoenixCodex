@@ -12,7 +12,6 @@ namespace CodexEngine.Parsing
         {
             var entries = new List<BaseMapEntry>();
 
-            // This regex splits the content by the start of each entry type
             var blocks = Regex.Split(markdownContent, @"(?=🔱|🔥|🧱|🕯️|📜|🪶)");
 
             foreach (var block in blocks.Where(b => !string.IsNullOrWhiteSpace(b)))
@@ -34,17 +33,12 @@ namespace CodexEngine.Parsing
 
         private string GetValue(string text, string key)
         {
-            // Merged: Uses @$ for a verbatim interpolated string
             var match = Regex.Match(text, @$"{key}:\s*(.*)", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.Trim() : null;
         }
 
         private string GetMultiLineValue(string text, string key)
         {
-            // Merged: Uses @$ for a verbatim interpolated string.
-            // Note: The original Regex in the 'main' branch had "\Z", which is an invalid escape sequence.
-            // This is now correctly handled by the verbatim string. The regex looks for the key,
-            // followed by two newlines, and captures everything until the next line that doesn't start with whitespace, or the end of the string.
             var match = Regex.Match(text, @$"{key}:\s*\n\n(.*?)(?=\n[^\s\n]|\Z)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.Trim() : GetValue(text, key);
         }

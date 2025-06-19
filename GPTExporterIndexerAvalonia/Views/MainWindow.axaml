@@ -58,5 +58,21 @@
                 <Button Content="Open" Command="{Binding OpenSelectedCommand}" />
             </StackPanel>
         </TabItem>
+        <TabItem Header="Parse">
+            <StackPanel Margin="10" Spacing="5">
+                <TextBlock Text="File" />
+                <TextBox Text="{Binding ParseFilePath, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Parse" Command="{Binding ParseFileCommand}" />
+                <ListBox Items="{Binding ParsedEntries}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Content="Export Summary" Command="{Binding ExportSummaryCommand}" />
+                <TextBlock Text="{Binding ParseStatus}" />
+            </StackPanel>
+        </TabItem>
     </TabControl>
 </Window>
