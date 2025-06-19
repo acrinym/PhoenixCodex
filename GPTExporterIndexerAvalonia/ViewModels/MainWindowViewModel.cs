@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Avalonia.Media.Imaging;
+using GPTExporterIndexerAvalonia.Reading;
 using System.Threading.Tasks;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
@@ -45,6 +47,11 @@ public partial class MainWindowViewModel : ObservableObject
     private string _parseStatus = string.Empty;
 
     [ObservableProperty]
+    private string _documentPath = string.Empty;
+
+    public ObservableCollection<Bitmap> Pages { get; } = new();
+
+    private readonly BookReader _reader = new();
     private string _bookFile = string.Empty;
 
     [ObservableProperty]
@@ -133,6 +140,11 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void LoadDocument()
+    {
+        Pages.Clear();
+        _reader.Load(DocumentPath);
+        foreach (var p in _reader.Pages) Pages.Add(p);
     private async Task LoadBook()
     {
         if (string.IsNullOrWhiteSpace(BookFile) || !File.Exists(BookFile))
