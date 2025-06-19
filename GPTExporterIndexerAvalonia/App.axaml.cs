@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using GPTExporterIndexerAvalonia.Views;
 
 namespace GPTExporterIndexerAvalonia;
 
@@ -15,7 +16,6 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new Views.MainWindow();
             desktop.MainWindow = new MainWindow();
         }
 
