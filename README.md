@@ -25,6 +25,16 @@ Bash
 
 dotnet build GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj -c Release
 
+Running the Application
+-----------------------
+After building, start the Avalonia UI with:
+
+```bash
+dotnet run --project GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj
+```
+
+The window will display **Index** and **Search** tabs where you can build and search the archive index.
+
 Web assets
 The WebAssets folder contains a small index.html that loads three.js from a CDN.
 This is a placeholder for future visualisation features.
