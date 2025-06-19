@@ -6,7 +6,8 @@ This repository includes a simple Avalonia application written in C#. It can
 build a token-based search index for .txt, .json and .md files and search
 the resulting index with basic context snippets. The UI now exposes additional
 search options such as case sensitivity, fuzzy matching and AND/OR logic. You
-can also open any matching file directly from the results list.
+can also open any matching file directly from the results list. A third tab
+lets you parse a Markdown or JSON AmandaMap file and export a concise summary.
 
 Building
 Install the .NET 8 SDK on your system. On Ubuntu:
@@ -23,3 +24,17 @@ dotnet build GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj -c Rel
 Web assets
 The WebAssets folder contains a small index.html that loads three.js from a CDN.
 This is a placeholder for future visualisation features.
+CodexEngine Library
+-------------------
+The `CodexEngine` folder contains a .NET 8 class library with models and utilities used across the Phoenix Codex tools.
+
+Build it separately with:
+
+```
+dotnet build CodexEngine/CodexEngine.csproj -c Release
+```
+
+The library's `Parsing` folder contains a Markdown parser that reads AmandaMap entries with emoji headers and exports them to a concise summary format.
+The parser also handles JSON representations of the same entries. Use the helper methods in `JsonMarkdownConverter` to transform between JSON and Markdown while preserving any date strings found in the original text.
+The Avalonia UI uses this library to parse files from the **Parse** tab and export summaries.
+

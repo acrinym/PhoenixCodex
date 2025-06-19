@@ -13,4 +13,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CodexEngine\CodexEngine.csproj" />
+  </ItemGroup>
 </Project>
