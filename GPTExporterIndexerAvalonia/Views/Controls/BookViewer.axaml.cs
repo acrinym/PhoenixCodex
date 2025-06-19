@@ -22,7 +22,7 @@ public partial class BookViewer : UserControl
         set => SetValue(FilePathProperty, value);
     }
 
-    private ContentControl _content = null!;
+    private ContentControl? _content;
 
     public BookViewer()
     {
