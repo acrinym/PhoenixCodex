@@ -4,5 +4,8 @@
              RequestedThemeVariant="Light">
     <Application.Styles>
         <FluentTheme />
+             x:Class="GPTExporterIndexerAvalonia.App">
+    <Application.Styles>
+        <FluentTheme Mode="Light" />
     </Application.Styles>
 </Application>
