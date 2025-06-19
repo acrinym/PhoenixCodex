@@ -74,5 +74,36 @@
                 <TextBlock Text="{Binding ParseStatus}" />
             </StackPanel>
         </TabItem>
+        <TabItem Header="Viewer">
+            <StackPanel Margin="10" Spacing="5">
+                <TextBlock Text="Document" />
+                <TextBox Text="{Binding DocumentPath, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Load" Command="{Binding LoadDocumentCommand}" />
+                <ScrollViewer Height="300">
+                    <ItemsControl Items="{Binding Pages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding}" Stretch="Uniform" Margin="0,5"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Book Reader">
+            <StackPanel Margin="10" Spacing="5">
+                <TextBlock Text="Book File" />
+                <TextBox Text="{Binding BookFile, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Load" Command="{Binding LoadBookCommand}" />
+                <ScrollViewer Height="200">
+                    <TextBlock Text="{Binding BookContent}" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Legacy Tool">
+            <StackPanel Margin="10" Spacing="5">
+                <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
+            </StackPanel>
+        </TabItem>
     </TabControl>
 </Window>
