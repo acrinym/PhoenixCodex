@@ -39,7 +39,7 @@ namespace CodexEngine.Parsing
 
         private string GetMultiLineValue(string text, string key)
         {
-            var match = Regex.Match(text, @$"{key}:\s*\n\n(.*?)(?=\n[^\s\n]|\\Z)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            var match = Regex.Match(text, @$"{key}:\s*\n\n(.*?)(?=\n[^\s\n]|\Z)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.Trim() : GetValue(text, key);
         }
 
