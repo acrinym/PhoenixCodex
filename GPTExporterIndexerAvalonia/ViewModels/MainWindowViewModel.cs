@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Avalonia.Media.Imaging;
+using GPTExporterIndexerAvalonia.Reading;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -42,6 +44,13 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private string _parseStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _documentPath = string.Empty;
+
+    public ObservableCollection<Bitmap> Pages { get; } = new();
+
+    private readonly BookReader _reader = new();
 
     public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
 
@@ -123,5 +132,13 @@ public partial class MainWindowViewModel : ObservableObject
         var exporter = new MarkdownExporter();
         File.WriteAllText(path, exporter.Export(ParsedEntries.ToList()));
         ParseStatus = $"Summary saved to {path}";
+    }
+
+    [RelayCommand]
+    private void LoadDocument()
+    {
+        Pages.Clear();
+        _reader.Load(DocumentPath);
+        foreach (var p in _reader.Pages) Pages.Add(p);
     }
 }
