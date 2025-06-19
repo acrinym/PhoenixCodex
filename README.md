@@ -32,3 +32,5 @@ Build it separately with:
 ```
 dotnet build CodexEngine/CodexEngine.csproj -c Release
 ```
+
+The library's `Parsing` folder contains a Markdown parser that reads AmandaMap entries with emoji headers and exports them to a concise summary format.
