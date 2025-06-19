@@ -1,6 +1,14 @@
 Phoenix Codex 🪶
 The Phoenix Codex is a suite of tools for sorting, indexing, and visualizing the AmandaMap. It is composed of a main Avalonia UI application and a shared core library.
 
+## Python Scripts
+
+Earlier iterations of the project were written in Python. These scripts remain in
+the repository for reference only and are **not** used by the Avalonia
+application. Instructions for launching or installing the old Python GUI have
+been removed. All core functionality is being ported to C# so that it can be
+maintained alongside the main application.
+
 GPTExporterIndexerAvalonia
 This repository includes a simple Avalonia application written in C#. It can
 build a token-based search index for .txt, .json and .md files and search
