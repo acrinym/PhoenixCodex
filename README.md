@@ -55,3 +55,15 @@ dotnet build CodexEngine/CodexEngine.csproj -c Release
 The library's Parsing folder contains a Markdown parser that reads AmandaMap entries with emoji headers and exports them to a concise summary format.
 The parser also handles JSON representations of the same entries. Use the helper methods in JsonMarkdownConverter to transform between JSON and Markdown while preserving any date strings found in the original text.
 The Avalonia UI uses this library to parse files from the Parse tab and export summaries.
+
+Python Scripts (Optional Reference)
+----------------------------------
+The `modules` folder and `gpt_export_index_tool.py` contain earlier Python
+utilities for indexing and parsing AmandaMap content. They are provided solely
+as reference implementations and are **not** required when building or running
+the C# application.
+
+If you wish to recreate their functionality, you may port the logic into C# or
+another language of your choice, or simply run them with Python 3.10+. If you do
+not need them, these files can be ignored or removed without affecting any of
+the .NET projects.
