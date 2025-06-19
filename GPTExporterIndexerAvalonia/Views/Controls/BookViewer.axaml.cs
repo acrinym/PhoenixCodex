@@ -27,7 +27,7 @@ public partial class BookViewer : UserControl
     public BookViewer()
     {
         InitializeComponent();
-        _content = this.FindControl<ContentControl>("PART_Content");
+        _content = this.FindControl<ContentControl>("PART_Content")!;
         this.GetObservable(FilePathProperty).Subscribe(LoadFile);
     }
 
