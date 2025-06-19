@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="https://github.com/avaloniaui"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+        mc:Ignorable="d"
+        x:Class="GPTExporterIndexerAvalonia.Views.MainWindow"
+        Width="600" Height="400"
+        Title="GPT Exporter Indexer">
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+    <Window.DataContext>
+        <vm:MainWindowViewModel />
+    </Window.DataContext>
+    <TabControl>
+        <TabItem Header="Index">
+            <StackPanel Margin="10" Spacing="5">
+                <TextBlock Text="Folder:" />
+                <TextBox Text="{Binding IndexFolder, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Build Index" Command="{Binding BuildIndexCommand}" />
+                <TextBlock Text="{Binding Status}" />
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Search">
+            <StackPanel Margin="10" Spacing="5">
+                <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <CheckBox Content="Case" IsChecked="{Binding CaseSensitive}" />
+                    <CheckBox Content="Fuzzy" IsChecked="{Binding UseFuzzy}" />
+                    <CheckBox Content="AND" IsChecked="{Binding UseAnd}" />
+                    <TextBlock Text="Context" Margin="0,0,2,0" />
+                    <NumericUpDown Width="40" Minimum="0" Maximum="5" Value="{Binding ContextLines}" />
+                </StackPanel>
+                <Button Content="Search" Command="{Binding SearchCommand}" />
+                <ListBox Items="{Binding Results}" SelectedItem="{Binding SelectedResult}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding File}" FontWeight="Bold" />
+                                <ItemsControl Items="{Binding Snippets}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Content="Open" Command="{Binding OpenSelectedCommand}" />
+            </StackPanel>
+        </TabItem>
+    </TabControl>
+</Window>
