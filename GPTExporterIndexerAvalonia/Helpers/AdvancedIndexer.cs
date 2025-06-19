@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace GPTExporterIndexerAvalonia.Helpers;
@@ -10,6 +11,14 @@ public class SearchResult
 {
     public required string File { get; init; }
     public List<string> Snippets { get; init; } = new();
+}
+
+public class SearchOptions
+{
+    public bool CaseSensitive { get; set; }
+    public bool UseFuzzy { get; set; }
+    public bool UseAnd { get; set; } = true;
+    public int ContextLines { get; set; } = 1;
 }
 
 public static class AdvancedIndexer
@@ -63,8 +72,10 @@ public static class AdvancedIndexer
         File.WriteAllText(indexPath, JsonSerializer.Serialize(index, options));
     }
 
-    public static IEnumerable<SearchResult> Search(string indexPath, string phrase, int contextLines = 1)
+    public static IEnumerable<SearchResult> Search(string indexPath, string phrase, SearchOptions? options = null)
     {
+        options ??= new SearchOptions();
+
         if (!File.Exists(indexPath) || string.IsNullOrWhiteSpace(phrase))
             yield break;
         var index = JsonSerializer.Deserialize<Index>(File.ReadAllText(indexPath));
@@ -74,16 +85,31 @@ public static class AdvancedIndexer
         HashSet<string>? result = null;
         foreach (var token in tokens)
         {
-            if (!index.Tokens.TryGetValue(token.ToLowerInvariant(), out var set))
-                set = new HashSet<string>();
-            result = result == null ? new HashSet<string>(set) : new HashSet<string>(result.Intersect(set));
+            var term = options.CaseSensitive ? token : token.ToLowerInvariant();
+            var current = new HashSet<string>();
+            if (index.Tokens.TryGetValue(term, out var set))
+                current.UnionWith(set);
+
+            if (options.UseFuzzy)
+            {
+                foreach (var key in index.Tokens.Keys)
+                {
+                    var cmp = options.CaseSensitive ? key : key.ToLowerInvariant();
+                    if (cmp == term) continue;
+                    if (LevenshteinDistance(term, cmp) <= 2)
+                        current.UnionWith(index.Tokens[key]);
+                }
+            }
+
+            result = result == null ? new HashSet<string>(current) :
+                (options.UseAnd ? new HashSet<string>(result.Intersect(current)) : new HashSet<string>(result.Union(current)));
         }
         if (result == null)
             yield break;
         foreach (var rel in result)
         {
             var fullPath = Path.Combine(Path.GetDirectoryName(indexPath)!, rel);
-            var snippets = ExtractSnippets(fullPath, phrase, contextLines);
+            var snippets = ExtractSnippets(fullPath, phrase, options.ContextLines);
             yield return new SearchResult { File = rel, Snippets = snippets };
         }
     }
@@ -104,5 +130,21 @@ public static class AdvancedIndexer
             }
         }
         return snippets;
+    }
+
+    private static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+    {
+        var dp = new int[a.Length + 1, b.Length + 1];
+        for (int i = 0; i <= a.Length; i++) dp[i, 0] = i;
+        for (int j = 0; j <= b.Length; j++) dp[0, j] = j;
+        for (int i = 1; i <= a.Length; i++)
+        {
+            for (int j = 1; j <= b.Length; j++)
+            {
+                int cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                dp[i, j] = Math.Min(Math.Min(dp[i - 1, j] + 1, dp[i, j - 1] + 1), dp[i - 1, j - 1] + cost);
+            }
+        }
+        return dp[a.Length, b.Length];
     }
 }
