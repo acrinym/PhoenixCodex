@@ -41,6 +41,9 @@ public partial class MainWindowViewModel : ObservableObject
     private SearchResult? _selectedResult;
 
     [ObservableProperty]
+    private string _selectedFile = string.Empty;
+
+    [ObservableProperty]
     private string _parseFilePath = string.Empty;
 
     [ObservableProperty]
@@ -139,6 +142,16 @@ public partial class MainWindowViewModel : ObservableObject
         ParseStatus = $"Summary saved to {path}";
     }
 
+    partial void OnSelectedResultChanged(SearchResult? value)
+    {
+        if (value == null)
+        {
+            SelectedFile = string.Empty;
+        }
+        else
+        {
+            SelectedFile = Path.Combine(IndexFolder, value.File);
+        }
     [RelayCommand]
     private void LoadDocument()
     {

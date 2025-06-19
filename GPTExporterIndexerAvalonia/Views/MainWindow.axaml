@@ -15,7 +15,7 @@
         <vm:MainWindowViewModel />
     </Window.DataContext>
 
-    <TabControl>
+    <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
         <TabItem Header="Index">
             <StackPanel Margin="10" Spacing="5">
                 <TextBlock Text="Folder:" />
@@ -54,7 +54,7 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                
+                <controls:BookViewer FilePath="{Binding SelectedFile}" Height="200" Margin="0,5"/>
                 <Button Content="Open" Command="{Binding OpenSelectedCommand}" />
             </StackPanel>
         </TabItem>
