@@ -25,6 +25,8 @@ Case sensitivity
 Fuzzy matching
 AND/OR logic
 Allows you to open any matching file directly from the search results list.
+Includes a book reader tab for loading Markdown or text files.
+Provides a legacy tool tab to launch the original Python utility.
 Building the Application
 Install the .NET 8 SDK on your system. On Ubuntu, you can do this with the following commands:
 
@@ -46,7 +48,7 @@ After building, start the Avalonia UI with:
 dotnet run --project GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj
 ```
 
-The window will display **Index** and **Search** tabs where you can build and search the archive index.
+The window will display **Index**, **Search**, **Parse**, **Book Reader** and **Legacy Tool** tabs where you can build, search and parse the archive, read grimoire files or launch the original tool.
 
 
 Web assets
