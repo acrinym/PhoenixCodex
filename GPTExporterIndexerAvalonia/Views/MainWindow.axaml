@@ -90,5 +90,20 @@
                 </ScrollViewer>
             </StackPanel>
         </TabItem>
+        <TabItem Header="Book Reader">
+            <StackPanel Margin="10" Spacing="5">
+                <TextBlock Text="Book File" />
+                <TextBox Text="{Binding BookFile, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Load" Command="{Binding LoadBookCommand}" />
+                <ScrollViewer Height="200">
+                    <TextBlock Text="{Binding BookContent}" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Legacy Tool">
+            <StackPanel Margin="10" Spacing="5">
+                <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
+            </StackPanel>
+        </TabItem>
     </TabControl>
 </Window>

@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using Avalonia.Media.Imaging;
 using GPTExporterIndexerAvalonia.Reading;
+using System.Threading.Tasks;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -51,6 +52,10 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<Bitmap> Pages { get; } = new();
 
     private readonly BookReader _reader = new();
+    private string _bookFile = string.Empty;
+
+    [ObservableProperty]
+    private string _bookContent = string.Empty;
 
     public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
 
@@ -140,5 +145,29 @@ public partial class MainWindowViewModel : ObservableObject
         Pages.Clear();
         _reader.Load(DocumentPath);
         foreach (var p in _reader.Pages) Pages.Add(p);
+    private async Task LoadBook()
+    {
+        if (string.IsNullOrWhiteSpace(BookFile) || !File.Exists(BookFile))
+        {
+            BookContent = "Select a valid book file";
+            return;
+        }
+        BookContent = await File.ReadAllTextAsync(BookFile);
+    }
+
+    [RelayCommand]
+    private void LaunchLegacyTool()
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = "gpt_export_index_tool.py",
+                UseShellExecute = false
+            };
+            Process.Start(psi);
+        }
+        catch { }
     }
 }
