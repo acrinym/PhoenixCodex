@@ -23,3 +23,14 @@ dotnet build GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj -c Rel
 Web assets
 The WebAssets folder contains a small index.html that loads three.js from a CDN.
 This is a placeholder for future visualisation features.
+CodexEngine Library
+-------------------
+The `CodexEngine` folder contains a .NET 8 class library with models and utilities used across the Phoenix Codex tools.
+
+Build it separately with:
+
+```
+dotnet build CodexEngine/CodexEngine.csproj -c Release
+```
+
+The library's `Parsing` folder contains a Markdown parser that reads AmandaMap entries with emoji headers and exports them to a concise summary format.
