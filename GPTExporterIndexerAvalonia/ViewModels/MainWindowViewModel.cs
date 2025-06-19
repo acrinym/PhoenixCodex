@@ -74,6 +74,7 @@ public partial class MainWindowViewModel : ObservableObject
         var path = System.IO.Path.Combine(IndexFolder, SelectedResult.File);
         try
         {
+            // UseShellExecute is required to open the file with the default application
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
         catch { }

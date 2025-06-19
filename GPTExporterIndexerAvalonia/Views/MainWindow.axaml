@@ -7,12 +7,14 @@
         x:Class="GPTExporterIndexerAvalonia.Views.MainWindow"
         Width="600" Height="400"
         Title="GPT Exporter Indexer">
+    
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
     <Window.DataContext>
         <vm:MainWindowViewModel />
     </Window.DataContext>
+
     <TabControl>
         <TabItem Header="Index">
             <StackPanel Margin="10" Spacing="5">
@@ -25,14 +27,17 @@
         <TabItem Header="Search">
             <StackPanel Margin="10" Spacing="5">
                 <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
+                
                 <StackPanel Orientation="Horizontal" Spacing="5">
                     <CheckBox Content="Case" IsChecked="{Binding CaseSensitive}" />
                     <CheckBox Content="Fuzzy" IsChecked="{Binding UseFuzzy}" />
                     <CheckBox Content="AND" IsChecked="{Binding UseAnd}" />
-                    <TextBlock Text="Context" Margin="0,0,2,0" />
+                    <TextBlock Text="Context" Margin="0,0,2,0" VerticalAlignment="Center" />
                     <NumericUpDown Width="40" Minimum="0" Maximum="5" Value="{Binding ContextLines}" />
                 </StackPanel>
+                
                 <Button Content="Search" Command="{Binding SearchCommand}" />
+                
                 <ListBox Items="{Binding Results}" SelectedItem="{Binding SelectedResult}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -49,6 +54,7 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                
                 <Button Content="Open" Command="{Binding OpenSelectedCommand}" />
             </StackPanel>
         </TabItem>

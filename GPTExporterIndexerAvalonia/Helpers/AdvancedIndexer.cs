@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace GPTExporterIndexerAvalonia.Helpers;
@@ -75,6 +75,7 @@ public static class AdvancedIndexer
     public static IEnumerable<SearchResult> Search(string indexPath, string phrase, SearchOptions? options = null)
     {
         options ??= new SearchOptions();
+
         if (!File.Exists(indexPath) || string.IsNullOrWhiteSpace(phrase))
             yield break;
         var index = JsonSerializer.Deserialize<Index>(File.ReadAllText(indexPath));
