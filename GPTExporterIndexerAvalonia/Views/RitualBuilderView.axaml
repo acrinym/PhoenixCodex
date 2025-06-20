@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="https://github.com/avaloniaui"
+             xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             x:Class="GPTExporterIndexerAvalonia.Views.RitualBuilderView">
+    <Design.DataContext>
+        <vm:RitualBuilderViewModel />
+    </Design.DataContext>
+    <Grid>
+        <WebView Source="/WebAssets/ritual-builder.html" Name="Builder" />
+        <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Command="{Binding SaveCommand}" />
+    </Grid>
+</UserControl>
