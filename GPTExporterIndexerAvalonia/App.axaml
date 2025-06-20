@@ -4,5 +4,6 @@
              RequestedThemeVariant="Light">
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://GPTExporterIndexerAvalonia/Styles/MagicTheme.axaml" />
     </Application.Styles>
 </Application>

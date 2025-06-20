@@ -55,6 +55,8 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<Bitmap> Pages { get; } = new();
 
     private readonly BookReader _reader = new();
+
+    [ObservableProperty]
     private string _bookFile = string.Empty;
 
     [ObservableProperty]
@@ -152,12 +154,17 @@ public partial class MainWindowViewModel : ObservableObject
         {
             SelectedFile = Path.Combine(IndexFolder, value.File);
         }
+    }
+
     [RelayCommand]
     private void LoadDocument()
     {
         Pages.Clear();
         _reader.Load(DocumentPath);
         foreach (var p in _reader.Pages) Pages.Add(p);
+    }
+
+    [RelayCommand]
     private async Task LoadBook()
     {
         if (string.IsNullOrWhiteSpace(BookFile) || !File.Exists(BookFile))
