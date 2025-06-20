@@ -1,3 +1,23 @@
 # Build artifacts
 **/bin/
 **/obj/
+
+# Python cache files
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Build output
+build/
+dist/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln
+*.csproj
+*.iml
+
