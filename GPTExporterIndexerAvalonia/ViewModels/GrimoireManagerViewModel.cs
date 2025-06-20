@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CodexEngine.GrimoireCore.Models;
+using CodexEngine.GrimoireCore.Models; // Ensure this namespace contains Ritual, Ingredient, and Servitor
 using System.Collections.ObjectModel;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
@@ -8,11 +8,12 @@ namespace GPTExporterIndexerAvalonia.ViewModels;
 public partial class GrimoireManagerViewModel : ObservableObject
 {
     public ObservableCollection<Ritual> Rituals { get; } = new();
-    public ObservableCollection<Ingredient> Ingredients { get; } = new();
-    public ObservableCollection<Servitor> Servitors { get; } = new();
+    public ObservableCollection<Ingredient> Ingredients { get; } = new(); // New collection for Ingredients
+    public ObservableCollection<Servitor> Servitors { get; } = new();     // New collection for Servitors
 
     public GrimoireManagerViewModel()
     {
+        // Registering this instance with SharedState for global access
         SharedState.Grimoire = this;
     }
 
@@ -37,6 +38,7 @@ public partial class GrimoireManagerViewModel : ObservableObject
     private void Add()
     {
         Rituals.Add(new Ritual { Title = "New Ritual" });
+        // After adding a ritual, notify the TimelineViewModel to refresh its view
         SharedState.Timeline?.Refresh();
     }
 
@@ -44,10 +46,14 @@ public partial class GrimoireManagerViewModel : ObservableObject
     private void Remove()
     {
         if (SelectedRitual != null)
+        {
             Rituals.Remove(SelectedRitual);
-        SharedState.Timeline?.Refresh();
+            // After removing a ritual, notify the TimelineViewModel to refresh its view
+            SharedState.Timeline?.Refresh();
+        }
     }
 
+    // New commands for Ingredients
     [RelayCommand]
     private void AddIngredient()
     {
@@ -61,6 +67,7 @@ public partial class GrimoireManagerViewModel : ObservableObject
             Ingredients.Remove(ingredient);
     }
 
+    // New commands for Servitors
     [RelayCommand]
     private void AddServitor()
     {

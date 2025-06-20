@@ -14,114 +14,114 @@
     </Design.DataContext>
     <Window.DataContext>
         <vm:MainWindowViewModel />
-    </Window.DataContext>
+    </Design.DataContext>
 
     <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
-    <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
-        <TabItem Header="Index">
-            <StackPanel Margin="10" Spacing="5">
-                <TextBlock Text="Folder:" />
-                <TextBox Text="{Binding IndexFolder, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Content="Build Index" Command="{Binding BuildIndexCommand}" />
-                <TextBlock Text="{Binding Status}" />
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Search">
-            <StackPanel Margin="10" Spacing="5">
-                <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
-
-                <StackPanel Orientation="Horizontal" Spacing="5">
-                    <CheckBox Content="Case" IsChecked="{Binding CaseSensitive}" />
-                    <CheckBox Content="Fuzzy" IsChecked="{Binding UseFuzzy}" />
-                    <CheckBox Content="AND" IsChecked="{Binding UseAnd}" />
-                    <TextBlock Text="Context" Margin="0,0,2,0" VerticalAlignment="Center" />
-                    <NumericUpDown Width="40" Minimum="0" Maximum="5" Value="{Binding ContextLines}" />
+        <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
+            <TabItem Header="Index">
+                <StackPanel Margin="10" Spacing="5">
+                    <TextBlock Text="Folder:" />
+                    <TextBox Text="{Binding IndexFolder, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Build Index" Command="{Binding BuildIndexCommand}" />
+                    <TextBlock Text="{Binding Status}" />
                 </StackPanel>
+            </TabItem>
+            <TabItem Header="Search">
+                <StackPanel Margin="10" Spacing="5">
+                    <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
 
-                <Button Content="Search" Command="{Binding SearchCommand}" />
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <CheckBox Content="Case" IsChecked="{Binding CaseSensitive}" />
+                        <CheckBox Content="Fuzzy" IsChecked="{Binding UseFuzzy}" />
+                        <CheckBox Content="AND" IsChecked="{Binding UseAnd}" />
+                        <TextBlock Text="Context" Margin="0,0,2,0" VerticalAlignment="Center" />
+                        <NumericUpDown Width="40" Minimum="0" Maximum="5" Value="{Binding ContextLines}" />
+                    </StackPanel>
 
-                <ListBox Items="{Binding Results}" SelectedItem="{Binding SelectedResult}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding File}" FontWeight="Bold" />
-                                <ItemsControl Items="{Binding Snippets}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <controls:BookViewer FilePath="{Binding SelectedFile}" Height="200" Margin="0,5"/>
-                <Button Content="Open" Command="{Binding OpenSelectedCommand}" />
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Parse">
-            <StackPanel Margin="10" Spacing="5">
-                <TextBlock Text="File" />
-                <TextBox Text="{Binding ParseFilePath, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Content="Parse" Command="{Binding ParseFileCommand}" />
-                <ListBox Items="{Binding ParsedEntries}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Title}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <Button Content="Export Summary" Command="{Binding ExportSummaryCommand}" />
-                <TextBlock Text="{Binding ParseStatus}" />
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Viewer">
-            <StackPanel Margin="10" Spacing="5">
-                <TextBlock Text="Document" />
-                <TextBox Text="{Binding DocumentPath, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Content="Load" Command="{Binding LoadDocumentCommand}" />
-                <ScrollViewer Height="300">
-                    <ItemsControl Items="{Binding Pages}">
-                        <ItemsControl.ItemTemplate>
+                    <Button Content="Search" Command="{Binding SearchCommand}" />
+
+                    <ListBox Items="{Binding Results}" SelectedItem="{Binding SelectedResult}">
+                        <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Image Source="{Binding}" Stretch="Uniform" Margin="0,5"/>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding File}" FontWeight="Bold" />
+                                    <ItemsControl Items="{Binding Snippets}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Book Reader">
-            <StackPanel Margin="10" Spacing="5">
-                <TextBlock Text="Book File" />
-                <TextBox Text="{Binding BookFile, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Content="Load" Command="{Binding LoadBookCommand}" />
-                <ScrollViewer Height="200">
-                    <TextBlock Text="{Binding BookContent}" TextWrapping="Wrap" />
-                </ScrollViewer>
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Legacy Tool">
-            <StackPanel Margin="10" Spacing="5">
-                <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Ritual Builder">
-            <views:RitualBuilderView />
-        </TabItem>
-        <TabItem Header="Grimoire">
-            <views:GrimoireManagerView />
-        </TabItem>
-        <TabItem Header="Timeline">
-            <views:TimelineView />
-        </TabItem>
-        <TabItem Header="AmandaMap">
-            <views:AmandaMapView />
-        </TabItem>
-        <TabItem Header="Chat Logs">
-            <views:ChatLogView />
-        </TabItem>
-    </TabControl>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <controls:BookViewer FilePath="{Binding SelectedFile}" Height="200" Margin="0,5"/>
+                    <Button Content="Open" Command="{Binding OpenSelectedCommand}" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Parse">
+                <StackPanel Margin="10" Spacing="5">
+                    <TextBlock Text="File" />
+                    <TextBox Text="{Binding ParseFilePath, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Parse" Command="{Binding ParseFileCommand}" />
+                    <ListBox Items="{Binding ParsedEntries}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Title}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Content="Export Summary" Command="{Binding ExportSummaryCommand}" />
+                    <TextBlock Text="{Binding ParseStatus}" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Viewer">
+                <StackPanel Margin="10" Spacing="5">
+                    <TextBlock Text="Document" />
+                    <TextBox Text="{Binding DocumentPath, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Load" Command="{Binding LoadDocumentCommand}" />
+                    <ScrollViewer Height="300">
+                        <ItemsControl Items="{Binding Pages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Image Source="{Binding}" Stretch="Uniform" Margin="0,5"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Book Reader">
+                <StackPanel Margin="10" Spacing="5">
+                    <TextBlock Text="Book File" />
+                    <TextBox Text="{Binding BookFile, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Load" Command="{Binding LoadBookCommand}" />
+                    <ScrollViewer Height="200">
+                        <TextBlock Text="{Binding BookContent}" TextWrapping="Wrap" />
+                    </ScrollViewer>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Legacy Tool">
+                <StackPanel Margin="10" Spacing="5">
+                    <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Ritual Builder">
+                <views:RitualBuilderView />
+            </TabItem>
+            <TabItem Header="Grimoire">
+                <views:GrimoireManagerView />
+            </TabItem>
+            <TabItem Header="Timeline">
+                <views:TimelineView />
+            </TabItem>
+            <TabItem Header="AmandaMap">
+                <views:AmandaMapView />
+            </TabItem>
+            <TabItem Header="Chat Logs">
+                <views:ChatLogView />
+            </TabItem>
+        </TabControl>
     </Border>
 </Window>
