@@ -17,5 +17,31 @@
         <TextBox Text="{Binding RitualTitle, UpdateSourceTrigger=PropertyChanged}" />
         <Button Content="Add" Command="{Binding AddCommand}" />
         <Button Content="Remove" Command="{Binding RemoveCommand}" />
+
+        <TextBlock Text="Ingredients" Margin="0,10,0,0" FontWeight="Bold" />
+        <ListBox Items="{Binding Ingredients}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBox Width="150" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Content="X" Command="{Binding DataContext.RemoveIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button Content="Add Ingredient" Command="{Binding AddIngredientCommand}" />
+
+        <TextBlock Text="Servitors" Margin="0,10,0,0" FontWeight="Bold" />
+        <ListBox Items="{Binding Servitors}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBox Width="150" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Content="X" Command="{Binding DataContext.RemoveServitorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button Content="Add Servitor" Command="{Binding AddServitorCommand}" />
     </StackPanel>
 </UserControl>

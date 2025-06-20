@@ -14,7 +14,7 @@
     </Design.DataContext>
     <Window.DataContext>
         <vm:MainWindowViewModel />
-    </Window.DataContext>
+    </Design.DataContext>
 
     <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
         <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
@@ -115,6 +115,9 @@
             </TabItem>
             <TabItem Header="Timeline">
                 <views:TimelineView />
+            </TabItem>
+            <TabItem Header="AmandaMap">
+                <views:AmandaMapView />
             </TabItem>
             <TabItem Header="Chat Logs">
                 <views:ChatLogView />

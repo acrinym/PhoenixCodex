@@ -33,6 +33,17 @@
             };
             return JSON.stringify(obj);
         };
+
+        window.loadScene = (scene) => {
+            try {
+                if (scene.objects && scene.objects[0]) {
+                    const p = scene.objects[0].position;
+                    cube.position.set(p[0], p[1], p[2]);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
     </script>
 </body>
 </html>
