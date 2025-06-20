@@ -5,5 +5,15 @@
     <Design.DataContext>
         <vm:TimelineViewModel />
     </Design.DataContext>
-    <Calendar SelectedDate="{Binding SelectedDate}" />
+    <StackPanel Margin="10" Spacing="5">
+        <Calendar SelectedDate="{Binding SelectedDate}" />
+        <TextBlock Text="Upcoming" FontWeight="Bold" Margin="0,5" />
+        <ListBox Items="{Binding Upcoming}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Title}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
 </UserControl>

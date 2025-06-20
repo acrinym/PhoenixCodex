@@ -7,7 +7,9 @@
         <vm:RitualBuilderViewModel />
     </Design.DataContext>
     <Grid>
-        <WebView Source="/WebAssets/ritual-builder.html" Name="Builder" />
+        <Border BorderThickness="1" BorderBrush="Violet" CornerRadius="8">
+            <WebView Source="/WebAssets/ritual-builder.html" Name="Builder" />
+        </Border>
         <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Command="{Binding SaveCommand}" />
     </Grid>
 </UserControl>

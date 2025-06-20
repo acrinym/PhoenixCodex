@@ -13,6 +13,8 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <TextBlock Text="Title" />
+        <TextBox Text="{Binding RitualTitle, UpdateSourceTrigger=PropertyChanged}" />
         <Button Content="Add" Command="{Binding AddCommand}" />
         <Button Content="Remove" Command="{Binding RemoveCommand}" />
     </StackPanel>
