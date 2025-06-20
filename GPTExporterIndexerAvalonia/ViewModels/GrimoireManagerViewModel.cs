@@ -13,15 +13,17 @@ public partial class GrimoireManagerViewModel : ObservableObject
     private Ritual? _selectedRitual;
 
     [ObservableProperty]
-    private string? _ritualTitle;
+    private string? _ritualTitle; // New property to bind the title for editing
 
     partial void OnSelectedRitualChanged(Ritual? value)
     {
+        // When a new ritual is selected, update the RitualTitle property to display its title
         RitualTitle = value?.Title;
     }
 
     partial void OnRitualTitleChanged(string? value)
     {
+        // When the RitualTitle is changed (e.g., by user input), update the SelectedRitual's title
         if (SelectedRitual != null && value != null)
             SelectedRitual.Title = value;
     }

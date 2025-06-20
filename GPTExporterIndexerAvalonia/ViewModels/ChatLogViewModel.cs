@@ -10,7 +10,7 @@ namespace GPTExporterIndexerAvalonia.ViewModels;
 public partial class ChatLogViewModel : ObservableObject
 {
     public ObservableCollection<ChatMessage> Logs { get; } = new();
-    public ObservableCollection<ChatMessage> FilteredLogs { get; } = new();
+    public ObservableCollection<ChatMessage> FilteredLogs { get; } = new(); // This was added for filtering
 
     [ObservableProperty]
     private string? _filter;
@@ -34,7 +34,7 @@ public partial class ChatLogViewModel : ObservableObject
             foreach (var m in entry.Messages)
                 Logs.Add(m);
         }
-        FilterLogs();
+        FilterLogs(); // Call FilterLogs after loading to initialize FilteredLogs
     }
 
     private void FilterLogs()
