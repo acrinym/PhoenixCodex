@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             x:Class="GPTExporterIndexerAvalonia.Views.TagMapView">
+    <Design.DataContext>
+        <vm:TagMapViewModel />
+    </Design.DataContext>
+    <StackPanel Margin="10" Spacing="5">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox Width="200" Watermark="TagMap File" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="Load" Command="{Binding LoadCommand}" />
+            <Button Content="Save" Command="{Binding SaveCommand}" />
+            <Button Content="Add Doc" Command="{Binding AddDocumentCommand}" />
+        </StackPanel>
+        <TabControl Items="{Binding Documents}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <StackPanel Spacing="5" Margin="5">
+                        <Button Content="Add Tag" Command="{Binding DataContext.AddEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}" CommandParameter="{Binding}" />
+                        <ItemsControl Items="{Binding Entries}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="Violet" BorderThickness="1" Padding="2" Margin="2">
+                                        <StackPanel>
+                                            <TextBox Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+    </StackPanel>
+</UserControl>
+

@@ -3,11 +3,12 @@
         xmlns:d="https://github.com/avaloniaui"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+        xmlns:views="clr-namespace:GPTExporterIndexerAvalonia.Views"
         mc:Ignorable="d"
         x:Class="GPTExporterIndexerAvalonia.Views.MainWindow"
         Width="600" Height="400"
         Title="GPT Exporter Indexer">
-    
+
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
@@ -15,6 +16,7 @@
         <vm:MainWindowViewModel />
     </Window.DataContext>
 
+    <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
     <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
         <TabItem Header="Index">
             <StackPanel Margin="10" Spacing="5">
@@ -27,7 +29,7 @@
         <TabItem Header="Search">
             <StackPanel Margin="10" Spacing="5">
                 <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
-                
+
                 <StackPanel Orientation="Horizontal" Spacing="5">
                     <CheckBox Content="Case" IsChecked="{Binding CaseSensitive}" />
                     <CheckBox Content="Fuzzy" IsChecked="{Binding UseFuzzy}" />
@@ -35,9 +37,9 @@
                     <TextBlock Text="Context" Margin="0,0,2,0" VerticalAlignment="Center" />
                     <NumericUpDown Width="40" Minimum="0" Maximum="5" Value="{Binding ContextLines}" />
                 </StackPanel>
-                
+
                 <Button Content="Search" Command="{Binding SearchCommand}" />
-                
+
                 <ListBox Items="{Binding Results}" SelectedItem="{Binding SelectedResult}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -105,5 +107,24 @@
                 <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
             </StackPanel>
         </TabItem>
+        <TabItem Header="Ritual Builder">
+            <views:RitualBuilderView />
+        </TabItem>
+        <TabItem Header="Grimoire">
+            <views:GrimoireManagerView />
+        </TabItem>
+        <TabItem Header="Timeline">
+            <views:TimelineView />
+        </TabItem>
+        <TabItem Header="AmandaMap">
+            <views:AmandaMapView />
+        </TabItem>
+        <TabItem Header="TagMap">
+            <views:TagMapView />
+        </TabItem>
+        <TabItem Header="Chat Logs">
+            <views:ChatLogView />
+        </TabItem>
     </TabControl>
+    </Border>
 </Window>
