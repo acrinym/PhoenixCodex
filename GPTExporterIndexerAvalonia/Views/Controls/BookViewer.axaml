@@ -1,5 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="GPTExporterIndexerAvalonia.Views.Controls.BookViewer">
-    <ContentControl x:Name="PART_Content" />
+    <Border Padding="8" BorderThickness="2" CornerRadius="8"
+            BorderBrush="Violet" Background="#220022">
+        <ContentControl x:Name="PART_Content" />
+    </Border>
 </UserControl>

@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             x:Class="GPTExporterIndexerAvalonia.Views.ChatLogView">
+    <Design.DataContext>
+        <vm:ChatLogViewModel />
+    </Design.DataContext>
+    <StackPanel Margin="10" Spacing="5">
+        <Button Content="Load" Command="{Binding LoadCommand}" />
+        <TextBox Watermark="Filter" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" />
+        <ListBox Items="{Binding FilteredLogs}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Content}" TextWrapping="Wrap" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
+</UserControl>
