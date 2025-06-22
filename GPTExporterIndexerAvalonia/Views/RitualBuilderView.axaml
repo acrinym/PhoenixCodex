@@ -13,4 +13,3 @@
         <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Command="{Binding SaveCommand}" />
     </Grid>
 </UserControl>
-

@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 
-// Assuming SharedState is in the same or an accessible namespace.
+// Assuming SharedState is in the same or an accessible namespace(which it is, in SharedState.cs).
 // If not, you might need: using GPTExporterIndexerAvalonia.Services; or similar
 // For this example, I'll assume it's directly accessible.
 // If SharedState is a new file, we'll create a placeholder for it below.
