@@ -5,6 +5,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 
+// Assuming SharedState is in the same or an accessible namespace(which it is, in SharedState.cs).
+// If not, you might need: using GPTExporterIndexerAvalonia.Services; or similar
+// For this example, I'll assume it's directly accessible.
+// If SharedState is a new file, we'll create a placeholder for it below.
+
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
 public partial class ChatLogViewModel : ObservableObject
@@ -12,8 +17,11 @@ public partial class ChatLogViewModel : ObservableObject
     public ObservableCollection<ChatMessage> Logs { get; } = new();
     public ObservableCollection<ChatMessage> FilteredLogs { get; } = new();
 
+    // Constructor where SharedState is utilized
     public ChatLogViewModel()
     {
+        // This line registers this instance of ChatLogViewModel with SharedState.
+        // It implies SharedState is a static class or a singleton instance.
         SharedState.ChatLogs = this;
     }
 
