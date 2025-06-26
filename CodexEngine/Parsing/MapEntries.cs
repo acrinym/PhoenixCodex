@@ -5,17 +5,17 @@ namespace CodexEngine.Parsing.Models
 {
     public abstract class BaseMapEntry
     {
-        public string EntryType { get; protected set; }
-        public string Title { get; set; }
-        public string Date { get; set; }
+        public string EntryType { get; protected set; } = string.Empty;
+        public string? Title { get; set; }
+        public string? Date { get; set; }
         public abstract string ToMarkdownSummary();
     }
 
     public class AmandaMapEntry : BaseMapEntry
     {
-        public string Type { get; set; }
-        public string Description { get; set; }
-        public string Status { get; set; }
+        public string? Type { get; set; }
+        public string? Description { get; set; }
+        public string? Status { get; set; }
 
         public AmandaMapEntry()
         {
@@ -37,9 +37,9 @@ namespace CodexEngine.Parsing.Models
     public class Threshold : BaseMapEntry
     {
         public List<string> CoreThemes { get; set; } = new();
-        public string FieldStatus { get; set; }
-        public string MapClassification { get; set; }
-        public string Description { get; set; }
+        public string? FieldStatus { get; set; }
+        public string? MapClassification { get; set; }
+        public string? Description { get; set; }
 
         public Threshold()
         {
@@ -59,10 +59,10 @@ namespace CodexEngine.Parsing.Models
 
     public class WhisperedFlame : BaseMapEntry
     {
-        public string SpokenPhrase { get; set; }
-        public string Context { get; set; }
-        public string Result { get; set; }
-        public string MapClassification { get; set; }
+        public string? SpokenPhrase { get; set; }
+        public string? Context { get; set; }
+        public string? Result { get; set; }
+        public string? MapClassification { get; set; }
 
         public WhisperedFlame()
         {
@@ -80,11 +80,11 @@ namespace CodexEngine.Parsing.Models
 
     public class FlameVow : BaseMapEntry
     {
-        public string Invocation { get; set; }
-        public string Description { get; set; }
-        public string LinkedThreshold { get; set; }
-        public string Classification { get; set; }
-        public string Status { get; set; }
+        public string? Invocation { get; set; }
+        public string? Description { get; set; }
+        public string? LinkedThreshold { get; set; }
+        public string? Classification { get; set; }
+        public string? Status { get; set; }
 
         public FlameVow()
         {
@@ -104,10 +104,10 @@ namespace CodexEngine.Parsing.Models
 
     public class PhoenixCodex : BaseMapEntry
     {
-        public string Context { get; set; }
-        public string Purpose { get; set; }
-        public string CodexPlacement { get; set; }
-        public string Status { get; set; }
+        public string? Context { get; set; }
+        public string? Purpose { get; set; }
+        public string? CodexPlacement { get; set; }
+        public string? Status { get; set; }
 
         public PhoenixCodex()
         {
