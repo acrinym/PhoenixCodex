@@ -17,7 +17,7 @@ namespace CodexEngine.Parsing
             foreach (var block in blocks.Where(b => !string.IsNullOrWhiteSpace(b)))
             {
                 var trimmed = block.Trim();
-                BaseMapEntry entry = null;
+                BaseMapEntry? entry = null;
 
                 if (trimmed.StartsWith("🔱")) entry = ParseAmandaMapEntry(trimmed);
                 else if (trimmed.StartsWith("🔥") || trimmed.StartsWith("🧱")) entry = ParseThreshold(trimmed);
@@ -31,13 +31,13 @@ namespace CodexEngine.Parsing
             return entries;
         }
 
-        private string GetValue(string text, string key)
+        private string? GetValue(string text, string key)
         {
             var match = Regex.Match(text, @$"{key}:\s*(.*)", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.Trim() : null;
         }
 
-        private string GetMultiLineValue(string text, string key)
+        private string? GetMultiLineValue(string text, string key)
         {
             var match = Regex.Match(text, @$"{key}:\s*\n\n(.*?)(?=\n[^\s\n]|\Z)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.Trim() : GetValue(text, key);
