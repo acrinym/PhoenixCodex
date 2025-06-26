@@ -1,13 +1,14 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using PdfiumViewer;
+using GPTExporterIndexerAvalonia.Reading;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.IO;
-using VersFx.Formats.Text.Epub;
+using VersOne.Epub;
 using TheArtOfDev.HtmlRenderer.Avalonia;
 using Avalonia.Media;
+using System.Linq;
 
 namespace GPTExporterIndexerAvalonia.Views.Controls;
 
@@ -47,8 +48,19 @@ public partial class BookViewer : UserControl
         var ext = Path.GetExtension(path).ToLowerInvariant();
         if (ext == ".pdf")
         {
-            var pdfDoc = PdfDocument.Load(path);
-            _content.Content = new PdfViewer { Document = pdfDoc };
+            var reader = new BookReader();
+            reader.Load(path);
+            var panel = new StackPanel();
+            foreach (var bmp in reader.Pages)
+            {
+                panel.Children.Add(new Image
+                {
+                    Source = bmp,
+                    Stretch = Stretch.Uniform,
+                    Margin = new Thickness(0, 5)
+                });
+            }
+            _content.Content = new ScrollViewer { Content = panel };
         }
         else if (ext == ".docx")
         {
