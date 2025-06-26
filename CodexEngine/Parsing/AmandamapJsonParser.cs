@@ -31,7 +31,7 @@ namespace CodexEngine.Parsing
             return entries;
         }
 
-        private static string Prop(JsonElement el, string name)
+        private static string? Prop(JsonElement el, string name)
         {
             return el.TryGetProperty(name, out var prop) ? prop.GetString() : null;
         }
@@ -40,11 +40,11 @@ namespace CodexEngine.Parsing
         {
             return new AmandaMapEntry
             {
-                Title = Prop(el, "Title"),
-                Date = Prop(el, "Date"),
-                Type = Prop(el, "Type"),
-                Description = Prop(el, "Description"),
-                Status = Prop(el, "Status")
+                Title = Prop(el, "Title") ?? string.Empty,
+                Date = Prop(el, "Date") ?? string.Empty,
+                Type = Prop(el, "Type") ?? string.Empty,
+                Description = Prop(el, "Description") ?? string.Empty,
+                Status = Prop(el, "Status") ?? string.Empty
             };
         }
 
@@ -54,16 +54,20 @@ namespace CodexEngine.Parsing
             if (el.TryGetProperty("CoreThemes", out var ct) && ct.ValueKind == JsonValueKind.Array)
             {
                 foreach (var item in ct.EnumerateArray())
-                    coreThemes.Add(item.GetString());
+                {
+                    var val = item.GetString();
+                    if (val != null)
+                        coreThemes.Add(val);
+                }
             }
             return new Threshold
             {
-                Title = Prop(el, "Title"),
-                Date = Prop(el, "Date"),
-                Description = Prop(el, "Description"),
+                Title = Prop(el, "Title") ?? string.Empty,
+                Date = Prop(el, "Date") ?? string.Empty,
+                Description = Prop(el, "Description") ?? string.Empty,
                 CoreThemes = coreThemes,
-                FieldStatus = Prop(el, "FieldStatus"),
-                MapClassification = Prop(el, "MapClassification")
+                FieldStatus = Prop(el, "FieldStatus") ?? string.Empty,
+                MapClassification = Prop(el, "MapClassification") ?? string.Empty
             };
         }
 
@@ -71,12 +75,12 @@ namespace CodexEngine.Parsing
         {
             return new WhisperedFlame
             {
-                Title = Prop(el, "Title"),
-                Date = Prop(el, "Date"),
-                SpokenPhrase = Prop(el, "SpokenPhrase"),
-                Context = Prop(el, "Context"),
-                Result = Prop(el, "Result"),
-                MapClassification = Prop(el, "MapClassification")
+                Title = Prop(el, "Title") ?? string.Empty,
+                Date = Prop(el, "Date") ?? string.Empty,
+                SpokenPhrase = Prop(el, "SpokenPhrase") ?? string.Empty,
+                Context = Prop(el, "Context") ?? string.Empty,
+                Result = Prop(el, "Result") ?? string.Empty,
+                MapClassification = Prop(el, "MapClassification") ?? string.Empty
             };
         }
 
@@ -84,13 +88,13 @@ namespace CodexEngine.Parsing
         {
             return new FlameVow
             {
-                Title = Prop(el, "Title"),
-                Date = Prop(el, "Date"),
-                Invocation = Prop(el, "Invocation"),
-                Description = Prop(el, "Description"),
-                LinkedThreshold = Prop(el, "LinkedThreshold"),
-                Classification = Prop(el, "Classification"),
-                Status = Prop(el, "Status")
+                Title = Prop(el, "Title") ?? string.Empty,
+                Date = Prop(el, "Date") ?? string.Empty,
+                Invocation = Prop(el, "Invocation") ?? string.Empty,
+                Description = Prop(el, "Description") ?? string.Empty,
+                LinkedThreshold = Prop(el, "LinkedThreshold") ?? string.Empty,
+                Classification = Prop(el, "Classification") ?? string.Empty,
+                Status = Prop(el, "Status") ?? string.Empty
             };
         }
 
@@ -98,12 +102,12 @@ namespace CodexEngine.Parsing
         {
             return new PhoenixCodex
             {
-                Title = Prop(el, "Title"),
-                Date = Prop(el, "Date"),
-                Context = Prop(el, "Context"),
-                Purpose = Prop(el, "Purpose"),
-                CodexPlacement = Prop(el, "CodexPlacement"),
-                Status = Prop(el, "Status")
+                Title = Prop(el, "Title") ?? string.Empty,
+                Date = Prop(el, "Date") ?? string.Empty,
+                Context = Prop(el, "Context") ?? string.Empty,
+                Purpose = Prop(el, "Purpose") ?? string.Empty,
+                CodexPlacement = Prop(el, "CodexPlacement") ?? string.Empty,
+                Status = Prop(el, "Status") ?? string.Empty
             };
         }
     }
