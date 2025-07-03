@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Linq;
+using System;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -19,6 +20,7 @@ public partial class TagMapDocument : ObservableObject
 {
     public string Name { get; set; } = string.Empty;
     public ObservableCollection<TagMapEntry> Entries { get; } = new();
+    public ObservableCollection<TagMapEntry> FilteredEntries { get; } = new();
 }
 
 public partial class TagMapViewModel : ObservableObject
@@ -26,7 +28,17 @@ public partial class TagMapViewModel : ObservableObject
     [ObservableProperty]
     private string _filePath = "tagmap.json";
 
+    [ObservableProperty]
+    private string? _documentFilter;
+
+    [ObservableProperty]
+    private string? _categoryFilter;
+
     public ObservableCollection<TagMapDocument> Documents { get; } = new();
+    public ObservableCollection<TagMapDocument> FilteredDocuments { get; } = new();
+
+    partial void OnDocumentFilterChanged(string? value) => FilterDocuments();
+    partial void OnCategoryFilterChanged(string? value) => FilterDocuments();
 
     [RelayCommand]
     private void Load()
@@ -49,6 +61,8 @@ public partial class TagMapViewModel : ObservableObject
             }
         }
         catch { }
+
+        FilterDocuments();
     }
 
     [RelayCommand]
@@ -69,6 +83,7 @@ public partial class TagMapViewModel : ObservableObject
     private void AddDocument()
     {
         Documents.Add(new TagMapDocument { Name = "New Document" });
+        FilterDocuments();
     }
 
     [RelayCommand]
@@ -77,6 +92,30 @@ public partial class TagMapViewModel : ObservableObject
         if (document == null)
             return;
         document.Entries.Add(new TagMapEntry { Category = "General" });
+        FilterDocuments();
+    }
+
+    private void FilterDocuments()
+    {
+        FilteredDocuments.Clear();
+        foreach (var doc in Documents)
+        {
+            if (!string.IsNullOrWhiteSpace(DocumentFilter) &&
+                !doc.Name.Contains(DocumentFilter, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            doc.FilteredEntries.Clear();
+            foreach (var entry in doc.Entries)
+            {
+                if (string.IsNullOrWhiteSpace(CategoryFilter) ||
+                    entry.Category.Contains(CategoryFilter, StringComparison.OrdinalIgnoreCase))
+                {
+                    doc.FilteredEntries.Add(entry);
+                }
+            }
+
+            FilteredDocuments.Add(doc);
+        }
     }
 }
 
