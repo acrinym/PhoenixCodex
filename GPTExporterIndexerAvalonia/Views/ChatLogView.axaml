@@ -8,7 +8,7 @@
     <StackPanel Margin="10" Spacing="5">
         <Button Content="Load" Command="{Binding LoadCommand}" />
         <TextBox Watermark="Filter" Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" />
-        <ListBox Items="{Binding FilteredLogs}">
+        <ListBox ItemsSource="{Binding FilteredLogs}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Content}" TextWrapping="Wrap" />
