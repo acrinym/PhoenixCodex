@@ -71,7 +71,8 @@ public partial class BookViewer : UserControl
         else if (ext == ".epub")
         {
             var book = EpubReader.ReadBook(path);
-            var firstHtml = book.Content.Html.Values.FirstOrDefault();
+            // Latest VersOne.Epub exposes Html as a collection with Local/Remote sets
+            var firstHtml = book.Content.Html.Local.FirstOrDefault();
             _content.Content = new HtmlControl { Text = firstHtml?.Content ?? string.Empty };
         }
         else

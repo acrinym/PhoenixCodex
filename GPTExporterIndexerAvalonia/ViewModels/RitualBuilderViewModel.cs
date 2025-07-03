@@ -1,7 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.RitualForge.Models;
-using Avalonia.Controls; // This using directive is likely for WebView, which is a control.
+using Avalonia.Controls; // For common controls
+using AvaloniaWebView; // Provides the WebView control
 using System.Threading.Tasks;
 using System.IO;
 using System;
@@ -24,8 +25,8 @@ public partial class RitualBuilderViewModel : ObservableObject
     [RelayCommand]
     private async Task Save()
     {
-        // Null checks for Builder and WebViewImpl are good practice.
-        if (Builder?.WebViewImpl == null)
+        // Ensure the WebView control has been created
+        if (Builder is null)
             return;
         
         // Execute the JavaScript function to get the scene data.
@@ -39,7 +40,7 @@ public partial class RitualBuilderViewModel : ObservableObject
     private async Task Load()
     {
         // Ensure WebView is ready.
-        if (Builder?.WebViewImpl == null)
+        if (Builder is null)
             return;
         
         // Check if the scene file exists before attempting to load.

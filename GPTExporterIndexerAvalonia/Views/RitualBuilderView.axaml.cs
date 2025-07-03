@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using AvaloniaWebView; // Provides the WebView control
 using GPTExporterIndexerAvalonia.ViewModels;
 
 namespace GPTExporterIndexerAvalonia.Views;

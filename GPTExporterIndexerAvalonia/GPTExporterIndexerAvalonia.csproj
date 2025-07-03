@@ -10,7 +10,9 @@
     <PackageReference Include="Avalonia" Version="11.3.0" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
     <PackageReference Include="Avalonia.HtmlRenderer" Version="11.2.0" />
-    <PackageReference Include="Avalonia.WebView" Version="11.3.0" />
+    <!-- WebView control package was renamed; Avalonia.WebView is provided via
+         WebView.Avalonia -->
+    <PackageReference Include="WebView.Avalonia" Version="11.0.0.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
