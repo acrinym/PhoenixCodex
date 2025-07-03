@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
+using WebView.Avalonia;
 
 namespace GPTExporterIndexerAvalonia;
 
@@ -15,5 +16,6 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace()
-            .UseReactiveUI();
+            .UseReactiveUI()
+            .UseWebView();
 }
