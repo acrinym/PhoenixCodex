@@ -16,8 +16,15 @@
         <vm:MainWindowViewModel />
     </Window.DataContext>
 
-    <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
-        <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Document..." Click="OnOpenDocument" />
+                <MenuItem Header="_Exit" Click="OnExit" />
+            </MenuItem>
+        </Menu>
+        <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
+            <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
             <TabItem Header="Index">
                 <StackPanel Margin="10" Spacing="5">
                     <TextBlock Text="Folder:" />
@@ -124,4 +131,5 @@
             </TabItem>
         </TabControl>
     </Border>
+    </DockPanel>
 </Window>
