@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.GrimoireCore.Models; // Ensure this namespace contains Ritual, Ingredient, and Servitor
 using System.Collections.ObjectModel;
+using System;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -37,7 +38,12 @@ public partial class GrimoireManagerViewModel : ObservableObject
     [RelayCommand]
     private void Add()
     {
-        Rituals.Add(new Ritual { Title = "New Ritual" });
+        Rituals.Add(new Ritual
+        {
+            ID = Guid.NewGuid().ToString(),
+            Title = "New Ritual",
+            Content = string.Empty
+        });
         // After adding a ritual, notify the TimelineViewModel to refresh its view
         SharedState.Timeline?.Refresh();
     }
@@ -57,7 +63,11 @@ public partial class GrimoireManagerViewModel : ObservableObject
     [RelayCommand]
     private void AddIngredient()
     {
-        Ingredients.Add(new Ingredient { Name = "New Ingredient" });
+        Ingredients.Add(new Ingredient
+        {
+            Name = "New Ingredient",
+            Category = "General"
+        });
     }
 
     [RelayCommand]
@@ -71,7 +81,12 @@ public partial class GrimoireManagerViewModel : ObservableObject
     [RelayCommand]
     private void AddServitor()
     {
-        Servitors.Add(new Servitor { Name = "New Servitor" });
+        Servitors.Add(new Servitor
+        {
+            Name = "New Servitor",
+            Purpose = string.Empty,
+            VisualDescription = string.Empty
+        });
     }
 
     [RelayCommand]

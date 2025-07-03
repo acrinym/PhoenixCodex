@@ -107,9 +107,6 @@
                     <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Ritual Builder">
-                <views:RitualBuilderView />
-            </TabItem>
             <TabItem Header="Grimoire">
                 <views:GrimoireManagerView />
             </TabItem>

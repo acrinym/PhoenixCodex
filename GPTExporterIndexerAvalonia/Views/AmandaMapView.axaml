@@ -9,7 +9,7 @@
         <TextBox Watermark="File Path" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
         <Button Content="Load" Command="{Binding LoadCommand}" />
         <ScrollViewer Height="250">
-            <ItemsControl Items="{Binding Entries}" >
+            <ItemsControl ItemsSource="{Binding Entries}" >
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="Violet" BorderThickness="1" Margin="2" Padding="2">
