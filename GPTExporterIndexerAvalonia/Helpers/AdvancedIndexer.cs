@@ -11,6 +11,8 @@ public class SearchResult
 {
     public required string File { get; init; }
     public List<string> Snippets { get; init; } = new();
+    public string? Category { get; init; }
+    public string? Preview { get; init; }
 }
 
 public class SearchOptions
@@ -35,12 +37,42 @@ public static class AdvancedIndexer
     {
         public string Filename { get; set; } = string.Empty;
         public long Modified { get; set; }
+        public string? Category { get; set; }
+        public string? Preview { get; set; }
+    }
+
+    private class TagMapEntry
+    {
+        public string? Document { get; set; }
+        public string? Category { get; set; }
+        public string? Preview { get; set; }
     }
 
     public static void BuildIndex(string folderPath, string indexPath)
     {
         var tokens = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var files = new Dictionary<string, FileDetail>(StringComparer.OrdinalIgnoreCase);
+
+        var tagLookup = new Dictionary<string, TagMapEntry>(StringComparer.OrdinalIgnoreCase);
+        var tagPath = Path.Combine(folderPath, "tagmap.json");
+        if (File.Exists(tagPath))
+        {
+            try
+            {
+                var json = File.ReadAllText(tagPath);
+                var entries = JsonSerializer.Deserialize<TagMapEntry[]>(json);
+                if (entries != null)
+                {
+                    foreach (var e in entries)
+                    {
+                        if (!string.IsNullOrWhiteSpace(e.Document) && !tagLookup.ContainsKey(e.Document!))
+                            tagLookup[e.Document!] = e;
+                    }
+                }
+            }
+            catch { }
+        }
+
         foreach (var file in Directory.EnumerateFiles(folderPath, "*", SearchOption.AllDirectories))
         {
             var ext = Path.GetExtension(file).ToLowerInvariant();
@@ -50,11 +82,17 @@ public static class AdvancedIndexer
             try { text = File.ReadAllText(file); } catch { continue; }
 
             var relative = Path.GetRelativePath(folderPath, file);
-            files[relative] = new FileDetail
+            var detail = new FileDetail
             {
                 Filename = Path.GetFileName(file),
                 Modified = File.GetLastWriteTimeUtc(file).Ticks
             };
+            if (tagLookup.TryGetValue(relative, out var info) || tagLookup.TryGetValue(detail.Filename, out info))
+            {
+                detail.Category = info.Category;
+                detail.Preview = info.Preview;
+            }
+            files[relative] = detail;
 
             foreach (Match m in TokenPattern.Matches(text))
             {
@@ -110,7 +148,14 @@ public static class AdvancedIndexer
         {
             var fullPath = Path.Combine(Path.GetDirectoryName(indexPath)!, rel);
             var snippets = ExtractSnippets(fullPath, phrase, options.ContextLines);
-            yield return new SearchResult { File = rel, Snippets = snippets };
+            index.Files.TryGetValue(rel, out var detail);
+            yield return new SearchResult
+            {
+                File = rel,
+                Snippets = snippets,
+                Category = detail?.Category,
+                Preview = detail?.Preview
+            };
         }
     }
 
