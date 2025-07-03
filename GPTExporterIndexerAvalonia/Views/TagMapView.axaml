@@ -12,7 +12,11 @@
             <Button Content="Save" Command="{Binding SaveCommand}" />
             <Button Content="Add Doc" Command="{Binding AddDocumentCommand}" />
         </StackPanel>
-        <TabControl ItemsSource="{Binding Documents}">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox Width="150" Watermark="Document Filter" Text="{Binding DocumentFilter, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Width="150" Watermark="Category Filter" Text="{Binding CategoryFilter, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+        <TabControl ItemsSource="{Binding FilteredDocuments}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" />
@@ -22,7 +26,7 @@
                 <DataTemplate>
                     <StackPanel Spacing="5" Margin="5">
                         <Button Content="Add Tag" Command="{Binding DataContext.AddEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}" CommandParameter="{Binding}" />
-                        <ItemsControl ItemsSource="{Binding Entries}">
+                        <ItemsControl ItemsSource="{Binding FilteredEntries}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="Violet" BorderThickness="1" Padding="2" Margin="2">
