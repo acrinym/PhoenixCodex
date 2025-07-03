@@ -1,7 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             xmlns:conv="clr-namespace:GPTExporterIndexerAvalonia.Converters"
              x:Class="GPTExporterIndexerAvalonia.Views.TagMapView">
+    <UserControl.Resources>
+        <conv:DocEntryConverter x:Key="DocEntryConv" />
+    </UserControl.Resources>
     <Design.DataContext>
         <vm:TagMapViewModel />
     </Design.DataContext>
@@ -29,11 +33,24 @@
                                         <StackPanel>
                                             <TextBox Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
                                             <TextBox Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" />
+                                            <Button Content="Open">
+                                                <Button.Command>
+                                                    <Binding Path="DataContext.OpenEntryCommand" RelativeSource="{RelativeSource AncestorType=TabControl}" />
+                                                </Button.Command>
+                                                <Button.CommandParameter>
+                                                    <MultiBinding Converter="{StaticResource DocEntryConv}">
+                                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=TabItem}" />
+                                                        <Binding />
+                                                    </MultiBinding>
+                                                </Button.CommandParameter>
+                                            </Button>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        <TextBox Text="{Binding DataContext.SelectedSnippet, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                 IsReadOnly="True" AcceptsReturn="True" Height="120" TextWrapping="Wrap" />
                     </StackPanel>
                 </DataTemplate>
             </TabControl.ContentTemplate>
