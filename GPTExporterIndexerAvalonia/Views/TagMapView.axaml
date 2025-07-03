@@ -26,9 +26,15 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="Violet" BorderThickness="1" Padding="2" Margin="2">
-                                        <StackPanel>
-                                            <TextBox Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBox Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <StackPanel>
+                                                <TextBox Width="120" Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
+                                                <TextBox Width="200" Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <TextBox Width="50" Text="{Binding Line, UpdateSourceTrigger=PropertyChanged}" />
+                                            <Button Content="Open"
+                                                    Command="{Binding DataContext.OpenEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                    CommandParameter="{Binding}" />
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
