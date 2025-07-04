@@ -128,6 +128,9 @@
             <TabItem Header="TagMap">
                 <views:TagMapView />
             </TabItem>
+            <TabItem Header="YAML Interpreter">
+                <views:Yaml.YamlInterpreterView />
+            </TabItem>
             <TabItem Header="Chat Logs">
                 <views:ChatLogView />
             </TabItem>
