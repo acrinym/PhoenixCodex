@@ -3,7 +3,8 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using Avalonia.WebView;
+using WebView.Avalonia; // FIXED: correct namespace
+
 
 namespace GPTExporterIndexerAvalonia;
 
