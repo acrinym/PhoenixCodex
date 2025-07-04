@@ -23,7 +23,8 @@
       Additional controls and frameworks that enhance the UI.
     -->
     <PackageReference Include="Avalonia.HtmlRenderer" Version="11.0.0" />
-    <PackageReference Include="WebView.Avalonia" Version="11.0.0" />
+    <PackageReference Include="Avalonia.WebView" Version="11.0.0" />
+    <PackageReference Include="Avalonia.WebView.Desktop" Version="11.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 
     <!-- 
