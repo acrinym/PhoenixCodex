@@ -1,22 +1,29 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
-             xmlns:conv="clr-namespace:GPTExporterIndexerAvalonia.Converters"
              x:Class="GPTExporterIndexerAvalonia.Views.TagMapView">
     <UserControl.Resources>
-        <conv:DocEntryConverter x:Key="DocEntryConv" />
     </UserControl.Resources>
+    
     <Design.DataContext>
         <vm:TagMapViewModel />
     </Design.DataContext>
+    
     <StackPanel Margin="10" Spacing="5">
         <StackPanel Orientation="Horizontal" Spacing="5">
             <TextBox Width="200" Watermark="TagMap File" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="Browse" Click="OnBrowse" />
             <Button Content="Load" Command="{Binding LoadCommand}" />
             <Button Content="Save" Command="{Binding SaveCommand}" />
             <Button Content="Add Doc" Command="{Binding AddDocumentCommand}" />
         </StackPanel>
-        <TabControl ItemsSource="{Binding Documents}">
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox Width="150" Watermark="Document Filter" Text="{Binding DocumentFilter, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Width="150" Watermark="Category Filter" Text="{Binding CategoryFilter, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+
+        <TabControl ItemsSource="{Binding FilteredDocuments}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" />
@@ -26,35 +33,42 @@
                 <DataTemplate>
                     <StackPanel Spacing="5" Margin="5">
                         <Button Content="Add Tag" Command="{Binding DataContext.AddEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}" CommandParameter="{Binding}" />
-                        <ItemsControl ItemsSource="{Binding Entries}">
+                        
+                        <ItemsControl ItemsSource="{Binding FilteredEntries}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="Violet" BorderThickness="1" Padding="2" Margin="2">
-                                        <StackPanel>
-                                            <TextBox Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBox Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" />
-                                            <Button Content="Open">
-                                                <Button.Command>
-                                                    <Binding Path="DataContext.OpenEntryCommand" RelativeSource="{RelativeSource AncestorType=TabControl}" />
-                                                </Button.Command>
-                                                <Button.CommandParameter>
-                                                    <MultiBinding Converter="{StaticResource DocEntryConv}">
-                                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=TabItem}" />
-                                                        <Binding />
-                                                    </MultiBinding>
-                                                </Button.CommandParameter>
-                                            </Button>
+                                    <Border BorderBrush="DarkCyan" BorderThickness="1" Padding="5" Margin="2">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <StackPanel Spacing="3">
+                                                <TextBox Width="150" Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" Watermark="Category"/>
+                                                <TextBox Width="200" Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" Watermark="Preview Text"/>
+                                            </StackPanel>
+                                            <TextBox Width="50" Text="{Binding Line, UpdateSourceTrigger=PropertyChanged}" Watermark="Line"/>
+                                            
+                                            <StackPanel Spacing="3">
+                                                <Button Content="Preview Snippet"
+                                                        Command="{Binding DataContext.PreviewEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Open in Editor"
+                                                        Command="{Binding DataContext.OpenEntryInEditorCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
                                         </StackPanel>
-                                    </Border>
+                                        </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <TextBlock Text="Snippet Preview:" Margin="0,10,0,0" FontWeight="Bold"/>
                         <TextBox Text="{Binding DataContext.SelectedSnippet, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                 IsReadOnly="True" AcceptsReturn="True" Height="120" TextWrapping="Wrap" />
+                                 IsReadOnly="True" 
+                                 AcceptsReturn="True" 
+                                 Height="120" 
+                                 TextWrapping="Wrap" 
+                                 FontFamily="Cascadia Mono,Consolas,Menlo,monospace"/>
                     </StackPanel>
                 </DataTemplate>
             </TabControl.ContentTemplate>
         </TabControl>
     </StackPanel>
 </UserControl>
-

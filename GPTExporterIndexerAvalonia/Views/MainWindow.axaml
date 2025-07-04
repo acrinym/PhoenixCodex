@@ -52,6 +52,8 @@
                             <DataTemplate>
                                 <StackPanel>
                                     <TextBlock Text="{Binding File}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Category}" FontStyle="Italic" />
+                                    <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" />
                                     <ItemsControl Items="{Binding Snippets}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -125,6 +127,9 @@
             </TabItem>
             <TabItem Header="TagMap">
                 <views:TagMapView />
+            </TabItem>
+            <TabItem Header="YAML Interpreter">
+                <views:Yaml.YamlInterpreterView />
             </TabItem>
             <TabItem Header="Chat Logs">
                 <views:ChatLogView />

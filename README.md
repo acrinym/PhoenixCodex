@@ -27,6 +27,17 @@ AND/OR logic
 Allows you to open any matching file directly from the search results list.
 Includes a book reader tab for loading Markdown or text files.
 Provides a legacy tool tab to launch the original Python utility.
+TagMap Tab
+-----------
+The **TagMap** tab manages tag entries that point back to lines in your source documents.
+Load a `tagmap.json` file to see each referenced document in its own sub-tab. Within a document you can add new tags, edit the *Category* and *Preview* fields, and then save your changes back to JSON.
+Entries store the document name and an optional line number. Use the built-in **Open Document...** command to jump to the referenced file so you can view the surrounding context before editing.
+
+YAML Interpreter
+----------------
+The **YAML Interpreter** tab lets you load `.yaml` files and inspect their keys and values in a nested tree view.
+Enter a file path, click **Load**, and the entries will be parsed using **YamlDotNet** so you can browse ritual templates directly inside the app.
+
 Building the Application
 Install the .NET 8 SDK on your system. On Ubuntu, you can do this with the following commands:
 
