@@ -5,7 +5,6 @@ using Avalonia.ReactiveUI;
 using System;
 using WebView.Avalonia; // FIXED: correct namespace
 
-
 namespace GPTExporterIndexerAvalonia;
 
 internal class Program
