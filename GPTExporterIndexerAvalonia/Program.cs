@@ -3,7 +3,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using WebView.Avalonia; // FIXED: Added missing using directive
+using Avalonia.WebView;
 
 namespace GPTExporterIndexerAvalonia;
 

@@ -3,7 +3,8 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity; // FIXED: Added missing using directive
 using Avalonia.Markup.Xaml;
-using WebView.Avalonia; // FIXED: Added missing using directive
+using Avalonia.WebView;
+using Avalonia.VisualTree;
 using GPTExporterIndexerAvalonia.ViewModels;
 using System;
 
