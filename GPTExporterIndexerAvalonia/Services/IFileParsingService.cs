@@ -1,3 +1,5 @@
+// FILE: GPTExporterIndexerAvalonia/Services/IFileParsingService.cs
+// REFACTORED
 using CodexEngine.Parsing.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,3 +25,4 @@ public interface IFileParsingService
     /// <param name="sourceFilePath">The original file path, used to determine the output path.</param>
     /// <returns>The path to the generated summary file.</returns>
     Task<string> ExportSummaryAsync(IEnumerable<BaseMapEntry> entries, string sourceFilePath);
+}
