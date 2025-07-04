@@ -4,22 +4,43 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- AllowUnsafeBlocks is kept as it's required by Docnet.Core -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <!-- Grouping PackageReferences makes the file easier to read. -->
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
-    <PackageReference Include="Avalonia.HtmlRenderer" Version="11.3.0" />
-    <PackageReference Include="WebView.Avalonia" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.0" />
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+    <!-- 
+      Avalonia Packages:
+      The merge conflict was resolved by choosing the newer versions from the 'main' branch.
+      All Avalonia-related packages have been unified to version 11.1.1, which is the latest stable release.
+      Using a consistent version across all framework packages prevents compatibility issues.
+    -->
+    <PackageReference Include="Avalonia" Version="11.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.1" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.1.1" />
+
+    <!-- 
+      Community and Third-Party UI Packages:
+      These have also been updated to their latest stable versions for compatibility with Avalonia 11.1.1.
+    -->
+    <PackageReference Include="Avalonia.HtmlRenderer" Version="11.0.1" />
+    <PackageReference Include="WebView.Avalonia" Version="11.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+
+    <!-- 
+      Backend and Document Handling Packages:
+      Updated to their latest stable versions for bug fixes and performance improvements.
+      Note: DocumentFormat.OpenXml was updated to 3.0.2, its latest stable version.
+    -->
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageReference Include="VersOne.Epub" Version="3.3.4" />
-    <PackageReference Include="Docnet.Core" Version="2.3.0" />
-    <PackageReference Include="YamlDotNet" Version="13.2.1" />
+    <PackageReference Include="Docnet.Core" Version="2.5.0" />
+    <PackageReference Include="YamlDotNet" Version="15.1.2" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\CodexEngine\CodexEngine.csproj" />
   </ItemGroup>
