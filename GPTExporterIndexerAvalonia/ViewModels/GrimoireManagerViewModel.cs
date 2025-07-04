@@ -1,27 +1,27 @@
+// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-// Ensure this using statement points to the correct namespace where your models are defined.
-using CodexEngine.GrimoireCore.Models; 
+using CommunityToolkit.Mvvm.Messaging; // New using
+using CodexEngine.GrimoireCore.Models;
 using System.Collections.ObjectModel;
 using System;
+using GPTExporterIndexerAvalonia.ViewModels.Messages; // New using
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-/// <summary>
-/// Manages the collections of core Grimoire entities like Rituals, Ingredients, and Servitors.
-/// Acts as a central point for adding, removing, and modifying these entities.
-/// </summary>
 public partial class GrimoireManagerViewModel : ObservableObject
 {
+    private readonly IMessenger _messenger;
+
     public ObservableCollection<Ritual> Rituals { get; } = new();
     public ObservableCollection<Ingredient> Ingredients { get; } = new();
     public ObservableCollection<Servitor> Servitors { get; } = new();
 
-    public GrimoireManagerViewModel()
+    public GrimoireManagerViewModel(IMessenger messenger)
     {
-        // Register this instance for global access by other ViewModels.
-        // This allows, for example, the TimelineViewModel to be notified of changes.
-        SharedState.Grimoire = this;
+        _messenger = messenger;
+        // We can pre-populate with some design-time data if we want
+        Rituals.CollectionChanged += (s, e) => _messenger.Send(new RitualsChangedMessage());
     }
 
     [ObservableProperty]
@@ -29,14 +29,12 @@ public partial class GrimoireManagerViewModel : ObservableObject
 
     [ObservableProperty]
     private string? _ritualTitle;
-
-    // When the selected ritual changes, update the title property for editing in the UI.
+    
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;
     }
 
-    // When the title is edited in the UI, update the source ritual object.
     partial void OnRitualTitleChanged(string? value)
     {
         if (SelectedRitual != null && value != null)
@@ -52,12 +50,11 @@ public partial class GrimoireManagerViewModel : ObservableObject
         {
             ID = Guid.NewGuid().ToString(),
             Title = "New Ritual",
-            Content = string.Empty
+            Content = string.Empty,
+            DateTime = DateTime.Now.AddDays(7) // Give it a future date for timeline testing
         };
         Rituals.Add(newRitual);
-        
-        // Notify other parts of the app (like the timeline) that the data has changed.
-        SharedState.Timeline?.Refresh();
+        // The CollectionChanged event handler will automatically send the message
     }
 
     [RelayCommand]
@@ -66,52 +63,31 @@ public partial class GrimoireManagerViewModel : ObservableObject
         if (SelectedRitual != null)
         {
             Rituals.Remove(SelectedRitual);
-            SharedState.Timeline?.Refresh();
+            // The CollectionChanged event handler will automatically send the message
         }
     }
-
-    // --- Ingredient Commands ---
 
     [RelayCommand]
     private void AddIngredient()
     {
-        Ingredients.Add(new Ingredient
-        {
-            Name = "New Ingredient",
-            // CONFLICT RESOLVED: Using "General" as a default category is more user-friendly
-            // than an empty string.
-            Category = "General" 
-        });
+        Ingredients.Add(new Ingredient { Name = "New Ingredient", Category = "General" });
     }
 
     [RelayCommand]
     private void RemoveIngredient(Ingredient? ingredient)
     {
-        if (ingredient != null)
-        {
-            Ingredients.Remove(ingredient);
-        }
+        if (ingredient != null) { Ingredients.Remove(ingredient); }
     }
-
-    // --- Servitor Commands ---
 
     [RelayCommand]
     private void AddServitor()
     {
-        Servitors.Add(new Servitor
-        {
-            Name = "New Servitor",
-            Purpose = string.Empty,
-            VisualDescription = string.Empty
-        });
+        Servitors.Add(new Servitor { Name = "New Servitor", Purpose = string.Empty, VisualDescription = string.Empty });
     }
 
     [RelayCommand]
     private void RemoveServitor(Servitor? servitor)
     {
-        if (servitor != null)
-        {
-            Servitors.Remove(servitor);
-        }
+        if (servitor != null) { Servitors.Remove(servitor); }
     }
 }

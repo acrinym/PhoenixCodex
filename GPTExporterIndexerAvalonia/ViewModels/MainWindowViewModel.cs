@@ -1,159 +1,142 @@
+// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPTExporterIndexerAvalonia.Helpers;
-using CodexEngine.Parsing;
 using CodexEngine.Parsing.Models;
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
+using GPTExporterIndexerAvalonia.Services;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media.Imaging;
 using GPTExporterIndexerAvalonia.Reading;
-using System.Threading.Tasks;
+using System;
+using CodexEngine.ExportEngine.Models; // New using
+using CodexEngine.ChatGPTLogManager.Models; // New using
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private string _indexFolder = string.Empty;
+    private readonly IIndexingService _indexingService;
+    private readonly ISearchService _searchService;
+    private readonly IFileParsingService _fileParsingService;
+    private readonly IExportService _exportService; // New dependency
 
-    [ObservableProperty]
-    private string _status = string.Empty;
-
-    [ObservableProperty]
-    private string _query = string.Empty;
-
-    [ObservableProperty]
-    private bool _caseSensitive;
-
-    [ObservableProperty]
-    private bool _useFuzzy;
-
-    [ObservableProperty]
-    private bool _useAnd = true;
-
-    [ObservableProperty]
-    private int _contextLines = 1;
-
-    [ObservableProperty]
-    private SearchResult? _selectedResult;
-
-    [ObservableProperty]
-    private string _selectedFile = string.Empty;
-
-    [ObservableProperty]
-    private string _parseFilePath = string.Empty;
-
-    [ObservableProperty]
-    private string _parseStatus = string.Empty;
-
-    [ObservableProperty]
-    private string _documentPath = string.Empty;
-
+    [ObservableProperty] private string _indexFolder = string.Empty;
+    [ObservableProperty] private string _status = "Ready.";
+    [ObservableProperty] private string _query = string.Empty;
+    [ObservableProperty] private bool _caseSensitive;
+    [ObservableProperty] private bool _useFuzzy;
+    [ObservableProperty] private bool _useAnd = true;
+    [ObservableProperty] private int _contextLines = 1;
+    [ObservableProperty] private SearchResult? _selectedResult;
+    [ObservableProperty] private string _selectedFile = string.Empty;
+    [ObservableProperty] private string _parseFilePath = string.Empty;
+    [ObservableProperty] private string _parseStatus = string.Empty;
+    [ObservableProperty] private string _documentPath = string.Empty;
+    [ObservableProperty] private string _bookFile = string.Empty;
+    [ObservableProperty] private string _bookContent = string.Empty;
+    
     public ObservableCollection<Bitmap> Pages { get; } = new();
-
     private readonly BookReader _reader = new();
-
-    [ObservableProperty]
-    private string _bookFile = string.Empty;
-
-    [ObservableProperty]
-    private string _bookContent = string.Empty;
-
     public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
-
     public ObservableCollection<SearchResult> Results { get; } = new();
 
-    [RelayCommand]
-    private void BuildIndex()
+    public MainWindowViewModel(
+        IIndexingService indexingService, 
+        ISearchService searchService, 
+        IFileParsingService fileParsingService,
+        IExportService exportService) // New dependency injected
     {
-        if (string.IsNullOrWhiteSpace(IndexFolder))
-        {
-            Status = "Select a folder";
-            return;
-        }
-        var indexPath = System.IO.Path.Combine(IndexFolder, "index.json");
-        Status = "Building...";
-        AdvancedIndexer.BuildIndex(IndexFolder, indexPath);
-        Status = $"Index built at {indexPath}";
+        _indexingService = indexingService;
+        _searchService = searchService;
+        _fileParsingService = fileParsingService;
+        _exportService = exportService; // Store the service
     }
 
     [RelayCommand]
-    private void Search()
+    private async Task BuildIndex()
     {
-        Results.Clear();
-        var indexPath = System.IO.Path.Combine(IndexFolder, "index.json");
-        var opts = new SearchOptions
+        if (string.IsNullOrWhiteSpace(IndexFolder))
         {
-            CaseSensitive = CaseSensitive,
-            UseFuzzy = UseFuzzy,
-            UseAnd = UseAnd,
-            ContextLines = ContextLines
-        };
-        foreach (var result in AdvancedIndexer.Search(indexPath, Query, opts))
+            Status = "Please select a folder to index.";
+            return;
+        }
+        Status = $"Building index for '{Path.GetFileName(IndexFolder)}'...";
+        await _indexingService.BuildIndexAsync(IndexFolder, true);
+        Status = "Index build complete.";
+    }
+
+    [RelayCommand]
+    private async Task Search()
+    {
+        Status = $"Searching for '{Query}'...";
+        Results.Clear();
+        var opts = new SearchOptions { CaseSensitive = CaseSensitive, UseFuzzy = UseFuzzy, UseAnd = UseAnd, ContextLines = ContextLines };
+        var searchResults = await _searchService.SearchAsync(Query, opts);
+        foreach (var result in searchResults)
         {
             Results.Add(result);
         }
+        Status = $"Search complete. Found {Results.Count} files.";
     }
 
     [RelayCommand]
     private void OpenSelected()
     {
-        if (SelectedResult == null)
-            return;
-        var path = System.IO.Path.Combine(IndexFolder, SelectedResult.File);
+        if (SelectedResult == null) return;
+        var path = Path.Combine(IndexFolder, SelectedResult.File);
         try
         {
-            // UseShellExecute is required to open the file with the default application
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
-        catch { }
+        catch (Exception ex) { Status = $"Error opening file: {ex.Message}"; }
     }
 
     [RelayCommand]
-    private void ParseFile()
+    private async Task ParseFile()
     {
-        ParsedEntries.Clear();
         if (string.IsNullOrWhiteSpace(ParseFilePath) || !File.Exists(ParseFilePath))
         {
-            ParseStatus = "Select a valid file";
+            ParseStatus = "Please select a valid file to parse.";
             return;
         }
-        var text = File.ReadAllText(ParseFilePath);
-        List<BaseMapEntry> entries = ParseFilePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
-            ? new AmandamapJsonParser().Parse(text)
-            : new AmandamapParser().Parse(text);
-
+        ParseStatus = $"Parsing '{Path.GetFileName(ParseFilePath)}'...";
+        ParsedEntries.Clear();
+        var entries = await _fileParsingService.ParseFileAsync(ParseFilePath);
         foreach (var e in entries) ParsedEntries.Add(e);
-        ParseStatus = $"Parsed {entries.Count} entries";
+        ParseStatus = $"Parsed {ParsedEntries.Count} entries.";
     }
 
     [RelayCommand]
-    private void ExportSummary()
+    private async Task ExportSummary()
     {
-        if (ParsedEntries.Count == 0)
+        if (!ParsedEntries.Any())
         {
-            ParseStatus = "Nothing to export";
+            ParseStatus = "Nothing to export.";
             return;
         }
-        var path = Path.ChangeExtension(ParseFilePath, ".summary.md");
-        var exporter = new MarkdownExporter();
-        File.WriteAllText(path, exporter.Export(ParsedEntries.ToList()));
-        ParseStatus = $"Summary saved to {path}";
+        ParseStatus = "Exporting summary...";
+        
+        // This command now uses the new ExportService
+        var chatToExport = new ExportableChat
+        {
+            Title = Path.GetFileNameWithoutExtension(ParseFilePath),
+            Messages = ParsedEntries.Select(entry => new ChatMessage { Role = "Summary", Content = entry.ToMarkdownSummary(), Timestamp = DateTime.Now }).ToList()
+        };
+        var outputFilePath = Path.ChangeExtension(ParseFilePath, ".summary.md");
+
+        await _exportService.ExportAsync(chatToExport, outputFilePath, "Markdown");
+
+        ParseStatus = $"Summary exported to {Path.GetFileName(outputFilePath)}";
     }
 
     partial void OnSelectedResultChanged(SearchResult? value)
     {
-        if (value == null)
-        {
-            SelectedFile = string.Empty;
-        }
-        else
-        {
-            SelectedFile = Path.Combine(IndexFolder, value.File);
-        }
+        SelectedFile = value is null ? string.Empty : Path.Combine(IndexFolder, value.File);
     }
 
     [RelayCommand]
@@ -169,25 +152,9 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(BookFile) || !File.Exists(BookFile))
         {
-            BookContent = "Select a valid book file";
+            BookContent = "Select a valid book file.";
             return;
         }
         BookContent = await File.ReadAllTextAsync(BookFile);
-    }
-
-    [RelayCommand]
-    private void LaunchLegacyTool()
-    {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = "python",
-                Arguments = "gpt_export_index_tool.py",
-                UseShellExecute = false
-            };
-            Process.Start(psi);
-        }
-        catch { }
     }
 }
