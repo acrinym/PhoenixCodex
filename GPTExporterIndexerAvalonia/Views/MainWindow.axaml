@@ -16,8 +16,15 @@
         <vm:MainWindowViewModel />
     </Window.DataContext>
 
-    <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
-        <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Document..." Click="OnOpenDocument" />
+                <MenuItem Header="_Exit" Click="OnExit" />
+            </MenuItem>
+        </Menu>
+        <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
+            <TabControl xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls">
             <TabItem Header="Index">
                 <StackPanel Margin="10" Spacing="5">
                     <TextBlock Text="Folder:" />
@@ -45,6 +52,8 @@
                             <DataTemplate>
                                 <StackPanel>
                                     <TextBlock Text="{Binding File}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Category}" FontStyle="Italic" />
+                                    <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" />
                                     <ItemsControl Items="{Binding Snippets}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -107,9 +116,6 @@
                     <Button Content="Launch" Command="{Binding LaunchLegacyToolCommand}" />
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Ritual Builder">
-                <views:RitualBuilderView />
-            </TabItem>
             <TabItem Header="Grimoire">
                 <views:GrimoireManagerView />
             </TabItem>
@@ -122,9 +128,13 @@
             <TabItem Header="TagMap">
                 <views:TagMapView />
             </TabItem>
+            <TabItem Header="YAML Interpreter">
+                <views:Yaml.YamlInterpreterView />
+            </TabItem>
             <TabItem Header="Chat Logs">
                 <views:ChatLogView />
             </TabItem>
         </TabControl>
     </Border>
+    </DockPanel>
 </Window>

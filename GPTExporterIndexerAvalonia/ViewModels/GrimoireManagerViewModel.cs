@@ -1,19 +1,26 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CodexEngine.GrimoireCore.Models; // Ensure this namespace contains Ritual, Ingredient, and Servitor
+// Ensure this using statement points to the correct namespace where your models are defined.
+using CodexEngine.GrimoireCore.Models; 
 using System.Collections.ObjectModel;
+using System;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
+/// <summary>
+/// Manages the collections of core Grimoire entities like Rituals, Ingredients, and Servitors.
+/// Acts as a central point for adding, removing, and modifying these entities.
+/// </summary>
 public partial class GrimoireManagerViewModel : ObservableObject
 {
     public ObservableCollection<Ritual> Rituals { get; } = new();
-    public ObservableCollection<Ingredient> Ingredients { get; } = new(); // New collection for Ingredients
-    public ObservableCollection<Servitor> Servitors { get; } = new();     // New collection for Servitors
+    public ObservableCollection<Ingredient> Ingredients { get; } = new();
+    public ObservableCollection<Servitor> Servitors { get; } = new();
 
     public GrimoireManagerViewModel()
     {
-        // Registering this instance with SharedState for global access
+        // Register this instance for global access by other ViewModels.
+        // This allows, for example, the TimelineViewModel to be notified of changes.
         SharedState.Grimoire = this;
     }
 
@@ -23,49 +30,57 @@ public partial class GrimoireManagerViewModel : ObservableObject
     [ObservableProperty]
     private string? _ritualTitle;
 
+    // When the selected ritual changes, update the title property for editing in the UI.
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;
     }
 
+    // When the title is edited in the UI, update the source ritual object.
     partial void OnRitualTitleChanged(string? value)
     {
         if (SelectedRitual != null && value != null)
+        {
             SelectedRitual.Title = value;
+        }
     }
 
     [RelayCommand]
-    private void Add()
+    private void AddRitual()
     {
-        Rituals.Add(new Ritual
+        var newRitual = new Ritual
         {
             ID = Guid.NewGuid().ToString(),
             Title = "New Ritual",
             Content = string.Empty
-        });
-        // After adding a ritual, notify the TimelineViewModel to refresh its view
+        };
+        Rituals.Add(newRitual);
+        
+        // Notify other parts of the app (like the timeline) that the data has changed.
         SharedState.Timeline?.Refresh();
     }
 
     [RelayCommand]
-    private void Remove()
+    private void RemoveRitual()
     {
         if (SelectedRitual != null)
         {
             Rituals.Remove(SelectedRitual);
-            // After removing a ritual, notify the TimelineViewModel to refresh its view
             SharedState.Timeline?.Refresh();
         }
     }
 
-    // New commands for Ingredients
+    // --- Ingredient Commands ---
+
     [RelayCommand]
     private void AddIngredient()
     {
         Ingredients.Add(new Ingredient
         {
             Name = "New Ingredient",
-            Category = string.Empty
+            // CONFLICT RESOLVED: Using "General" as a default category is more user-friendly
+            // than an empty string.
+            Category = "General" 
         });
     }
 
@@ -73,10 +88,13 @@ public partial class GrimoireManagerViewModel : ObservableObject
     private void RemoveIngredient(Ingredient? ingredient)
     {
         if (ingredient != null)
+        {
             Ingredients.Remove(ingredient);
+        }
     }
 
-    // New commands for Servitors
+    // --- Servitor Commands ---
+
     [RelayCommand]
     private void AddServitor()
     {
@@ -92,6 +110,8 @@ public partial class GrimoireManagerViewModel : ObservableObject
     private void RemoveServitor(Servitor? servitor)
     {
         if (servitor != null)
+        {
             Servitors.Remove(servitor);
+        }
     }
 }

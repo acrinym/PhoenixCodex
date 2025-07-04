@@ -1,23 +1,47 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using AvaloniaWebView; // Provides the WebView control
+// CONFLICT RESOLVED: Using the correct namespace for the WebView control.
+using WebView.Avalonia; 
 using GPTExporterIndexerAvalonia.ViewModels;
+using System;
 
 namespace GPTExporterIndexerAvalonia.Views;
 
+/// <summary>
+/// The View for the Ritual Builder. This UserControl hosts the WebView
+/// that contains the interactive builder interface. Its primary role is to
+/// connect the WebView control from the XAML to the ViewModel.
+/// </summary>
 public partial class RitualBuilderView : UserControl
 {
     public RitualBuilderView()
     {
         InitializeComponent();
-        if (DataContext is RitualBuilderViewModel vm)
-        {
-            vm.Builder = this.FindControl<WebView>("Builder");
-        }
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    /// <summary>
+    /// Overridden to handle setup logic when the control is attached to the visual tree.
+    /// This is a more reliable place to access the DataContext and controls than the constructor.
+    /// </summary>
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        if (DataContext is RitualBuilderViewModel vm)
+        {
+            // Find the WebView control defined in the corresponding .axaml file.
+            // Using the IWebView interface is a good practice for decoupling.
+            var webView = this.FindControl<IWebView>("Builder") 
+                ?? throw new InvalidOperationException("Could not find a WebView control named 'Builder' in the template.");
+
+            // Assign the control instance to the ViewModel property so it can be controlled.
+            vm.Builder = webView;
+        }
     }
 }

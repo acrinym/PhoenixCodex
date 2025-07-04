@@ -2,14 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="https://github.com/avaloniaui"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             xmlns:wv="clr-namespace:WebView.Avalonia;assembly=WebView.Avalonia"
              x:Class="GPTExporterIndexerAvalonia.Views.RitualBuilderView">
     <Design.DataContext>
         <vm:RitualBuilderViewModel />
     </Design.DataContext>
     <Grid>
-        <Border BorderThickness="1" BorderBrush="Violet" CornerRadius="8">
-            <WebView Source="/WebAssets/ritual-builder.html" Name="Builder" />
-        </Border>
+        <wv:WebView Source="/WebAssets/ritual-builder.html" Name="Builder" />
         <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Command="{Binding SaveCommand}" />
     </Grid>
 </UserControl>

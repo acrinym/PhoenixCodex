@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui">
     <Style Selector="Window">
         <Setter Property="Background">
             <Setter.Value>
@@ -17,5 +17,5 @@
         <Setter Property="Background" Value="#592474" />
         <Setter Property="Foreground" Value="White" />
     </Style>
-</ResourceDictionary>
+</Styles>
 
