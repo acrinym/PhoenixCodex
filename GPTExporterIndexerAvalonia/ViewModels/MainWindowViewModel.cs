@@ -1,4 +1,3 @@
-// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPTExporterIndexerAvalonia.Helpers;
@@ -13,8 +12,9 @@ using System.Linq;
 using Avalonia.Media.Imaging;
 using GPTExporterIndexerAvalonia.Reading;
 using System;
-using CodexEngine.ExportEngine.Models; // New using
-using CodexEngine.ChatGPTLogManager.Models; // New using
+using CodexEngine.ExportEngine.Models;
+using CodexEngine.ChatGPTLogManager.Models;
+using Avalonia.Controls; // For FileDialogFilter
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -23,7 +23,8 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IIndexingService _indexingService;
     private readonly ISearchService _searchService;
     private readonly IFileParsingService _fileParsingService;
-    private readonly IExportService _exportService; // New dependency
+    private readonly IExportService _exportService;
+    private readonly IDialogService _dialogService; // New dependency
 
     [ObservableProperty] private string _indexFolder = string.Empty;
     [ObservableProperty] private string _status = "Ready.";
@@ -49,22 +50,27 @@ public partial class MainWindowViewModel : ObservableObject
         IIndexingService indexingService, 
         ISearchService searchService, 
         IFileParsingService fileParsingService,
-        IExportService exportService) // New dependency injected
+        IExportService exportService,
+        IDialogService dialogService) // New dependency injected
     {
         _indexingService = indexingService;
         _searchService = searchService;
         _fileParsingService = fileParsingService;
-        _exportService = exportService; // Store the service
+        _exportService = exportService;
+        _dialogService = dialogService; // Store the service
     }
 
     [RelayCommand]
     private async Task BuildIndex()
     {
-        if (string.IsNullOrWhiteSpace(IndexFolder))
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Index");
+        if (string.IsNullOrWhiteSpace(folderPath))
         {
-            Status = "Please select a folder to index.";
+            Status = "Index operation cancelled.";
             return;
         }
+
+        IndexFolder = folderPath;
         Status = $"Building index for '{Path.GetFileName(IndexFolder)}'...";
         await _indexingService.BuildIndexAsync(IndexFolder, true);
         Status = "Index build complete.";
@@ -99,11 +105,16 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ParseFile()
     {
-        if (string.IsNullOrWhiteSpace(ParseFilePath) || !File.Exists(ParseFilePath))
+        var filePath = await _dialogService.ShowOpenFileDialogAsync("Select File to Parse", 
+            new FileDialogFilter { Name = "Parsable Files", Extensions = { "json", "md", "txt" } });
+
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
-            ParseStatus = "Please select a valid file to parse.";
+            ParseStatus = "Parse operation cancelled.";
             return;
         }
+
+        ParseFilePath = filePath;
         ParseStatus = $"Parsing '{Path.GetFileName(ParseFilePath)}'...";
         ParsedEntries.Clear();
         var entries = await _fileParsingService.ParseFileAsync(ParseFilePath);
@@ -121,7 +132,6 @@ public partial class MainWindowViewModel : ObservableObject
         }
         ParseStatus = "Exporting summary...";
         
-        // This command now uses the new ExportService
         var chatToExport = new ExportableChat
         {
             Title = Path.GetFileNameWithoutExtension(ParseFilePath),
@@ -140,8 +150,14 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void LoadDocument()
+    private async Task LoadDocument()
     {
+        var filePath = await _dialogService.ShowOpenFileDialogAsync("Select Document to View",
+            new FileDialogFilter { Name = "Documents", Extensions = { "pdf", "md", "txt", "docx", "json" } });
+        
+        if (string.IsNullOrWhiteSpace(filePath)) return;
+
+        DocumentPath = filePath;
         Pages.Clear();
         _reader.Load(DocumentPath);
         foreach (var p in _reader.Pages) Pages.Add(p);
@@ -150,11 +166,16 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadBook()
     {
-        if (string.IsNullOrWhiteSpace(BookFile) || !File.Exists(BookFile))
+        var filePath = await _dialogService.ShowOpenFileDialogAsync("Select Book File",
+            new FileDialogFilter { Name = "Text-based Books", Extensions = { "txt", "md", "html" } });
+
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
-            BookContent = "Select a valid book file.";
+            BookContent = "Could not load book file.";
             return;
         }
+        
+        BookFile = filePath;
         BookContent = await File.ReadAllTextAsync(BookFile);
     }
 }

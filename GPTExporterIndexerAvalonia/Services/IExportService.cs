@@ -1,3 +1,4 @@
+using CodexEngine.ExportEngine.Models;
 using System.Threading.Tasks;
 
 namespace GPTExporterIndexerAvalonia.Services;

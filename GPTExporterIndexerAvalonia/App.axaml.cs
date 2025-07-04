@@ -1,9 +1,8 @@
-// REFACTORED
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using CommunityToolkit.Mvvm.Messaging;
-using CodexEngine.ExportEngine.Renderers; // New using
+using CodexEngine.ExportEngine.Renderers;
 using GPTExporterIndexerAvalonia.Services;
 using GPTExporterIndexerAvalonia.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +20,7 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
     }
+
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -47,10 +47,11 @@ public partial class App : Application
         services.AddSingleton<IIndexingService, IndexingService>();
         services.AddSingleton<ISearchService, SearchService>();
         services.AddSingleton<IFileParsingService, FileParsingService>();
-        services.AddSingleton<IExportService, ExportService>(); // Register new service
+        services.AddSingleton<IExportService, ExportService>();
+        services.AddSingleton<IDialogService, DialogService>(); // Register new DialogService
 
         // Register Renderers
-        services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>(); // Register new renderer
+        services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
 
         // Register ViewModels
         services.AddSingleton<GrimoireManagerViewModel>();
