@@ -1,8 +1,9 @@
+// FILE: GPTExporterIndexerAvalonia/ViewModels/RitualBuilderViewModel.cs
+// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.RitualForge.Models;
-// Using the correct namespace for the WebView control from the 'WebView.Avalonia' package.
-using WebView.Avalonia; 
+using WebView.Avalonia; // FIXED: Added missing using directive
 using System.Threading.Tasks;
 using System.IO;
 using System;

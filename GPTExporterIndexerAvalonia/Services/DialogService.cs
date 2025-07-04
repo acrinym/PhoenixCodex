@@ -1,3 +1,5 @@
+// FILE: GPTExporterIndexerAvalonia/Services/DialogService.cs
+// REFACTORED
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -36,8 +38,9 @@ public class DialogService : IDialogService
 
         return result.FirstOrDefault()?.Path.LocalPath;
     }
-
-    public async Task<string?> ShowOpenFileDialogAsync(string title, FileDialogFilter filter)
+    
+    // FIXED: Updated method to use the new FileFilter record.
+    public async Task<string?> ShowOpenFileDialogAsync(string title, FileFilter filter)
     {
         var mainWindow = GetMainWindow();
         if (mainWindow is null) return null;

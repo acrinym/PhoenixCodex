@@ -1,3 +1,5 @@
+// FILE: GPTExporterIndexerAvalonia/ViewModels/MainWindowViewModel.cs
+// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPTExporterIndexerAvalonia.Helpers;
@@ -14,7 +16,6 @@ using GPTExporterIndexerAvalonia.Reading;
 using System;
 using CodexEngine.ExportEngine.Models;
 using CodexEngine.ChatGPTLogManager.Models;
-using Avalonia.Controls; // For FileDialogFilter
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -24,7 +25,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly ISearchService _searchService;
     private readonly IFileParsingService _fileParsingService;
     private readonly IExportService _exportService;
-    private readonly IDialogService _dialogService; // New dependency
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty] private string _indexFolder = string.Empty;
     [ObservableProperty] private string _status = "Ready.";
@@ -51,13 +52,13 @@ public partial class MainWindowViewModel : ObservableObject
         ISearchService searchService, 
         IFileParsingService fileParsingService,
         IExportService exportService,
-        IDialogService dialogService) // New dependency injected
+        IDialogService dialogService)
     {
         _indexingService = indexingService;
         _searchService = searchService;
         _fileParsingService = fileParsingService;
         _exportService = exportService;
-        _dialogService = dialogService; // Store the service
+        _dialogService = dialogService;
     }
 
     [RelayCommand]
@@ -105,8 +106,9 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ParseFile()
     {
+        // FIXED: Using the new FileFilter record
         var filePath = await _dialogService.ShowOpenFileDialogAsync("Select File to Parse", 
-            new FileDialogFilter { Name = "Parsable Files", Extensions = { "json", "md", "txt" } });
+            new FileFilter("Parsable Files", new []{ "json", "md", "txt" }));
 
         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
@@ -153,7 +155,7 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task LoadDocument()
     {
         var filePath = await _dialogService.ShowOpenFileDialogAsync("Select Document to View",
-            new FileDialogFilter { Name = "Documents", Extensions = { "pdf", "md", "txt", "docx", "json" } });
+            new FileFilter("Documents", new []{ "pdf", "md", "txt", "docx", "json" }));
         
         if (string.IsNullOrWhiteSpace(filePath)) return;
 
@@ -167,7 +169,7 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task LoadBook()
     {
         var filePath = await _dialogService.ShowOpenFileDialogAsync("Select Book File",
-            new FileDialogFilter { Name = "Text-based Books", Extensions = { "txt", "md", "html" } });
+            new FileFilter("Text-based Books", new []{ "txt", "md", "html" }));
 
         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
