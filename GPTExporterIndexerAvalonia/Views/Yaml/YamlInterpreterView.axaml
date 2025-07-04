@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             x:Class="GPTExporterIndexerAvalonia.Views.Yaml.YamlInterpreterView">
+    <Design.DataContext>
+        <vm:YamlInterpreterViewModel />
+    </Design.DataContext>
+    <StackPanel Margin="10" Spacing="5">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox Width="220" Watermark="YAML File" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="Load" Command="{Binding LoadCommand}" />
+        </StackPanel>
+        <TreeView Items="{Binding Items}">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding Display}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </StackPanel>
+</UserControl>
