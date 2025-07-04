@@ -1,5 +1,3 @@
-// FILE: GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj
-// REFACTORED
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
