@@ -11,7 +11,7 @@
     
     <StackPanel Margin="10" Spacing="5">
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBox Width="200" Watermark="TagMap File" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Width="200" Watermark="TagMap File" Text="{Binding FilePath}" />
             <Button Content="Browse" Click="OnBrowse" />
             <Button Content="Load" Command="{Binding LoadCommand}" />
             <Button Content="Save" Command="{Binding SaveCommand}" />
@@ -19,8 +19,8 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBox Width="150" Watermark="Document Filter" Text="{Binding DocumentFilter, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBox Width="150" Watermark="Category Filter" Text="{Binding CategoryFilter, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Width="150" Watermark="Document Filter" Text="{Binding DocumentFilter}" />
+            <TextBox Width="150" Watermark="Category Filter" Text="{Binding CategoryFilter}" />
         </StackPanel>
 
         <TabControl ItemsSource="{Binding FilteredDocuments}">
@@ -40,10 +40,10 @@
                                     <Border BorderBrush="DarkCyan" BorderThickness="1" Padding="5" Margin="2">
                                         <StackPanel Orientation="Horizontal" Spacing="5">
                                             <StackPanel Spacing="3">
-                                                <TextBox Width="150" Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" Watermark="Category"/>
-                                                <TextBox Width="200" Text="{Binding Preview, UpdateSourceTrigger=PropertyChanged}" Watermark="Preview Text"/>
+                                                <TextBox Width="150" Text="{Binding Category}" Watermark="Category"/>
+                                                <TextBox Width="200" Text="{Binding Preview}" Watermark="Preview Text"/>
                                             </StackPanel>
-                                            <TextBox Width="50" Text="{Binding Line, UpdateSourceTrigger=PropertyChanged}" Watermark="Line"/>
+                                            <TextBox Width="50" Text="{Binding Line}" Watermark="Line"/>
                                             
                                             <StackPanel Spacing="3">
                                                 <Button Content="Preview Snippet"

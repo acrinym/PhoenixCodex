@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using GPTExporterIndexerAvalonia.ViewModels;
 
 namespace GPTExporterIndexerAvalonia.Views;

@@ -3,7 +3,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using WebView.Avalonia; // FIXED: correct namespace
+using Avalonia.WebView.Desktop;
 
 namespace GPTExporterIndexerAvalonia;
 
@@ -22,5 +22,5 @@ internal class Program
             .UsePlatformDetect()
             .LogToTrace()
             .UseReactiveUI()
-            .UseWebView(); // FIXED: Correctly initialize WebView
+            .UseDesktopWebView();
 }
