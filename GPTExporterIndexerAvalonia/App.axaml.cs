@@ -8,6 +8,7 @@ using GPTExporterIndexerAvalonia.ViewModels;
 
 
 using GPTExporterIndexerAvalonia.Views;
+using GPTExporterIndexerAvalonia.Views.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
