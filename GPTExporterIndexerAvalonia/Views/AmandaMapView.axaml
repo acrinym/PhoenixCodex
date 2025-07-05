@@ -6,7 +6,7 @@
         <vm:AmandaMapViewModel />
     </Design.DataContext>
     <StackPanel Margin="10" Spacing="5">
-        <TextBox Watermark="File Path" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBox Watermark="File Path" Text="{Binding FilePath}" />
         <Button Content="Load" Command="{Binding LoadCommand}" />
         <ScrollViewer Height="250">
             <ItemsControl ItemsSource="{Binding Entries}" >

@@ -14,7 +14,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <TextBlock Text="Title" />
-        <TextBox Text="{Binding RitualTitle, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBox Text="{Binding RitualTitle}" />
         <Button Content="Add" Command="{Binding AddCommand}" />
         <Button Content="Remove" Command="{Binding RemoveCommand}" />
 
@@ -23,7 +23,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Spacing="5">
-                        <TextBox Width="150" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="150" Text="{Binding Name}" />
                         <Button Content="X" Command="{Binding DataContext.RemoveIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
                     </StackPanel>
                 </DataTemplate>
@@ -36,7 +36,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Spacing="5">
-                        <TextBox Width="150" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="150" Text="{Binding Name}" />
                         <Button Content="X" Command="{Binding DataContext.RemoveServitorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
                     </StackPanel>
                 </DataTemplate>

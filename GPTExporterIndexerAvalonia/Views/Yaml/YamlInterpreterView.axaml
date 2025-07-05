@@ -7,14 +7,14 @@
     </Design.DataContext>
     <StackPanel Margin="10" Spacing="5">
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBox Width="220" Watermark="YAML File" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Width="220" Watermark="YAML File" Text="{Binding FilePath}" />
             <Button Content="Load" Command="{Binding LoadCommand}" />
         </StackPanel>
-        <TreeView Items="{Binding Items}">
+        <TreeView ItemsSource="{Binding Items}">
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                <TreeDataTemplate ItemsSource="{Binding Children}">
                     <TextBlock Text="{Binding Display}" />
-                </HierarchicalDataTemplate>
+                </TreeDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>
     </StackPanel>

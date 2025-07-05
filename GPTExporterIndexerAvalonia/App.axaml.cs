@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CodexEngine.ExportEngine.Renderers;
 using GPTExporterIndexerAvalonia.Services;
 using GPTExporterIndexerAvalonia.ViewModels;
+using GPTExporterIndexerAvalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 

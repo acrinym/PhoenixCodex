@@ -3,8 +3,8 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity; // FIXED: Added missing using directive
 using Avalonia.Markup.Xaml;
-using WebView.Avalonia; // FIXED: correct namespace
-using Avalonia.VisualTree;
+using AvaloniaWebView;
+using Avalonia;
 using GPTExporterIndexerAvalonia.ViewModels;
 using System;
 
@@ -37,9 +37,8 @@ public partial class RitualBuilderView : UserControl
 
         if (DataContext is RitualBuilderViewModel vm)
         {
-            // Find the WebView control defined in the corresponding .axaml file.
-            // Using the IWebView interface is a good practice for decoupling.
-            var webView = this.FindControl<IWebView>("Builder") 
+            // Locate the WebView control defined in the XAML.
+            var webView = this.FindControl<WebView>("Builder")
                 ?? throw new InvalidOperationException("Could not find a WebView control named 'Builder' in the template.");
             
             // Assign the control instance to the ViewModel property so it can be controlled.
