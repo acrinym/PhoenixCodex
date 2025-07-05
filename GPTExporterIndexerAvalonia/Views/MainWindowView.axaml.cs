@@ -3,12 +3,9 @@ using Avalonia.Markup.Xaml;
 
 namespace GPTExporterIndexerAvalonia.Views;
 
-/// <summary>
-/// Code-behind for <see cref="MainWindow.axaml"/>.
-/// </summary>
-public partial class MainWindow : Window
+public partial class MainWindowView : UserControl
 {
-public MainWindow()
+    public MainWindowView()
     {
         InitializeComponent();
     }
