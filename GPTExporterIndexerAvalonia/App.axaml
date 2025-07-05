@@ -1,7 +1,17 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:GPTExporterIndexerAvalonia"
              x:Class="GPTExporterIndexerAvalonia.App"
-             RequestedThemeVariant="Light">
+             RequestedThemeVariant="Dark">
+    <!--
+      This Application.Resources section is crucial. It contains the ViewLocator,
+      which tells the application how to find the correct View for any given ViewModel.
+      Without this, the TabControl in MainWindow won't know how to display the content.
+    -->
+    <Application.Resources>
+        <local:ViewLocator x:Key="ViewLocator"/>
+    </Application.Resources>
+    
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://GPTExporterIndexerAvalonia/Styles/MagicTheme.axaml" />

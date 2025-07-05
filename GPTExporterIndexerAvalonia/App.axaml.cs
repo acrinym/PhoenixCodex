@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CodexEngine.ExportEngine.Renderers;
 using GPTExporterIndexerAvalonia.Services;
 using GPTExporterIndexerAvalonia.ViewModels;
+using GPTExporterIndexerAvalonia.Views; // New using for Views
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -28,11 +29,12 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var mainWindow = new MainWindow
+            // We now create the MainWindow directly, its DataContext will be set by the ViewLocator
+            desktop.MainWindow = new MainWindow
             {
+                // The main DataContext is now the MainWindowViewModel itself.
                 DataContext = Services.GetRequiredService<MainWindowViewModel>()
             };
-            desktop.MainWindow = mainWindow;
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -48,7 +50,9 @@ public partial class App : Application
         services.AddSingleton<ISearchService, SearchService>();
         services.AddSingleton<IFileParsingService, FileParsingService>();
         services.AddSingleton<IExportService, ExportService>();
-        services.AddSingleton<IDialogService, DialogService>(); // Register new DialogService
+
+        // FIXED: Register the DialogService so it can be injected.
+        services.AddSingleton<IDialogService, DialogService>();
 
         // Register Renderers
         services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
@@ -62,6 +66,17 @@ public partial class App : Application
         services.AddTransient<TagMapViewModel>();
         services.AddTransient<YamlInterpreterViewModel>();
         services.AddTransient<MainWindowViewModel>();
+
+        // Register Views (for the ViewLocator)
+        services.AddTransient<MainWindow>();
+        services.AddTransient<GrimoireManagerView>();
+        services.AddTransient<TimelineView>();
+        services.AddTransient<AmandaMapView>();
+        services.AddTransient<TagMapView>();
+        services.AddTransient<YamlInterpreterView>();
+        services.AddTransient<ChatLogView>();
+        services.AddTransient<RitualBuilderView>();
+
 
         return services.BuildServiceProvider();
     }
