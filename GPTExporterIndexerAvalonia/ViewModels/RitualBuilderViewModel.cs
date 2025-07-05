@@ -3,7 +3,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.RitualForge.Models;
-using WebView.Avalonia; // FIXED: correct namespace
+using AvaloniaWebView;
 using System.Threading.Tasks;
 using System.IO;
 using System;
@@ -19,7 +19,7 @@ public partial class RitualBuilderViewModel : ObservableObject
     /// <summary>
     /// A reference to the WebView control in the View. This should be set from the code-behind.
     /// </summary>
-    public IWebView? Builder { get; set; }
+    public WebView? Builder { get; set; }
 
     /// <summary>
     /// Defines the path where the ritual scene data will be saved.

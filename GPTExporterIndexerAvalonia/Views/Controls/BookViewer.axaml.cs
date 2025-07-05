@@ -158,8 +158,7 @@ public partial class BookViewer : UserControl
                 IsReadOnly = true,
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+                // Avalonia handles scroll bars via ScrollViewer. Keep default behaviour.
             };
 
             if (useMonospace)

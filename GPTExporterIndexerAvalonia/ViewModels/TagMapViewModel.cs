@@ -209,8 +209,6 @@ public partial class TagMapViewModel : ObservableObject
                     {
                         IsReadOnly = true,
                         AcceptsReturn = true,
-                        HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                         Text = File.ReadAllText(path_to_open)
                     };
                     window.Content = textBox;
