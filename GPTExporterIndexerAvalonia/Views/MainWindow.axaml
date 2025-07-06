@@ -3,6 +3,9 @@
         xmlns:d="http://schemas.microsoft.com/avaloniaui"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+        xmlns:views="clr-namespace:GPTExporterIndexerAvalonia.Views"
+        xmlns:yaml="clr-namespace:GPTExporterIndexerAvalonia.Views.Yaml"
+        xmlns:loc="clr-namespace:GPTExporterIndexerAvalonia"
         mc:Ignorable="d"
         x:Class="GPTExporterIndexerAvalonia.Views.MainWindow"
         Width="1200" Height="800"
@@ -15,13 +18,34 @@
               The ViewLocator (defined in App.axaml) will automatically find the correct
               View for each ViewModel in the collection.
             -->
-            <TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}">
-                <TabControl.ItemTemplate>
-                    <DataTemplate>
-                        <!-- The header for each tab is bound to the Header property of the ViewModel -->
-                        <TextBlock Text="{Binding Header}" />
-                    </DataTemplate>
-                </TabControl.ItemTemplate>
+            <TabControl>
+                <TabControl.DataTemplates>
+                    <loc:ViewLocator/>
+                </TabControl.DataTemplates>
+                <TabItem Header="Index &amp; Search">
+                    <views:MainWindowView/>
+                </TabItem>
+                <TabItem Header="Grimoire">
+                    <views:GrimoireManagerView/>
+                </TabItem>
+                <TabItem Header="Timeline">
+                    <views:TimelineView/>
+                </TabItem>
+                <TabItem Header="AmandaMap">
+                    <views:AmandaMapView/>
+                </TabItem>
+                <TabItem Header="TagMap">
+                    <views:TagMapView/>
+                </TabItem>
+                <TabItem Header="YAML Interpreter">
+                    <yaml:YamlInterpreterView/>
+                </TabItem>
+                <TabItem Header="Chat Logs">
+                    <views:ChatLogView/>
+                </TabItem>
+                 <TabItem Header="Ritual Builder">
+                    <views:RitualBuilderView/>
+                </TabItem>
             </TabControl>
         </Border>
     </DockPanel>

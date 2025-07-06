@@ -11,7 +11,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="*,2,3*" RowDefinitions="Auto,*" Margin="10" Gap="10">
+    <Grid ColumnDefinitions="*,2,3*" RowDefinitions="Auto,*" Margin="10">
         
         <!-- Left Panel: Indexing and Parsing -->
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Spacing="10">
@@ -48,7 +48,7 @@
             
             <!-- Search Input Area -->
             <StackPanel DockPanel.Dock="Top" Spacing="5">
-                <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" Watermark="Enter search query..."/>
+                <TextBox Text="{Binding Query, Mode=TwoWay}" Watermark="Enter search query..."/>
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <CheckBox Content="Case Sensitive" IsChecked="{Binding CaseSensitive}" />
                     <CheckBox Content="Fuzzy Match" IsChecked="{Binding UseFuzzy}" />
