@@ -37,9 +37,9 @@ public partial class BookViewer : UserControl
     public BookViewer()
     {
         InitializeComponent();
-        _content = this.FindControl<ContentControl>("PART_Content") 
+        _content = this.FindControl<ContentControl>("PART_Content")
             ?? throw new InvalidOperationException("Could not find PART_Content in the control template.");
-            
+
         // Subscribe to changes on the FilePath property to automatically load files.
         this.GetObservable(FilePathProperty).Subscribe(LoadFile);
     }
@@ -128,7 +128,7 @@ public partial class BookViewer : UserControl
         {
             var book = EpubReader.ReadBook(path);
             var contentBuilder = new StringBuilder();
-            
+
             // Concatenate all local HTML content from the EPUB into one string.
             foreach (var htmlFile in book.Content.Html.Local)
             {
@@ -181,11 +181,11 @@ public partial class BookViewer : UserControl
     {
         // Note: .mobi is a complex binary format requiring specialized libraries to parse.
         // It is grouped here as unsupported for simplicity.
-        return new TextBlock 
-        { 
-            Text = $"The file format '{extension}' is not supported.", 
+        return new TextBlock
+        {
+            Text = $"The file format '{extension}' is not supported.",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center 
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
     }
 

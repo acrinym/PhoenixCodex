@@ -66,11 +66,11 @@ public class FileParsingService : IFileParsingService
             var chatToExport = new ExportableChat
             {
                 Title = Path.GetFileNameWithoutExtension(sourceFilePath),
-                Messages = entries.Select(entry => new ChatMessage 
-                { 
-                    Role = "Summary", 
-                    Content = entry.ToMarkdownSummary(), 
-                    Timestamp = DateTime.Now 
+                Messages = entries.Select(entry => new ChatMessage
+                {
+                    Role = "Summary",
+                    Content = entry.ToMarkdownSummary(),
+                    Timestamp = DateTime.Now
                 }).ToList()
             };
 

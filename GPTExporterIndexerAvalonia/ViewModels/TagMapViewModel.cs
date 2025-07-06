@@ -26,7 +26,7 @@ public partial class TagMapDocument : ObservableObject
 {
     public string Name { get; set; } = string.Empty;
     public ObservableCollection<TagMapEntry> Entries { get; } = new();
-    
+
     // Kept from 'main' for filtering
     public ObservableCollection<TagMapEntry> FilteredEntries { get; } = new();
 }
@@ -70,7 +70,7 @@ public partial class TagMapViewModel : ObservableObject
             if (entries == null) return;
 
             var baseDir = Path.GetDirectoryName(FilePath) ?? string.Empty;
-            
+
             // Group entries into documents
             foreach (var group in entries.GroupBy(e => e.Document))
             {
@@ -86,7 +86,7 @@ public partial class TagMapViewModel : ObservableObject
                 Documents.Add(doc);
             }
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             // It's good practice to handle or log the exception
             Debug.WriteLine($"Failed to load tag map: {ex.Message}");
@@ -105,7 +105,7 @@ public partial class TagMapViewModel : ObservableObject
             Line = e.Line,
             Preview = e.Preview
         })).ToList();
-        
+
         var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(FilePath, json);
     }
@@ -124,14 +124,14 @@ public partial class TagMapViewModel : ObservableObject
 
         var baseDir = Path.GetDirectoryName(FilePath) ?? string.Empty;
         var entry = new TagMapEntry { Category = "General", Document = document.Name };
-        
+
         // Merged logic: Set the FilePath and then add the entry
         entry.FilePath = Path.IsPathRooted(entry.Document)
             ? entry.Document
             : Path.Combine(baseDir, entry.Document);
-        
+
         document.Entries.Add(entry);
-        
+
         // Call FilterDocuments to ensure the UI updates with the new entry
         FilterDocuments();
     }
@@ -232,7 +232,7 @@ public partial class TagMapViewModel : ObservableObject
             else
             {
                 // Optionally handle the case where the file doesn't exist
-                 Debug.WriteLine($"File not found, cannot open: {path_to_open}");
+                Debug.WriteLine($"File not found, cannot open: {path_to_open}");
             }
         }
         catch (Exception ex)
@@ -257,15 +257,15 @@ public partial class TagMapViewModel : ObservableObject
                 entry.Category.Contains(CategoryFilter, StringComparison.OrdinalIgnoreCase)
             );
 
-            foreach(var entry in filtered)
+            foreach (var entry in filtered)
             {
                 doc.FilteredEntries.Add(entry);
             }
-            
+
             // Only add the document to the filtered list if it has matching entries
-            if(doc.FilteredEntries.Any())
+            if (doc.FilteredEntries.Any())
             {
-                 FilteredDocuments.Add(doc);
+                FilteredDocuments.Add(doc);
             }
         }
     }

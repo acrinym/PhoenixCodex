@@ -56,10 +56,10 @@ public partial class App : Application
         services.AddSingleton<IFileParsingService, FileParsingService>();
         services.AddSingleton<IExportService, ExportService>();
         services.AddSingleton<IDialogService, DialogService>();
-        
+
         // Register Renderers
         services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-        
+
         // Register ViewModels
         services.AddSingleton<GrimoireManagerViewModel>();
         services.AddTransient<TimelineViewModel>();
@@ -69,7 +69,7 @@ public partial class App : Application
         services.AddTransient<TagMapViewModel>();
         services.AddTransient<YamlInterpreterViewModel>();
         services.AddTransient<MainWindowViewModel>();
-        
+
         // Register Views (for the ViewLocator)
         services.AddTransient<MainWindow>();
         services.AddTransient<GrimoireManagerView>();

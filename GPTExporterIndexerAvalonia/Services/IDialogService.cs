@@ -16,7 +16,7 @@ public record FileFilter(string Name, string[] Extensions);
 public interface IDialogService
 {
     Task<string?> ShowOpenFolderDialogAsync(string title);
-    
+
     // FIXED: Replaced obsolete FileDialogFilter with our new record type.
     Task<string?> ShowOpenFileDialogAsync(string title, FileFilter filter);
 }

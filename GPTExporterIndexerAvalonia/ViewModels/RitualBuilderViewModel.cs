@@ -26,7 +26,7 @@ public partial class RitualBuilderViewModel : ObservableObject
     //  Using a property for the path is more flexible than hardcoding it.
     /// </summary>
     public string ScenePath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
         "ritual-scene.json"
     );
 
@@ -44,7 +44,7 @@ public partial class RitualBuilderViewModel : ObservableObject
             // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML 
             // and returns the scene data as a JSON string.
             var result = await Builder.ExecuteScriptAsync("window.saveScene();");
-            
+
             // Save the resulting JSON to the predefined ScenePath.
             await File.WriteAllTextAsync(ScenePath, result ?? "{}");
         }
@@ -68,11 +68,11 @@ public partial class RitualBuilderViewModel : ObservableObject
             // If the file doesn't exist, there's nothing to load.
             return;
         }
-        
+
         try
         {
             var json = await File.ReadAllTextAsync(ScenePath);
-            
+
             // Sanitize the JSON string for use in a JavaScript literal.
             var escapedJson = json
                 .Replace("\\", "\\\\")

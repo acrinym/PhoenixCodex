@@ -27,7 +27,10 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IFileParsingService _fileParsingService;
     private readonly IDialogService _dialogService;
 
+
     // Properties holding the ViewModels for each tab
+
+
     public GrimoireManagerViewModel GrimoireViewModel { get; }
     public TimelineViewModel TimelineViewModel { get; }
     public AmandaMapViewModel AmandaMapViewModel { get; }
@@ -35,8 +38,11 @@ public partial class MainWindowViewModel : ObservableObject
     public YamlInterpreterViewModel YamlInterpreterViewModel { get; }
     public ChatLogViewModel ChatLogViewModel { get; }
     public RitualBuilderViewModel RitualBuilderViewModel { get; }
-    
+
     // Properties for the "Index & Search" view
+
+    [ObservableProperty] private string _indexContent = "Index has not been viewed yet. Click 'View Index' to load it.";
+
     [ObservableProperty] private string _indexFolder = string.Empty;
     [ObservableProperty] private string _status = "Ready.";
     [ObservableProperty] private string _query = string.Empty;
@@ -51,7 +57,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _documentPath = string.Empty;
     [ObservableProperty] private string _bookFile = string.Empty;
     [ObservableProperty] private string _bookContent = string.Empty;
-    
+
     public ObservableCollection<Bitmap> Pages { get; } = new();
     private readonly BookReader _reader = new();
     public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
@@ -59,8 +65,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel(
         // Inject services
-        IIndexingService indexingService, 
-        ISearchService searchService, 
+        IIndexingService indexingService,
+        ISearchService searchService,
         IFileParsingService fileParsingService,
         IDialogService dialogService,
         // Inject the ViewModels for the other tabs
@@ -86,7 +92,7 @@ public partial class MainWindowViewModel : ObservableObject
         YamlInterpreterViewModel = yamlInterpreterViewModel;
         ChatLogViewModel = chatLogViewModel;
         RitualBuilderViewModel = ritualBuilderViewModel;
-        
+
         DebugLogger.Log("MainWindowViewModel created and all services/sub-ViewModels injected.");
     }
 
@@ -116,7 +122,7 @@ public partial class MainWindowViewModel : ObservableObject
         DebugLogger.Log($"MainWindowViewModel: Kicking off search for query: '{Query}'");
         Results.Clear();
         var opts = new SearchOptions { CaseSensitive = CaseSensitive, UseFuzzy = UseFuzzy, UseAnd = UseAnd, ContextLines = ContextLines };
-        
+
         var indexPath = Path.Combine(IndexFolder, "index.json");
         if (!File.Exists(indexPath))
         {
@@ -126,7 +132,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         var searchResults = await _searchService.SearchAsync(indexPath, Query, opts);
-        
+
         foreach (var result in searchResults)
         {
             Results.Add(result);
@@ -145,8 +151,8 @@ public partial class MainWindowViewModel : ObservableObject
         {
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
-        catch (Exception ex) 
-        { 
+        catch (Exception ex)
+        {
             Status = $"Error opening file: {ex.Message}";
             DebugLogger.Log($"MainWindowViewModel: Error opening file '{path}'. Error: {ex.Message}");
         }
@@ -155,8 +161,8 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task ParseFile()
     {
-        var filePath = await _dialogService.ShowOpenFileDialogAsync("Select File to Parse", 
-            new FileFilter("Parsable Files", new []{ "json", "md", "txt" }));
+        var filePath = await _dialogService.ShowOpenFileDialogAsync("Select File to Parse",
+            new FileFilter("Parsable Files", new[] { "json", "md", "txt" }));
         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
             ParseStatus = "Parse operation cancelled.";
@@ -174,6 +180,26 @@ public partial class MainWindowViewModel : ObservableObject
         DebugLogger.Log($"MainWindowViewModel: Parsing complete. Found {ParsedEntries.Count} entries.");
     }
 
+[RelayCommand]
+private void ViewIndex()
+{
+    var indexPath = Path.Combine(IndexFolder, "index.json");
+    if (string.IsNullOrEmpty(IndexFolder) || !File.Exists(indexPath))
+    {
+        IndexContent = "Could not find index.json. Please build the index first.";
+        return;
+    }
+
+    try
+    {
+        IndexContent = File.ReadAllText(indexPath);
+    }
+    catch (Exception ex)
+    {
+        IndexContent = $"Failed to read index file.\n\nError: {ex.Message}";
+    }
+}
+
     [RelayCommand]
     private async Task ExportSummary()
     {
@@ -184,7 +210,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         ParseStatus = "Exporting summary...";
         DebugLogger.Log("MainWindowViewModel: Kicking off summary export.");
-        
+
         // This service was implemented in a previous step, but requires IExportService which we removed from the constructor. Let's add it back.
         // We will need to re-add IExportService to the constructor arguments.
         // Let's find where it's used... it's used by FileParsingService, which is injected. So we don't need it here directly.
@@ -215,7 +241,7 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task LoadDocument()
     {
         var filePath = await _dialogService.ShowOpenFileDialogAsync("Select Document to View",
-            new FileFilter("Documents", new []{ "pdf", "md", "txt", "docx", "json" }));
+            new FileFilter("Documents", new[] { "pdf", "md", "txt", "docx", "json" }));
         if (string.IsNullOrWhiteSpace(filePath)) return;
 
         DocumentPath = filePath;
@@ -229,13 +255,15 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task LoadBook()
     {
         var filePath = await _dialogService.ShowOpenFileDialogAsync("Select Book File",
-            new FileFilter("Text-based Books", new []{ "txt", "md", "html" }));
+            new FileFilter("Text-based Books", new[] { "txt", "md", "html" }));
         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
             BookContent = "Could not load book file.";
             return;
         }
-        
+
+
+
         BookFile = filePath;
         BookContent = await File.ReadAllTextAsync(BookFile);
     }

@@ -19,12 +19,12 @@ public partial class AmandaMapViewModel : ObservableObject
 
     [ObservableProperty]
     private string _filePath = string.Empty;
-    
+
     public ObservableCollection<BaseMapEntry> Entries { get; } = new();
 
     [ObservableProperty]
     private BaseMapEntry? _selectedEntry;
-    
+
     // The ViewModel now receives the messenger via its constructor
     public AmandaMapViewModel(IMessenger messenger)
     {
@@ -41,7 +41,7 @@ public partial class AmandaMapViewModel : ObservableObject
         var list = FilePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
             ? new AmandamapJsonParser().Parse(text)
             : new AmandamapParser().Parse(text);
-        
+
         foreach (var e in list)
             Entries.Add(e);
     }

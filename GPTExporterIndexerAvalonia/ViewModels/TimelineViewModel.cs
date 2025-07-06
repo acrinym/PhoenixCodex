@@ -24,7 +24,7 @@ public partial class TimelineViewModel : ObservableObject, IRecipient<RitualsCha
         messenger.RegisterAll(this); // Register for messages
         Refresh();
     }
-    
+
     // Receive the message that rituals have changed
     public void Receive(RitualsChangedMessage message)
     {
@@ -39,7 +39,7 @@ public partial class TimelineViewModel : ObservableObject, IRecipient<RitualsCha
         Upcoming.Clear();
 
         var rituals = _grimoireManager.Rituals;
-        
+
         foreach (var r in rituals.Where(r => r.DateTime.Date >= DateTime.Today).OrderBy(r => r.DateTime))
         {
             Upcoming.Add(r);

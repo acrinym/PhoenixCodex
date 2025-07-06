@@ -29,7 +29,7 @@ public partial class GrimoireManagerViewModel : ObservableObject
 
     [ObservableProperty]
     private string? _ritualTitle;
-    
+
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;

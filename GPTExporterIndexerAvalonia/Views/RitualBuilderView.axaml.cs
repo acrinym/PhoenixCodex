@@ -40,7 +40,7 @@ public partial class RitualBuilderView : UserControl
             // Locate the WebView control defined in the XAML.
             var webView = this.FindControl<WebView>("Builder")
                 ?? throw new InvalidOperationException("Could not find a WebView control named 'Builder' in the template.");
-            
+
             // Assign the control instance to the ViewModel property so it can be controlled.
             vm.Builder = webView;
         }

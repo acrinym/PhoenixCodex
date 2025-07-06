@@ -38,7 +38,7 @@ public class DialogService : IDialogService
 
         return result.FirstOrDefault()?.Path.LocalPath;
     }
-    
+
     // FIXED: Updated method to use the new FileFilter record.
     public async Task<string?> ShowOpenFileDialogAsync(string title, FileFilter filter)
     {

@@ -36,7 +36,7 @@ public class ViewLocator : IDataTemplate
             // The DataContext is already set by the TabControl's ItemsSource binding.
             return control;
         }
-        
+
         return new TextBlock { Text = "View Not Found: " + name };
     }
 }
