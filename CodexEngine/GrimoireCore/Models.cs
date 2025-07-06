@@ -9,6 +9,9 @@ namespace CodexEngine.GrimoireCore.Models
         public string[] Steps { get; set; } = Array.Empty<string>();
         public string[] Ingredients { get; set; } = Array.Empty<string>();
         public required string Content { get; set; }
+        
+        // New property for editable outcomes
+        public string? Outcome { get; set; }
     }
 
     public class Ingredient
