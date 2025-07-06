@@ -11,8 +11,8 @@ public class IndexingService : IIndexingService
 {
     public Task BuildIndexAsync(string folderPath, bool isJsonIndex)
     {
-        [cite_start]// This is where the logic from MainWindowViewModel.BuildIndex will go. [cite: 338]
-        [cite_start]// We run it on a background thread to keep the UI responsive. [cite: 339]
+        // This is where the logic from MainWindowViewModel.BuildIndex will go.
+        // We run it on a background thread to keep the UI responsive.
         return Task.Run(() =>
         {
             try

@@ -1,11 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Interactivity;
-using Avalonia.VisualTree;
-using GPTExporterIndexerAvalonia.ViewModels;
+
+// Note: Unused 'using' statements have been removed.
 
 namespace GPTExporterIndexerAvalonia.Views;
-
 public partial class TagMapView : UserControl
 {
     public TagMapView()
@@ -18,21 +16,5 @@ public partial class TagMapView : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    private async void OnBrowse(object? sender, RoutedEventArgs e)
-    {
-        var dlg = new OpenFileDialog();
-        dlg.Filters.Add(new FileDialogFilter
-        {
-            Name = "TagMap",
-            Extensions = { "csv", "xlsx", "xlsm", "xltx", "xltm", "json" }
-        });
-        var window = this.GetVisualRoot() as Window;
-        var result = await dlg.ShowAsync(window);
-        if (result?.Length > 0 && DataContext is TagMapViewModel vm)
-        {
-            vm.FilePath = result[0];
-            vm.LoadCommand.Execute(null);
-        }
-    }
+    // The entire "OnBrowse" method has been removed from this file.
 }
-

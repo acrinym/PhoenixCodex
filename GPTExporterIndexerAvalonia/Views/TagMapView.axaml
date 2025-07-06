@@ -13,7 +13,7 @@
     <StackPanel Margin="10" Spacing="5">
         <StackPanel Orientation="Horizontal" Spacing="5">
             <TextBox Width="200" Watermark="TagMap File" Text="{Binding FilePath}" />
-            <Button Content="Browse" Click="OnBrowse" />
+            <Button Content="Browse" Command="{Binding BrowseAndLoadCommand}" />
             <Button Content="Load" Command="{Binding LoadCommand}" />
             <Button Content="Save" Command="{Binding SaveCommand}" />
             <Button Content="Add Doc" Command="{Binding AddDocumentCommand}" />
