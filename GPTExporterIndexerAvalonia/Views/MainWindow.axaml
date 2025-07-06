@@ -3,52 +3,25 @@
         xmlns:d="http://schemas.microsoft.com/avaloniaui"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
-        xmlns:views="clr-namespace:GPTExporterIndexerAvalonia.Views"
         mc:Ignorable="d"
         x:Class="GPTExporterIndexerAvalonia.Views.MainWindow"
         Width="1200" Height="800"
         Title="Phoenix Codex">
 
-    <!-- 
-      FIXED: Removed the <Window.DataContext> and <Design.DataContext> sections.
-      This was the primary cause of the blank screen. The DataContext is now correctly
-      set in App.axaml.cs, ensuring the ViewModel is created by our Dependency
-      Injection container with all its required services.
-    -->
-
     <DockPanel>
-        <!-- The Menu is now removed from the main window and can be part of a specific view if needed -->
         <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
             <!-- 
-              This TabControl's content is now rendered by the ViewLocator.
-              It will automatically find the correct View for each ViewModel.
+              FIXED: The TabControl now binds to the Tabs collection in the MainWindowViewModel.
+              The ViewLocator (defined in App.axaml) will automatically find the correct
+              View for each ViewModel in the collection.
             -->
-            <TabControl DataTemplates="{StaticResource ViewLocator}">
-                <TabItem Header="Index &amp; Search">
-                    <!-- The content for this tab will be MainWindowViewModel, and the ViewLocator will find MainWindowView -->
-                    <vm:MainWindowViewModel />
-                </TabItem>
-                <TabItem Header="Grimoire">
-                    <vm:GrimoireManagerViewModel />
-                </TabItem>
-                <TabItem Header="Timeline">
-                    <vm:TimelineViewModel />
-                </TabItem>
-                <TabItem Header="AmandaMap">
-                    <vm:AmandaMapViewModel />
-                </TabItem>
-                <TabItem Header="TagMap">
-                    <vm:TagMapViewModel />
-                </TabItem>
-                <TabItem Header="YAML Interpreter">
-                    <vm:YamlInterpreterViewModel />
-                </TabItem>
-                <TabItem Header="Chat Logs">
-                    <vm:ChatLogViewModel />
-                </TabItem>
-                 <TabItem Header="Ritual Builder">
-                    <vm:RitualBuilderViewModel />
-                </TabItem>
+            <TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- The header for each tab is bound to the Header property of the ViewModel -->
+                        <TextBlock Text="{Binding Header}" />
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
             </TabControl>
         </Border>
     </DockPanel>

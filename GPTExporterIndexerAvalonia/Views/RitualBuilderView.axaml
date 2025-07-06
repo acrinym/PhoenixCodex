@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="https://github.com/avaloniaui"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
-            xmlns:wv="clr-namespace:AvaloniaWebView;assembly=Avalonia.WebView"
-             x:Class="GPTExporterIndexerAvalonia.Views.RitualBuilderView">
+             xmlns:wv="clr-namespace:AvaloniaWebView;assembly=Avalonia.WebView"
+             x:Class="GPTExporterIndexerAvalonia.Views.RitualBuilderView"
+             DataContext="{Binding RitualBuilderViewModel}">
     <Design.DataContext>
         <vm:RitualBuilderViewModel />
     </Design.DataContext>

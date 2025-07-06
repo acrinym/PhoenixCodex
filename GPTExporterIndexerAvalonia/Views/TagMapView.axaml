@@ -1,7 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
-             x:Class="GPTExporterIndexerAvalonia.Views.TagMapView">
+             x:Class="GPTExporterIndexerAvalonia.Views.TagMapView"
+             DataContext="{Binding TagMapViewModel}">
     <UserControl.Resources>
     </UserControl.Resources>
     
@@ -47,11 +48,11 @@
                                             
                                             <StackPanel Spacing="3">
                                                 <Button Content="Preview Snippet"
-                                                        Command="{Binding DataContext.PreviewEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                                        CommandParameter="{Binding}" />
+                                                          Command="{Binding DataContext.PreviewEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                          CommandParameter="{Binding}" />
                                                 <Button Content="Open in Editor"
-                                                        Command="{Binding DataContext.OpenEntryInEditorCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                                        CommandParameter="{Binding}" />
+                                                          Command="{Binding DataContext.OpenEntryInEditorCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                          CommandParameter="{Binding}" />
                                             </StackPanel>
                                         </StackPanel>
                                         </Border>
