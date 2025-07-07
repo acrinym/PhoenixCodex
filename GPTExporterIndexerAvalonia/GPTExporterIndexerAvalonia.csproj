@@ -48,4 +48,9 @@
   <ItemGroup>
     <ProjectReference Include="..\CodexEngine\CodexEngine.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="WebAssets\**" />
+  </ItemGroup>
+
 </Project>

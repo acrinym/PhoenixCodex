@@ -9,7 +9,7 @@
         <vm:RitualBuilderViewModel />
     </Design.DataContext>
     <Grid>
-        <wv:WebView Url="/WebAssets/ritual-builder.html" Name="Builder" />
+        <wv:WebView Url="avares://GPTExporterIndexerAvalonia/WebAssets/ritual-builder.html" Name="Builder" />
         <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Command="{Binding SaveCommand}" />
     </Grid>
 </UserControl>
