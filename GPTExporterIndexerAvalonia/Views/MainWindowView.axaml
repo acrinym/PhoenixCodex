@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
-             xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="GPTExporterIndexerAvalonia.Views.MainWindowView">
     
@@ -11,79 +10,46 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="*,2,3*" RowDefinitions="Auto,*" Margin="10">
+    <Grid ColumnDefinitions="4*,6*" RowDefinitions="*" Margin="10" >
         
-        <!-- Left Panel: Indexing and Parsing -->
-        <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Spacing="10">
-            
-            <!-- Indexing Section -->
-            <Border Classes="Card">
-                <StackPanel Spacing="5">
-                    <TextBlock Text="Indexing" Classes="Header"/>
-                    <TextBlock Text="Last Indexed Folder:" Classes="Label" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding IndexFolder}" Classes="Value" TextWrapping="Wrap"/>
-                    <Button Content="Build New Index..." Command="{Binding BuildIndexCommand}" Classes="Primary"/>
-                    <TextBlock Text="{Binding Status}" Classes="Status" TextWrapping="Wrap"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Parsing Section -->
-            <Border Classes="Card">
-                <StackPanel Spacing="5">
-                    <TextBlock Text="File Parser" Classes="Header"/>
-                    <TextBlock Text="Last Parsed File:" Classes="Label" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding ParseFilePath}" Classes="Value" TextWrapping="Wrap"/>
-                    <Button Content="Parse a File..." Command="{Binding ParseFileCommand}"/>
-                    <Button Content="Export Summary" Command="{Binding ExportSummaryCommand}"/>
-                    <TextBlock Text="{Binding ParseStatus}" Classes="Status" TextWrapping="Wrap"/>
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
-
-        <GridSplitter Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Background="Gray" Width="2"/>
-
-        <!-- Right Panel: Searching and Results -->
-        <DockPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
-            
-            <!-- Search Input Area -->
+        <DockPanel Grid.Column="0">
             <StackPanel DockPanel.Dock="Top" Spacing="5">
                 <TextBox Text="{Binding Query, Mode=TwoWay}" Watermark="Enter search query..."/>
-                <StackPanel Orientation="Horizontal" Spacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                     <CheckBox Content="Case Sensitive" IsChecked="{Binding CaseSensitive}" />
                     <CheckBox Content="Fuzzy Match" IsChecked="{Binding UseFuzzy}" />
-                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                        <TextBlock Text="Context Lines:"/>
-                        <NumericUpDown Width="50" Minimum="0" Maximum="10" Value="{Binding ContextLines}" />
-                    </StackPanel>
                     <Button Content="Search" Command="{Binding SearchCommand}" Classes="Primary"/>
                 </StackPanel>
             </StackPanel>
 
-            <!-- Search Results Area -->
             <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}" Margin="0,10,0,0">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Classes="Card" Margin="0,0,0,5">
+                        <Border Classes="Card" Margin="0,0,5,5">
                             <StackPanel Spacing="3">
                                 <TextBlock Text="{Binding File}" FontWeight="Bold" />
                                 <TextBlock Text="{Binding Category}" FontStyle="Italic" Foreground="LightGray"/>
                                 <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" Foreground="Silver"/>
-                                <ItemsControl ItemsSource="{Binding Snippets}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="#333" CornerRadius="3" Padding="5" Margin="0,2">
-                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" FontFamily="monospace"/>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+        </DockPanel>
+
+        <DockPanel Grid.Column="1" Margin="10,0,0,0">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,10,0,0">
+                <Button Content="Process as Ritual" Command="{Binding ProcessAsRitualCommand}" />
+                <Button Content="Process as AmandaMap Entry" Command="{Binding ProcessAsAmandaMapEntryCommand}" Classes="Primary"/>
+            </StackPanel>
             
+            <TextBox Text="{Binding SelectedFileContent}"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     IsReadOnly="True"
+                     FontFamily="monospace"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"/>
         </DockPanel>
 
     </Grid>
