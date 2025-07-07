@@ -43,13 +43,13 @@
                 <Button Content="Process as AmandaMap Entry" Command="{Binding ProcessAsAmandaMapEntryCommand}" Classes="Primary"/>
             </StackPanel>
             
-            <TextBox Text="{Binding SelectedFileContent}"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     IsReadOnly="True"
-                     FontFamily="monospace"
-                     VerticalScrollBarVisibility="Auto"
-                     HorizontalScrollBarVisibility="Auto"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <TextBox Text="{Binding SelectedFileContent}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         IsReadOnly="True"
+                         FontFamily="monospace"/>
+            </ScrollViewer>
         </DockPanel>
 
     </Grid>
