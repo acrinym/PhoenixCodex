@@ -13,8 +13,23 @@ internal class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        try // <-- ADD THIS
+        {
+            // This is the original line, now wrapped in the try block
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex) // <-- ADD THIS CATCH BLOCK
+        {
+            // This will now catch the crash and print the full error to the console
+            Console.WriteLine("A FATAL ERROR OCCURRED:");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("\nPress Enter to close...");
+            Console.ReadLine(); // This keeps the console window open
+        }
+    }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()

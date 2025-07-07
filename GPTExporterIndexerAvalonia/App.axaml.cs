@@ -9,8 +9,7 @@ using GPTExporterIndexerAvalonia.Views;
 using GPTExporterIndexerAvalonia.Views.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using CodexEngine.Parsing;
-using Avalonia.Threading; // <-- ADD THIS USING DIRECTIVE
+using CodexEngine.Parsing; // You may need to add this using statement
 
 namespace GPTExporterIndexerAvalonia;
 
@@ -42,19 +41,6 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
         DebugLogger.Log("Framework initialization completed.");
-
-        // --- ADD THIS GLOBAL EXCEPTION HANDLER ---
-        // This will catch any unhandled exceptions on the UI thread,
-        // log them, and prevent the app from immediately closing.
-        var dispatcher = Dispatcher.UIThread;
-        dispatcher.UnhandledException += (sender, args) =>
-        {
-            // Log the detailed exception to our file
-            DebugLogger.Log($"\n!!! FATAL UI CRASH !!!\n{args.Exception}\n");
-            // Mark the exception as "handled" to prevent the app from closing instantly.
-            // This is for debugging purposes to allow us to see the error.
-            args.SetHandled(true);
-        };
     }
 
     private static IServiceProvider ConfigureServices()
@@ -69,6 +55,7 @@ public partial class App : Application
         services.AddSingleton<IFileParsingService, FileParsingService>();
         services.AddSingleton<IExportService, ExportService>();
         services.AddSingleton<IDialogService, DialogService>();
+        // THIS IS THE REQUIRED LINE TO FIX THE CRASH
         services.AddSingleton<IEntryParserService, EntryParserService>();
 
         // Register Renderers
