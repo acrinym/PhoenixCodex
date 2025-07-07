@@ -9,77 +9,78 @@ using GPTExporterIndexerAvalonia.Views;
 using GPTExporterIndexerAvalonia.Views.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using CodexEngine.Parsing; // You may need to add this using statement
 
 namespace GPTExporterIndexerAvalonia;
 
 public partial class App : Application
 {
     public new static App Current => (App)Application.Current!;
-        public IServiceProvider Services { get; private set; } = null!;
+    public IServiceProvider Services { get; private set; } = null!;
+    
+    public override void Initialize()
+    {
+        DebugLogger.Log("==================================================");
+        DebugLogger.Log("Application Initializing...");
+        AvaloniaXamlLoader.Load(this);
+    }
 
-            public override void Initialize()
-                {
-                        DebugLogger.Log("==================================================");
-                                DebugLogger.Log("Application Initializing...");
-                                        AvaloniaXamlLoader.Load(this);
-                                            }
+    public override void OnFrameworkInitializationCompleted()
+    {
+        DebugLogger.Log("Framework initialization starting.");
+        Services = ConfigureServices();
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            DebugLogger.Log("Application lifetime is IClassicDesktopStyleApplicationLifetime.");
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = Services.GetRequiredService<MainWindowViewModel>()
+            };
+            DebugLogger.Log("MainWindow created and DataContext set.");
+        }
 
-                                                public override void OnFrameworkInitializationCompleted()
-                                                    {
-                                                            DebugLogger.Log("Framework initialization starting.");
-                                                                    Services = ConfigureServices();
-                                                                            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                                                                                    {
-                                                                                                DebugLogger.Log("Application lifetime is IClassicDesktopStyleApplicationLifetime.");
-                                                                                                            // We now create the MainWindow directly, its DataContext will be set by the ViewLocator
-                                                                                                                        desktop.MainWindow = new MainWindow
-                                                                                                                                    {
-                                                                                                                                                    // The main DataContext is now the MainWindowViewModel itself.
-                                                                                                                                                                    DataContext = Services.GetRequiredService<MainWindowViewModel>()
-                                                                                                                                                                                };
-                                                                                                                                                                                            DebugLogger.Log("MainWindow created and DataContext set.");
-                                                                                                                                                                                                    }
+        base.OnFrameworkInitializationCompleted();
+        DebugLogger.Log("Framework initialization completed.");
+    }
 
-                                                                                                                                                                                                            base.OnFrameworkInitializationCompleted();
-                                                                                                                                                                                                                    DebugLogger.Log("Framework initialization completed.");
-                                                                                                                                                                                                                        }
+    private static IServiceProvider ConfigureServices()
+    {
+        DebugLogger.Log("Configuring services.");
+        var services = new ServiceCollection();
 
-                                                                                                                                                                                                                            private static IServiceProvider ConfigureServices()
-                                                                                                                                                                                                                                {
-                                                                                                                                                                                                                                        DebugLogger.Log("Configuring services.");
-                                                                                                                                                                                                                                                var services = new ServiceCollection();
+        // Register Services
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<IIndexingService, IndexingService>();
+        services.AddSingleton<ISearchService, SearchService>();
+        services.AddSingleton<IFileParsingService, FileParsingService>();
+        services.AddSingleton<IExportService, ExportService>();
+        services.AddSingleton<IDialogService, DialogService>();
+        // THIS IS THE REQUIRED LINE TO FIX THE CRASH
+        services.AddSingleton<IEntryParserService, EntryParserService>();
 
-                                                                                                                                                                                                                                                        // Register Services
-                                                                                                                                                                                                                                                                services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
-                                                                                                                                                                                                                                                                        services.AddSingleton<IIndexingService, IndexingService>();
-                                                                                                                                                                                                                                                                                services.AddSingleton<ISearchService, SearchService>();
-                                                                                                                                                                                                                                                                                        services.AddSingleton<IFileParsingService, FileParsingService>();
-                                                                                                                                                                                                                                                                                                services.AddSingleton<IExportService, ExportService>();
-                                                                                                                                                                                                                                                                                                        services.AddSingleton<IDialogService, DialogService>();
+        // Register Renderers
+        services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
+        
+        // Register ViewModels
+        services.AddSingleton<GrimoireManagerViewModel>();
+        services.AddTransient<TimelineViewModel>();
+        services.AddTransient<AmandaMapViewModel>();
+        services.AddTransient<ChatLogViewModel>();
+        services.AddTransient<RitualBuilderViewModel>();
+        services.AddTransient<TagMapViewModel>();
+        services.AddTransient<YamlInterpreterViewModel>();
+        services.AddTransient<MainWindowViewModel>();
+        
+        // Register Views (for the ViewLocator)
+        services.AddTransient<MainWindow>();
+        services.AddTransient<GrimoireManagerView>();
+        services.AddTransient<TimelineView>();
+        services.AddTransient<AmandaMapView>();
+        services.AddTransient<TagMapView>();
+        services.AddTransient<YamlInterpreterView>();
+        services.AddTransient<ChatLogView>();
+        services.AddTransient<RitualBuilderView>();
 
-                                                                                                                                                                                                                                                                                                                // Register Renderers
-                                                                                                                                                                                                                                                                                                                        services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-
-                                                                                                                                                                                                                                                                                                                                // Register ViewModels
-                                                                                                                                                                                                                                                                                                                                        services.AddSingleton<GrimoireManagerViewModel>();
-                                                                                                                                                                                                                                                                                                                                                services.AddTransient<TimelineViewModel>();
-                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<AmandaMapViewModel>();
-                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<ChatLogViewModel>();
-                                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<RitualBuilderViewModel>();
-                                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<TagMapViewModel>();
-                                                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<YamlInterpreterViewModel>();
-                                                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<MainWindowViewModel>();
-
-                                                                                                                                                                                                                                                                                                                                                                                                        // Register Views (for the ViewLocator)
-                                                                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<MainWindow>();
-                                                                                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<GrimoireManagerView>();
-                                                                                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<TimelineView>();
-                                                                                                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<AmandaMapView>();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<TagMapView>();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<YamlInterpreterView>();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                services.AddTransient<ChatLogView>();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        services.AddTransient<RitualBuilderView>();
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                return services.BuildServiceProvider();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+        return services.BuildServiceProvider();
+    }
+}
