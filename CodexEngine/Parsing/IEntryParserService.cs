@@ -1,6 +1,3 @@
-using CodexEngine.GrimoireCore.Models;
-using CodexEngine.AmandaMapCore.Models;
-
 namespace CodexEngine.Parsing
 {
     /// <summary>

@@ -3,6 +3,7 @@ using CodexEngine.GrimoireCore.Models;
 using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Globalization;
+using CodexEngine.Parsing;
 
 namespace CodexEngine.Parsing
 {
@@ -21,26 +22,20 @@ namespace CodexEngine.Parsing
                 return null;
             }
 
-            // First, check if it matches the pattern for a Ritual.
             if (rawText.Contains("Ritual Name:") && rawText.Contains("Purpose:"))
             {
                 return ParseRitual(rawText);
             }
 
-            // Next, check if it matches the pattern for a numbered AmandaMap-style entry.
             var numberedMatch = NumberedEntryPattern.Match(rawText);
             if (numberedMatch.Success)
             {
                 return ParseNumberedEntry(rawText, numberedMatch);
             }
             
-            // Return null if no known pattern is matched.
             return null;
         }
 
-        /// <summary>
-        /// Helper method to extract a block of text between two headers (or until the end of the string).
-        /// </summary>
         private string GetSection(string text, string header, string? nextHeader = null)
         {
             var pattern = nextHeader == null
@@ -51,22 +46,16 @@ namespace CodexEngine.Parsing
             return match.Success ? match.Value.Trim() : string.Empty;
         }
 
-        /// <summary>
-        /// Parses text specifically into a Ritual object.
-        /// </summary>
         private Ritual? ParseRitual(string text)
         {
             try
             {
-                // We use our helper to get the content of each section.
                 var name = GetSection(text, "Ritual Name:", "Purpose:");
                 var purpose = GetSection(text, "Purpose:", "🔥 Ritual Effect");
                 var ingredientsText = GetSection(text, "✨ Ritual Ingredients:", "⚛️ Steps:");
                 var stepsText = GetSection(text, "⚛️ Steps:", "🔹 Afterward:");
                 var afterward = GetSection(text, "🔹 Afterward:", "Status:");
-                var status = GetSection(text, "Status:"); // This is the last section.
-
-                // A date might not always be present, so we look for it but don't fail if it's not there.
+                
                 var dateMatch = Regex.Match(text, @"Date:\s*(.*)");
                 var date = dateMatch.Success ? DateTime.Parse(dateMatch.Groups[1].Value.Trim()) : DateTime.MinValue;
 
@@ -74,24 +63,17 @@ namespace CodexEngine.Parsing
                 {
                     ID = Guid.NewGuid().ToString(),
                     Title = name,
-                    Content = text, // Store the full original text
+                    Content = text,
                     Purpose = purpose,
                     Ingredients = ingredientsText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                     Steps = stepsText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
-                    Outcome = afterward, // We can map 'Afterward' to 'Outcome'
+                    Outcome = afterward,
                     DateTime = date
                 };
             }
-            catch
-            {
-                // If parsing fails for any reason, return null.
-                return null;
-            }
+            catch { return null; }
         }
         
-        /// <summary>
-        /// Parses text into one of the NumberedMapEntry subtypes.
-        /// </summary>
         private NumberedMapEntry? ParseNumberedEntry(string text, Match initialMatch)
         {
             try
@@ -103,27 +85,17 @@ namespace CodexEngine.Parsing
                 var dateMatch = Regex.Match(text, @"Date:\s*(.*)");
                 var date = dateMatch.Success ? DateTime.Parse(dateMatch.Groups[1].Value.Trim(), CultureInfo.InvariantCulture) : DateTime.MinValue;
 
-                NumberedMapEntry entry = type switch
+                return type switch
                 {
-                    "Threshold" => new ThresholdEntry(),
-                    "WhisperedFlame" => new WhisperedFlameEntry(),
-                    "FieldPulse" => new FieldPulseEntry(),
-                    "SymbolicMoment" => new SymbolicMomentEntry(),
-                    "Servitor" => new ServitorLogEntry(),
-                    _ => new ThresholdEntry() // Default to Threshold if type is unrecognized but pattern matches
+                    "Threshold" => new ThresholdEntry { Title = title, RawContent = text, Number = number, Date = date },
+                    "WhisperedFlame" => new WhisperedFlameEntry { Title = title, RawContent = text, Number = number, Date = date },
+                    "FieldPulse" => new FieldPulseEntry { Title = title, RawContent = text, Number = number, Date = date },
+                    "SymbolicMoment" => new SymbolicMomentEntry { Title = title, RawContent = text, Number = number, Date = date },
+                    "Servitor" => new ServitorLogEntry { Title = title, RawContent = text, Number = number, Date = date },
+                    _ => new ThresholdEntry { Title = title, RawContent = text, Number = number, Date = date } 
                 };
-
-                entry.Number = number;
-                entry.Title = title;
-                entry.Date = date;
-                entry.RawContent = text;
-
-                return entry;
             }
-            catch
-            {
-                return null;
-            }
+            catch { return null; }
         }
     }
 }

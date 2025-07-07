@@ -10,7 +10,10 @@ namespace CodexEngine.GrimoireCore.Models
         public string[] Ingredients { get; set; } = Array.Empty<string>();
         public required string Content { get; set; }
         
-        // New property for editable outcomes
+        // This property was missing
+        public string? Purpose { get; set; }
+        
+        // This property was added correctly in the last step
         public string? Outcome { get; set; }
     }
 
