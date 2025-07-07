@@ -1,15 +1,16 @@
-// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging; // New using
+using CommunityToolkit.Mvvm.Messaging;
 using CodexEngine.GrimoireCore.Models;
 using System.Collections.ObjectModel;
 using System;
-using GPTExporterIndexerAvalonia.ViewModels.Messages; // New using
+using GPTExporterIndexerAvalonia.ViewModels.Messages;
+using System.Linq; // <-- NEW USING
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-public partial class GrimoireManagerViewModel : ObservableObject
+// Add the new IRecipient interface
+public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<AddNewRitualMessage>
 {
     private readonly IMessenger _messenger;
 
@@ -20,7 +21,9 @@ public partial class GrimoireManagerViewModel : ObservableObject
     public GrimoireManagerViewModel(IMessenger messenger)
     {
         _messenger = messenger;
-        // We can pre-populate with some design-time data if we want
+        // This registers the ViewModel to receive any messages it implements an IRecipient for.
+        _messenger.RegisterAll(this);
+        // We also still need to notify the timeline when rituals change.
         Rituals.CollectionChanged += (s, e) => _messenger.Send(new RitualsChangedMessage());
     }
 
@@ -43,6 +46,22 @@ public partial class GrimoireManagerViewModel : ObservableObject
         }
     }
 
+    // This new method handles the incoming message from the MainWindowViewModel
+    public void Receive(AddNewRitualMessage message)
+    {
+        var newRitual = message.Value;
+        
+        // Add the new ritual and re-sort the collection by date to maintain order
+        Rituals.Add(newRitual);
+        
+        var sortedRituals = new ObservableCollection<Ritual>(Rituals.OrderBy(r => r.DateTime));
+        Rituals.Clear();
+        foreach (var r in sortedRituals)
+        {
+            Rituals.Add(r);
+        }
+    }
+
     [RelayCommand]
     private void AddRitual()
     {
@@ -51,10 +70,9 @@ public partial class GrimoireManagerViewModel : ObservableObject
             ID = Guid.NewGuid().ToString(),
             Title = "New Ritual",
             Content = string.Empty,
-            DateTime = DateTime.Now.AddDays(7) // Give it a future date for timeline testing
+            DateTime = DateTime.Now.AddDays(7)
         };
         Rituals.Add(newRitual);
-        // The CollectionChanged event handler will automatically send the message
     }
 
     [RelayCommand]
@@ -63,7 +81,6 @@ public partial class GrimoireManagerViewModel : ObservableObject
         if (SelectedRitual != null)
         {
             Rituals.Remove(SelectedRitual);
-            // The CollectionChanged event handler will automatically send the message
         }
     }
 
@@ -84,6 +101,8 @@ public partial class GrimoireManagerViewModel : ObservableObject
     {
         Servitors.Add(new Servitor { Name = "New Servitor", Purpose = string.Empty, VisualDescription = string.Empty });
     }
+
+
 
     [RelayCommand]
     private void RemoveServitor(Servitor? servitor)

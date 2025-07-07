@@ -1,5 +1,5 @@
 // FILE: GPTExporterIndexerAvalonia/ViewModels/MainWindowViewModel.cs
-// REFACTORED AND FIXED
+// FINALIZED FOR PHASE 2
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPTExporterIndexerAvalonia.Helpers;
@@ -16,21 +16,23 @@ using GPTExporterIndexerAvalonia.Reading;
 using System;
 using CodexEngine.ExportEngine.Models;
 using CodexEngine.ChatGPTLogManager.Models;
-// New using statements for our new models and services
 using CodexEngine.AmandaMapCore.Models;
 using CodexEngine.GrimoireCore.Models;
 using CodexEngine.Parsing;
+using CommunityToolkit.Mvvm.Messaging; // <-- NEW USING
+using GPTExporterIndexerAvalonia.ViewModels.Messages; // <-- NEW USING
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
     // Services
+    private readonly IMessenger _messenger; // <-- NEW FIELD
     private readonly IIndexingService _indexingService;
     private readonly ISearchService _searchService;
     private readonly IFileParsingService _fileParsingService;
     private readonly IDialogService _dialogService;
-    private readonly IEntryParserService _entryParserService; // <-- INJECT THE NEW PARSER
+    private readonly IEntryParserService _entryParserService;
 
     // Sub-ViewModels for tabs
     public GrimoireManagerViewModel GrimoireViewModel { get; }
@@ -57,7 +59,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _bookFile = string.Empty;
     [ObservableProperty] private string _bookContent = string.Empty;
     [ObservableProperty] private string _indexContent = "Index has not been viewed yet. Click 'View Index' to load it.";
-    [ObservableProperty] private string? _selectedFileContent; // <-- NEW: To hold the full text of the selected file.
+    [ObservableProperty] private string? _selectedFileContent;
 
     public ObservableCollection<Bitmap> Pages { get; } = new();
     private readonly BookReader _reader = new();
@@ -65,11 +67,12 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<SearchResult> Results { get; } = new();
 
     public MainWindowViewModel(
+        IMessenger messenger, // <-- INJECT THE MESSENGER
         IIndexingService indexingService, 
         ISearchService searchService, 
         IFileParsingService fileParsingService,
         IDialogService dialogService,
-        IEntryParserService entryParserService, // <-- RECEIVE THE NEW PARSER
+        IEntryParserService entryParserService,
         GrimoireManagerViewModel grimoireViewModel,
         TimelineViewModel timelineViewModel,
         AmandaMapViewModel amandaMapViewModel,
@@ -78,11 +81,12 @@ public partial class MainWindowViewModel : ObservableObject
         ChatLogViewModel chatLogViewModel,
         RitualBuilderViewModel ritualBuilderViewModel)
     {
+        _messenger = messenger; // <-- ASSIGN THE MESSENGER
         _indexingService = indexingService;
         _searchService = searchService;
         _fileParsingService = fileParsingService;
         _dialogService = dialogService;
-        _entryParserService = entryParserService; // <-- ASSIGN THE NEW PARSER
+        _entryParserService = entryParserService;
 
         GrimoireViewModel = grimoireViewModel;
         TimelineViewModel = timelineViewModel;
@@ -95,7 +99,6 @@ public partial class MainWindowViewModel : ObservableObject
         DebugLogger.Log("MainWindowViewModel created and all services/sub-ViewModels injected.");
     }
 
-    // This method is now updated to load the full file content when a result is selected
     partial void OnSelectedResultChanged(SearchResult? value)
     {
         if (value is null)
@@ -124,9 +127,10 @@ public partial class MainWindowViewModel : ObservableObject
         var parsedObject = _entryParserService.ParseEntry(SelectedFileContent);
         if (parsedObject is Ritual ritual)
         {
-            DebugLogger.Log($"Successfully parsed as Ritual: {ritual.Title}");
-            Status = $"Parsed Ritual: {ritual.Title}";
-            // NEXT STEP: We will send this 'ritual' object to the GrimoireViewModel.
+            DebugLogger.Log($"Successfully parsed as Ritual: {ritual.Title}. Sending to Grimoire.");
+            Status = $"Parsed Ritual: {ritual.Title}. Sending to Grimoire.";
+            // SEND THE MESSAGE
+            _messenger.Send(new AddNewRitualMessage(ritual));
         }
         else
         {
@@ -143,9 +147,10 @@ public partial class MainWindowViewModel : ObservableObject
         var parsedObject = _entryParserService.ParseEntry(SelectedFileContent);
         if (parsedObject is NumberedMapEntry entry)
         {
-            DebugLogger.Log($"Successfully parsed as {entry.EntryType}: #{entry.Number} - {entry.Title}");
-            Status = $"Parsed {entry.EntryType}: #{entry.Number}";
-            // NEXT STEP: We will send this 'entry' object to the AmandaMapViewModel.
+            DebugLogger.Log($"Successfully parsed as {entry.EntryType}: #{entry.Number} - {entry.Title}. Sending to AmandaMap.");
+            Status = $"Parsed {entry.EntryType}: #{entry.Number}. Sending to AmandaMap.";
+            // SEND THE MESSAGE
+            _messenger.Send(new AddNewAmandaMapEntryMessage(entry));
         }
         else
         {
@@ -153,8 +158,6 @@ public partial class MainWindowViewModel : ObservableObject
             Status = "Could not parse selection as an AmandaMap Entry.";
         }
     }
-
-    // --- Other existing commands remain below ---
     
     [RelayCommand]
     private async Task BuildIndex()

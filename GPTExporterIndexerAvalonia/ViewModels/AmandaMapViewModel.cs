@@ -1,67 +1,93 @@
-// FILE: GPTExporterIndexerAvalonia/ViewModels/AmandaMapViewModel.cs
-// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CodexEngine.Parsing;
-using CodexEngine.Parsing.Models;
+using CodexEngine.AmandaMapCore.Models;
 using System.Collections.ObjectModel;
 using System.IO;
 using System;
 using System.Linq;
 using GPTExporterIndexerAvalonia.ViewModels.Messages;
-using GPTExporterIndexerAvalonia.Services; // New using
-using System.Threading.Tasks; // New using
+using GPTExporterIndexerAvalonia.Services;
+using System.Threading.Tasks;
+using CodexEngine.Parsing.Models; // <-- THIS IS THE MISSING USING DIRECTIVE
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-public partial class AmandaMapViewModel : ObservableObject
+// Implement the new IRecipient interface for adding entries
+public partial class AmandaMapViewModel : ObservableObject, 
+    IRecipient<SelectedMapEntryChangedMessage>, 
+    IRecipient<AddNewAmandaMapEntryMessage>
 {
     private readonly IMessenger _messenger;
-    private readonly IDialogService _dialogService; // Add service field
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private string _filePath = string.Empty;
 
-    public ObservableCollection<BaseMapEntry> Entries { get; } = new();
+    // This new collection will hold our structured, numbered entries.
+    public ObservableCollection<NumberedMapEntry> ProcessedEntries { get; } = new();
 
+    // The old collection is no longer used by the new workflow but is kept for now.
+    public ObservableCollection<BaseMapEntry> Entries { get; } = new();
+    
     [ObservableProperty]
     private BaseMapEntry? _selectedEntry;
 
     public AmandaMapViewModel(IMessenger messenger, IDialogService dialogService)
     {
         _messenger = messenger;
-        _dialogService = dialogService; // Inject service
+        _dialogService = dialogService;
+        _messenger.RegisterAll(this); // Registers this instance to receive all messages it implements a handler for
     }
     
-    [RelayCommand]
-    private async Task BrowseAndLoad()
+    // This is the new method that handles receiving a parsed entry from the MainWindowViewModel
+    public void Receive(AddNewAmandaMapEntryMessage message)
     {
-        var filter = new FileFilter("Map Files", new[] { "json", "md", "txt" });
-        var path = await _dialogService.ShowOpenFileDialogAsync("Select AmandaMap File", filter);
-        if (!string.IsNullOrWhiteSpace(path))
+        var newEntry = message.Value;
+
+        // --- CONFLICT RESOLUTION ---
+        // Check if an entry with this number already exists.
+        if (ProcessedEntries.Any(e => e.Number == newEntry.Number))
         {
-            FilePath = path;
-            Load();
+            // For now, we just log the conflict. A future step will be to show a dialog here.
+            DebugLogger.Log($"CONFLICT: AmandaMap entry with number {newEntry.Number} already exists. New entry was not added.");
+            return;
+        }
+
+        ProcessedEntries.Add(newEntry);
+
+        // --- SORTING ---
+        // Re-sort the entire collection by number to maintain order.
+        var sortedEntries = new ObservableCollection<NumberedMapEntry>(ProcessedEntries.OrderBy(e => e.Number));
+        ProcessedEntries.Clear();
+        foreach (var entry in sortedEntries)
+        {
+            ProcessedEntries.Add(entry);
         }
     }
+    
+    // This message is from a legacy workflow and is no longer the primary way data is populated.
+    public void Receive(SelectedMapEntryChangedMessage message)
+    {
+        // This is legacy from the old AmandaMap viewer, can be ignored for now.
+    }
 
-    [RelayCommand]
+    // --- The old Load commands are now disabled to favor the new workflow ---
+
+    // The CanExecute predicate will now return false, disabling the button.
+    private bool CanLoad() => false; 
+
+    [RelayCommand(CanExecute = nameof(CanLoad))]
+    private async Task BrowseAndLoad()
+    {
+        // This logic is now handled by the new Search->Process workflow.
+        await Task.CompletedTask; 
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLoad))]
     private void Load()
     {
-        Entries.Clear();
-        if (string.IsNullOrWhiteSpace(FilePath) || !File.Exists(FilePath))
-            return;
-        var text = File.ReadAllText(FilePath);
-        var list = FilePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
-            ? new AmandamapJsonParser().Parse(text)
-            : new AmandamapParser().Parse(text);
-        foreach (var e in list)
-            Entries.Add(e);
-    }
-    
-    partial void OnSelectedEntryChanged(BaseMapEntry? value)
-    {
-        _messenger.Send(new SelectedMapEntryChangedMessage(value));
+        // This logic is now handled by the new Search->Process workflow.
     }
 }
