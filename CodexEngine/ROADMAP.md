@@ -1,59 +1,66 @@
-That's a perfect idea. Creating a clear roadmap or devlog is a standard and incredibly useful practice in software development, no matter how long you've been doing it. It keeps the project focused and tracks all the great ideas.
-
-Let's map it out exactly like that. Here is a "readme" style development plan that summarizes everything we've discussed. This will serve as our blueprint.
-
-***
-# Phoenix Codex: Development Roadmap & Log
-*As of: July 5, 2025*
+Phoenix Codex: Development Roadmap & Log
+As of: July 6, 2025
 
 This document tracks the current features, the next set of features in development, and future ideas for the Phoenix Codex application.
 
-## ✅ **Phase 1: Core Functionality (Completed)**
-This phase focused on building the foundational shell of the application, fixing critical bugs, and implementing the initial search capabilities.
+✅ Phase 1: Foundational Engine & UI (Completed)
+This phase focused on building the stable shell of the application, implementing core services, and creating the initial search and parsing capabilities.
 
-* **Stable Application Shell:**
-    * [cite_start]Resolved all compiler errors and runtime crashes related to `DataContext` and `WebView` initialization[cite: 541, 649, 756].
-    * [cite_start]Each UI tab now correctly loads its own dedicated ViewModel [cite: 486-490].
-* **Functional Search & Indexing Engine:**
-    * [cite_start]The application can successfully build a token-based search index from a folder of `.txt`, `.md`, and `.json` files [cite: 415-416].
-    * [cite_start]The search feature finds and displays text snippets from indexed files [cite: 451-453, 686-692].
-    * [cite_start]A "View Index" feature was added for inspecting the raw `index.json` [cite: 491, 520-524].
-* **Core Services & Refactoring:**
-    * [cite_start]A modern `DialogService` handles all "Open File" and "Open Folder" requests, removing obsolete code [cite: 361-373, 576-578].
-    * [cite_start]The "Load" buttons on all tabs now correctly use this service to prompt the user for a file[cite: 441, 576].
-* **Basic Debugging:**
-    * [cite_start]A simple `DebugLogger` creates a `debuglog.txt` file to trace application behavior [cite: 353-360].
 
-## ⏩ **Phase 2: Intelligent Processing Pipeline (In Progress)**
-This next phase will transform the application from a simple viewer into an intelligent data-processing tool.
+Stable Application Shell: Resolved all initial compiler errors and runtime crashes related to DataContext and WebView initialization. Each UI tab now correctly loads its own dedicated ViewModel.
 
-* **Feature: Upgraded Data Models**
-    * **Grimoire Entry (Ritual):** The model will be updated to include an editable `string? Outcome` property. It will be sorted by `Date` and will not have a number.
-    * **AmandaMap Entry:** All related entries (Threshold, WhisperedFlame, etc.) will have a required `int Number` property for sorting and a `string Type` property for categorization.
 
-* **Feature: Intelligent Parsing Service**
-    * A new service will be built to parse raw text blocks from search results.
-    * It will use pattern recognition (based on your examples with emojis and keywords) to extract structured data (Number, Date, Purpose, Ingredients, etc.) and create the appropriate C# model instance.
 
-* **Feature: "Inbox" Workflow for Search & Index Tab**
-    * The search result view will be enhanced to show the full text of a selected file.
-    * New buttons will be added: **"Create Grimoire Entry"** and **"Create AmandaMap Entry."**
-    * This will create the primary workflow: `Find -> Process -> Send to Tab`.
 
-* **Feature: Conflict Resolution**
-    * When processing an AmandaMap entry with a number that already exists, the application will halt and display a dialog prompt.
-    * The user will be presented with choices: **Overwrite**, **Create Sub-entry** (e.g., 54.1), or **Cancel**.
+Functional Search & Indexing Engine: The application can build a search index from a folder and the "Index & Search" tab can find and display file content. The "Build Index" functionality has been restored to the UI.
 
-* **Feature: Enhanced Tab Views**
-    * The **AmandaMap** tab will group its entries by `Type` and sort them by `Number`.
-    * The **Grimoire** tab will display an editable field for the `Outcome` of each ritual and sort entries by `Date`.
 
-## 🗺️ **Phase 3: Future Ideas (Roadmap)**
+
+
+Core Services: A modern DialogService handles file/folder picking, and a DebugLogger creates a debuglog.txt file for tracing application behavior.
+
+
+
+Intelligent Parsing Engine: A dedicated EntryParserService exists that can parse raw text into structured Ritual and NumberedMapEntry objects based on predefined patterns.
+
+
+
+Data->UI Workflow: A messaging system is in place to send newly parsed entries from the "Index & Search" tab to the correct destination tabs ("Grimoire", "AmandaMap").
+
+
+
+
+
+⏩ Phase 2: UI Polish & Bug Squashing (In Progress)
+This phase focuses on fixing the bugs identified in the last round of testing and implementing the requested UI enhancements to make the application more usable.
+
+Bug Fix: Ritual Builder Crash: Diagnose and resolve the persistent, low-level crash when clicking the Ritual Builder tab.
+
+Bug Fix: Grimoire Title Display: The title of a "New Ritual" in the list does not update when edited. This will be fixed by making the Ritual model observable.
+
+Bug Fix: TagMap Data Loading: The TagMap view loads empty placeholders instead of data. This will be fixed by improving the data importer and its error logging.
+
+Feature: Full Grimoire Management:
+
+Implement "Spirits" management (Add/Remove) alongside Servitors.
+
+Display the date for each ritual in the list view.
+
+Add a DatePicker to allow editing the date of a selected ritual.
+
+Feature: AmandaMap UI Polish:
+
+The entries in the AmandaMap view will be displayed in groups based on their Type (e.g., Thresholds, WhisperedFlames).
+
+🗺️ Phase 3: Advanced Features & QOL (Future Ideas)
 These are ideas we have discussed but are scheduled for after Phase 2 is complete.
 
-* **User Activity Log:**
-    * Create a dedicated `UserActivityLog.txt` to record significant user actions (e.g., "Filter applied: 'ritual'").
-    * This will allow you to analyze your own usage patterns to inform future development priorities.
-* **Image & Visual Media Support:**
-    * Extend the indexer and search UI to handle searching for and previewing embedded images or other visual media, potentially stored as Base64 strings or file links.
+Feature: AmandaMap Timeline Tab: A new tab dedicated to visualizing NumberedMapEntry items on a calendar, similar to the Grimoire's timeline.
 
+Feature: Conflict Resolution UI: Build the user-facing dialog box that allows the user to resolve duplicate entry number conflicts (Overwrite, Create Sub-entry, Cancel).
+
+Feature: Manual Re-ordering: Add the ability to manually drag-and-drop to re-order entries within the Grimoire list.
+
+Feature: User Activity Log: Create a dedicated log to track user actions to inform future development priorities.
+
+Feature: Image & Visual Media Support: Extend the indexer to handle searching for and previewing images.
