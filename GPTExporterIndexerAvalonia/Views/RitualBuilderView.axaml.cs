@@ -1,20 +1,14 @@
-// FILE: GPTExporterIndexerAvalonia/Views/RitualBuilderView.axaml.cs
-// REFACTORED
 using Avalonia.Controls;
-using Avalonia.Interactivity; // FIXED: Added missing using directive
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using AvaloniaWebView;
 using Avalonia;
 using GPTExporterIndexerAvalonia.ViewModels;
 using System;
+using GPTExporterIndexerAvalonia.Services; // Add this for DebugLogger
 
 namespace GPTExporterIndexerAvalonia.Views;
 
-/// <summary>
-/// The View for the Ritual Builder. This UserControl hosts the WebView
-/// that contains the interactive builder interface. Its primary role is to
-/// connect the WebView control from the XAML to the ViewModel.
-/// </summary>
 public partial class RitualBuilderView : UserControl
 {
     public RitualBuilderView()
@@ -27,22 +21,30 @@ public partial class RitualBuilderView : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    /// <summary>
-    /// Overridden to handle setup logic when the control is attached to the visual tree.
-    /// This is a more reliable place to access the DataContext and controls than the constructor.
-    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
 
-        if (DataContext is RitualBuilderViewModel vm)
+        // We wrap this entire block in a try-catch to log any potential crash.
+        try
         {
-            // Locate the WebView control defined in the XAML.
-            var webView = this.FindControl<WebView>("Builder")
-                ?? throw new InvalidOperationException("Could not find a WebView control named 'Builder' in the template.");
-
-            // Assign the control instance to the ViewModel property so it can be controlled.
-            vm.Builder = webView;
+            if (DataContext is RitualBuilderViewModel vm)
+            {
+                var webView = this.FindControl<WebView>("Builder");
+                if (webView is null)
+                {
+                    DebugLogger.Log("FATAL: Could not find a WebView control named 'Builder' in RitualBuilderView.");
+                    return;
+                }
+                
+                // Assign the control instance to the ViewModel property.
+                vm.Builder = webView;
+            }
+        }
+        catch (Exception ex)
+        {
+            // If anything goes wrong during the WebView initialization, log it.
+            DebugLogger.Log($"!!! FATAL RITUAL BUILDER CRASH !!!\n{ex}");
         }
     }
 }
