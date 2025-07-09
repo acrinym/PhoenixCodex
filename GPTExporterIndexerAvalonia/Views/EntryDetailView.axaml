@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GPTExporterIndexerAvalonia.Views.EntryDetailView">
+    <StackPanel Margin="10" Spacing="5">
+        <TextBlock Text="Title" />
+        <TextBox Text="{Binding Title}" />
+        <TextBlock Text="Date" />
+        <DatePicker SelectedDate="{Binding Date}" />
+        <TextBlock Text="Description" />
+        <TextBox AcceptsReturn="True" TextWrapping="Wrap" Height="100" Text="{Binding Description}" />
+        <Expander Header="Field Encoding">
+            <StackPanel>
+                <TextBlock Text="Signal" />
+                <TextBox Text="{Binding FieldEncoding.Signal}" />
+                <TextBlock Text="Emotional Charge" />
+                <TextBox Text="{Binding FieldEncoding.EmotionalCharge}" />
+            </StackPanel>
+        </Expander>
+        <TextBlock Text="Tags" />
+        <ItemsControl ItemsSource="{Binding Tags}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBox Width="100" Text="{Binding .}" />
+                        <Button Content="X" Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding .}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Content="Add Tag" Command="{Binding AddTagCommand}" />
+        <TextBlock Text="Status" />
+        <ComboBox ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding Status}" />
+        <CheckBox Content="Mirror To AmandaMap" IsChecked="{Binding MirrorToAmandaMap}" />
+        <CheckBox Content="Visible To Amanda" IsChecked="{Binding VisibleToAmanda}" />
+        <Button Content="Save" Command="{Binding SaveCommand}" HorizontalAlignment="Right" />
+    </StackPanel>
+</UserControl>
