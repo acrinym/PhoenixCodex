@@ -11,5 +11,10 @@
     <Grid>
         <wv:WebView Url="avares://GPTExporterIndexerAvalonia/WebAssets/ritual-builder.html" Name="Builder" />
         <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Command="{Binding SaveCommand}" />
+        <!-- Display any initialization error -->
+        <TextBlock Text="{Binding ErrorMessage}" Background="#AA000000" Foreground="White"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   TextWrapping="Wrap" Padding="10"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNullOrEmptyToBoolConverter}}"/>
     </Grid>
 </UserControl>

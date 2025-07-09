@@ -46,5 +46,10 @@ public partial class RitualBuilderView : UserControl
         catch (Exception ex)
         {
             DebugLogger.Log($"!!! FATAL RITUAL BUILDER ATTACH CRASH !!!\n{ex}");
+            if (DataContext is RitualBuilderViewModel vm)
+            {
+                vm.ErrorMessage = $"Failed to initialize ritual builder: {ex.Message}";
+            }
         }
-    }}
+    }
+}
