@@ -36,27 +36,7 @@ public partial class RitualBuilderView : UserControl
                     return;
                 }
 
-                DebugLogger.Log("[RitualBuilderView] WebView control found. Subscribing to CoreWebView2Initialized event.");
-
-                // --- CORRECTED DEBUGGING EVENT HANDLER ---
-                // This is the correct event to check if the underlying browser control was created successfully.
-                webView.CoreWebView2Initialized += (sender, args) =>
-                {
-                    // Check if the initialization failed and an exception was thrown.
-                    if (args.Exception is not null)
-                    {
-                        DebugLogger.Log($"!!! FATAL CoreWebView2Initialized FAILED !!!\n{args.Exception}");
-                        return;
-                    }
-
-                    DebugLogger.Log("[RitualBuilderView] CoreWebView2Initialized event fired successfully.");
-                    
-                    // Now that the control is initialized, we can listen for navigation errors.
-                    webView.CoreWebView2.NavigationCompleted += (s, navArgs) =>
-                    {
-                        DebugLogger.Log($"[RitualBuilderView] NavigationCompleted: IsSuccess={navArgs.IsSuccess}, Status={navArgs.WebErrorStatus}");
-                    };
-                };
+                DebugLogger.Log("[RitualBuilderView] WebView control found.");
 
                 // Assign the control to the ViewModel
                 vm.Builder = webView;
@@ -67,5 +47,4 @@ public partial class RitualBuilderView : UserControl
         {
             DebugLogger.Log($"!!! FATAL RITUAL BUILDER ATTACH CRASH !!!\n{ex}");
         }
-    }
-}
+    }}
