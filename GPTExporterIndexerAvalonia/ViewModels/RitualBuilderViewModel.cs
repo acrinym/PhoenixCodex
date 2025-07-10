@@ -22,6 +22,13 @@ public partial class RitualBuilderViewModel : ObservableObject
     public WebView? Builder { get; set; }
 
     /// <summary>
+    /// Holds any error message that occurs during initialization so
+    /// the View can display it to the user instead of silently crashing.
+    /// </summary>
+    [ObservableProperty]
+    private string? _errorMessage;
+
+    /// <summary>
     /// Defines the path where the ritual scene data will be saved.
     //  Using a property for the path is more flexible than hardcoding it.
     /// </summary>
