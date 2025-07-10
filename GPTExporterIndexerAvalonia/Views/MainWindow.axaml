@@ -5,6 +5,7 @@
         xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
         xmlns:views="clr-namespace:GPTExporterIndexerAvalonia.Views"
         xmlns:yaml="clr-namespace:GPTExporterIndexerAvalonia.Views.Yaml"
+        xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls"
         xmlns:loc="clr-namespace:GPTExporterIndexerAvalonia"
         mc:Ignorable="d"
         x:Class="GPTExporterIndexerAvalonia.Views.MainWindow"
@@ -13,39 +14,59 @@
 
     <DockPanel>
         <Border Padding="5" BorderThickness="2" BorderBrush="Purple" CornerRadius="8">
-            <!-- 
-              FIXED: The TabControl now binds to the Tabs collection in the MainWindowViewModel.
-              The ViewLocator (defined in App.axaml) will automatically find the correct
-              View for each ViewModel in the collection.
-            -->
             <TabControl>
                 <TabControl.DataTemplates>
                     <loc:ViewLocator/>
                 </TabControl.DataTemplates>
+
                 <TabItem Header="Index &amp; Search">
-                    <views:MainWindowView/>
+                    <controls:ErrorBoundary>
+                        <views:MainWindowView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+
                 <TabItem Header="Grimoire">
-                    <views:GrimoireManagerView/>
+                    <controls:ErrorBoundary>
+                        <views:GrimoireManagerView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+
                 <TabItem Header="Timeline">
-                    <views:TimelineView/>
+                    <controls:ErrorBoundary>
+                        <views:TimelineView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+
                 <TabItem Header="AmandaMap">
-                    <views:AmandaMapView/>
+                    <controls:ErrorBoundary>
+                        <views:AmandaMapView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+
                 <TabItem Header="TagMap">
-                    <views:TagMapView/>
+                    <controls:ErrorBoundary>
+                        <views:TagMapView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+
                 <TabItem Header="YAML Interpreter">
-                    <yaml:YamlInterpreterView/>
+                    <controls:ErrorBoundary>
+                        <yaml:YamlInterpreterView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+
                 <TabItem Header="Chat Logs">
-                    <views:ChatLogView/>
+                    <controls:ErrorBoundary>
+                        <views:ChatLogView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
-                 <TabItem Header="Ritual Builder">
-                    <views:RitualBuilderView/>
+
+                <TabItem Header="Ritual Builder">
+                    <controls:ErrorBoundary>
+                        <views:RitualBuilderView/>
+                    </controls:ErrorBoundary>
                 </TabItem>
+                
             </TabControl>
         </Border>
     </DockPanel>
