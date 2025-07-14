@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
 using Avalonia.WebView.Desktop;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia;
 
@@ -24,6 +25,7 @@ internal class Program
         catch (Exception ex) // <-- ADD THIS CATCH BLOCK
         {
             // This will now catch the crash and print the full error to the console
+            DebugLogger.Log(ex.ToString());
             Console.WriteLine("A FATAL ERROR OCCURRED:");
             Console.WriteLine(ex.ToString());
             Console.WriteLine("\nPress Enter to close...");
