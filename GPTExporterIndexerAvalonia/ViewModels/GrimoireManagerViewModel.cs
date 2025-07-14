@@ -1,21 +1,31 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CodexEngine.GrimoireCore.Models; // Ensure this namespace contains Ritual, Ingredient, and Servitor
+using CommunityToolkit.Mvvm.Messaging;
+using CodexEngine.GrimoireCore.Models;
 using System.Collections.ObjectModel;
 using System;
+using GPTExporterIndexerAvalonia.ViewModels.Messages;
+using System.Linq; // <-- NEW USING
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-public partial class GrimoireManagerViewModel : ObservableObject
+// Add the new IRecipient interface
+public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<AddNewRitualMessage>
 {
-    public ObservableCollection<Ritual> Rituals { get; } = new();
-    public ObservableCollection<Ingredient> Ingredients { get; } = new(); // New collection for Ingredients
-    public ObservableCollection<Servitor> Servitors { get; } = new();     // New collection for Servitors
+    private readonly IMessenger _messenger;
 
-    public GrimoireManagerViewModel()
+    public ObservableCollection<Ritual> Rituals { get; } = new();
+    public ObservableCollection<Ingredient> Ingredients { get; } = new();
+    public ObservableCollection<Servitor> Servitors { get; } = new();
+    public ObservableCollection<Spirit> Spirits { get; } = new();
+
+    public GrimoireManagerViewModel(IMessenger messenger)
     {
-        // Registering this instance with SharedState for global access
-        SharedState.Grimoire = this;
+        _messenger = messenger;
+        // This registers the ViewModel to receive any messages it implements an IRecipient for.
+        _messenger.RegisterAll(this);
+        // We also still need to notify the timeline when rituals change.
+        Rituals.CollectionChanged += (s, e) => _messenger.Send(new RitualsChangedMessage());
     }
 
     [ObservableProperty]
@@ -24,75 +34,115 @@ public partial class GrimoireManagerViewModel : ObservableObject
     [ObservableProperty]
     private string? _ritualTitle;
 
+    [ObservableProperty]
+    private DateTime _ritualDate;
+
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;
+        RitualDate = value?.DateTime ?? DateTime.Now;
     }
 
     partial void OnRitualTitleChanged(string? value)
     {
         if (SelectedRitual != null && value != null)
+        {
             SelectedRitual.Title = value;
+        }
+    }
+
+    partial void OnRitualDateChanged(DateTime value)
+    {
+        if (SelectedRitual != null)
+        {
+            SelectedRitual.DateTime = value;
+            SortRituals();
+        }
+    }
+
+    private void SortRituals()
+    {
+        var sortedRituals = new ObservableCollection<Ritual>(Rituals.OrderBy(r => r.DateTime));
+        Rituals.Clear();
+        foreach (var r in sortedRituals)
+        {
+            Rituals.Add(r);
+        }
+    }
+
+    // This new method handles the incoming message from the MainWindowViewModel
+    public void Receive(AddNewRitualMessage message)
+    {
+        var newRitual = message.Value;
+        
+        // Add the new ritual and re-sort the collection by date to maintain order
+        Rituals.Add(newRitual);
+        
+        var sortedRituals = new ObservableCollection<Ritual>(Rituals.OrderBy(r => r.DateTime));
+        Rituals.Clear();
+        foreach (var r in sortedRituals)
+        {
+            Rituals.Add(r);
+        }
     }
 
     [RelayCommand]
-    private void Add()
+    private void AddRitual()
     {
-        Rituals.Add(new Ritual
+        var newRitual = new Ritual
         {
             ID = Guid.NewGuid().ToString(),
             Title = "New Ritual",
-            Content = string.Empty
-        });
-        // After adding a ritual, notify the TimelineViewModel to refresh its view
-        SharedState.Timeline?.Refresh();
+            Content = string.Empty,
+            DateTime = DateTime.Now.AddDays(7)
+        };
+        Rituals.Add(newRitual);
     }
 
     [RelayCommand]
-    private void Remove()
+    private void RemoveRitual()
     {
         if (SelectedRitual != null)
         {
             Rituals.Remove(SelectedRitual);
-            // After removing a ritual, notify the TimelineViewModel to refresh its view
-            SharedState.Timeline?.Refresh();
         }
     }
 
-    // New commands for Ingredients
     [RelayCommand]
     private void AddIngredient()
     {
-        Ingredients.Add(new Ingredient
-        {
-            Name = "New Ingredient",
-            Category = "General"
-        });
+        Ingredients.Add(new Ingredient { Name = "New Ingredient", Category = "General" });
     }
 
     [RelayCommand]
     private void RemoveIngredient(Ingredient? ingredient)
     {
-        if (ingredient != null)
-            Ingredients.Remove(ingredient);
+        if (ingredient != null) { Ingredients.Remove(ingredient); }
     }
 
-    // New commands for Servitors
     [RelayCommand]
     private void AddServitor()
     {
-        Servitors.Add(new Servitor
-        {
-            Name = "New Servitor",
-            Purpose = string.Empty,
-            VisualDescription = string.Empty
-        });
+        Servitors.Add(new Servitor { Name = "New Servitor", Purpose = string.Empty, VisualDescription = string.Empty });
     }
+
+
 
     [RelayCommand]
     private void RemoveServitor(Servitor? servitor)
     {
-        if (servitor != null)
-            Servitors.Remove(servitor);
+        if (servitor != null) { Servitors.Remove(servitor); }
+    }
+
+    [RelayCommand]
+    private void AddSpirit()
+    {
+        Spirits.Add(new Spirit { Name = "New Spirit", Purpose = string.Empty });
+    }
+
+    [RelayCommand]
+    private void RemoveSpirit(Spirit? spirit)
+    {
+        if (spirit != null) { Spirits.Remove(spirit); }
     }
 }

@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="GPTExporterIndexerAvalonia.Views.MainWindowView">
+    
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="4*,6*" RowDefinitions="*" Margin="10" >
+        
+        <DockPanel Grid.Column="0">
+            
+            <StackPanel DockPanel.Dock="Top" Spacing="5">
+                <Border Classes="Card">
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Indexing" Classes="Header"/>
+                        <TextBlock Text="Last Indexed Folder:" Classes="Label" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding IndexFolder}" Classes="Value" TextWrapping="Wrap"/>
+                        <Button Content="Build New Index..." Command="{Binding BuildIndexCommand}" Classes="Primary"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="Card" Margin="0,5,0,0">
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="File Parser" Classes="Header"/>
+                        <Button Content="Parse a File..." Command="{Binding ParseFileCommand}"/>
+                        <TextBlock Text="{Binding ParseStatus}" Classes="Status" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Top" Spacing="5" Margin="0,10,0,0">
+                <TextBox Text="{Binding Query, Mode=TwoWay}" Watermark="Enter search query..."/>
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                    <CheckBox Content="Case Sensitive" IsChecked="{Binding CaseSensitive}" />
+                    <CheckBox Content="Fuzzy Match" IsChecked="{Binding UseFuzzy}" />
+                    <Button Content="Search" Command="{Binding SearchCommand}" Classes="Primary"/>
+                </StackPanel>
+            </StackPanel>
+
+            <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}" Margin="0,10,0,0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Classes="Card" Margin="0,0,5,5">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="{Binding File}" FontWeight="Bold" />
+                                <TextBlock Text="{Binding Category}" FontStyle="Italic" Foreground="LightGray"/>
+                                <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" Foreground="Silver"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <DockPanel Grid.Column="1" Margin="10,0,0,0">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,10,0,0">
+                <Button Content="Process as Ritual" Command="{Binding ProcessAsRitualCommand}" />
+                <Button Content="Process as AmandaMap Entry" Command="{Binding ProcessAsAmandaMapEntryCommand}" Classes="Primary"/>
+            </StackPanel>
+            
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <TextBox Text="{Binding SelectedFileContent}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         IsReadOnly="True"
+                         FontFamily="monospace"/>
+            </ScrollViewer>
+        </DockPanel>
+
+    </Grid>
+</UserControl>

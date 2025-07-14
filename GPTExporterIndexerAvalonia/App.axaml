@@ -1,7 +1,18 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:GPTExporterIndexerAvalonia"
+             xmlns:converters="clr-namespace:GPTExporterIndexerAvalonia.Converters"
              x:Class="GPTExporterIndexerAvalonia.App"
-             RequestedThemeVariant="Light">
+             RequestedThemeVariant="Dark">
+    <!--
+      This Application.Resources section is crucial. It contains the ViewLocator,
+      which tells the application how to find the correct View for any given ViewModel.
+    -->
+    <Application.Resources>
+        <local:ViewLocator x:Key="ViewLocator"/>
+        <converters:StringNullOrEmptyToBoolConverter x:Key="StringNullOrEmptyToBoolConverter"/>
+    </Application.Resources>
+    
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://GPTExporterIndexerAvalonia/Styles/MagicTheme.axaml" />

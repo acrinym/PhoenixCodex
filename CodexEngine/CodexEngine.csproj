@@ -7,5 +7,7 @@
   <ItemGroup>
     <PackageReference Include="VersOne.Epub" Version="3.3.4" />
     <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
+    <PackageReference Include="YamlDotNet" Version="15.1.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
   </ItemGroup>
 </Project>

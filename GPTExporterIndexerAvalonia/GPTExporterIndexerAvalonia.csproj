@@ -5,21 +5,53 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
-    <PackageReference Include="Avalonia.HtmlRenderer" Version="11.2.0" />
+    <!-- 
+      Avalonia Packages: 
+      Core framework dependencies for the user interface.
+    -->
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.10" />
+
+    <!-- 
+      Community and Third-Party UI Packages:
+      Additional controls and frameworks that enhance the UI.
+    -->
+    <PackageReference Include="Avalonia.HtmlRenderer" Version="11.0.0" />
+    <!-- FIXED: Replaced the old, non-existent 'Avalonia.WebView' and 'Avalonia.WebView.Desktop' 
+         packages with the single, correct 'WebView.Avalonia' package. -->
     <PackageReference Include="WebView.Avalonia" Version="11.0.0" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.0" />
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+
+    <!-- 
+      Backend and Document Handling Packages:
+      Libraries for file parsing, data handling, and other backend logic.
+    -->
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageReference Include="VersOne.Epub" Version="3.3.4" />
-    <PackageReference Include="Docnet.Core" Version="2.3.0" />
+    <PackageReference Include="Docnet.Core" Version="2.6.0" />
+    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0" />
+    <PackageReference Include="YamlDotNet" Version="15.1.2" />
+    
+    <!-- 
+      Application Services:
+      Support for modern application architecture patterns like Dependency Injection.
+    -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\CodexEngine\CodexEngine.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="WebAssets\**" />
+  </ItemGroup>
+
 </Project>

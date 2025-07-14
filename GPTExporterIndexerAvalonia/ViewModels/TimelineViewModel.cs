@@ -1,42 +1,46 @@
+// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
-using CodexEngine.GrimoireCore.Models; // Ensure this namespace is correctly included
+using CommunityToolkit.Mvvm.Messaging; // New using
+using CodexEngine.GrimoireCore.Models;
 using System;
 using System.Collections.ObjectModel;
-using System.Linq; // Added for .Where and .OrderBy LINQ extensions
+using System.Linq;
+using GPTExporterIndexerAvalonia.ViewModels.Messages; // New using
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-public partial class TimelineViewModel : ObservableObject
+public partial class TimelineViewModel : ObservableObject, IRecipient<RitualsChangedMessage>
 {
+    private readonly GrimoireManagerViewModel _grimoireManager;
+
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
 
     public ObservableCollection<Ritual> Upcoming { get; } = new();
 
-    public TimelineViewModel()
+    public TimelineViewModel(IMessenger messenger, GrimoireManagerViewModel grimoireManager)
     {
-        // Register this instance with SharedState for global access
-        SharedState.Timeline = this;
-        // Initial refresh when the ViewModel is created
+        _grimoireManager = grimoireManager;
+        messenger.RegisterAll(this); // Register for messages
         Refresh();
     }
 
+    // Receive the message that rituals have changed
+    public void Receive(RitualsChangedMessage message)
+    {
+        Refresh(); // Re-run the filter logic
+    }
+
     /// <summary>
-    /// Refreshes the list of upcoming rituals based on the current state of Grimoire rituals
-    /// and filters them to include only those scheduled from today onwards, sorted by date.
+    /// Refreshes the list of upcoming rituals.
     /// </summary>
     public void Refresh()
     {
-        Upcoming.Clear(); // Clear existing items
+        Upcoming.Clear();
 
-        // Safely get rituals from SharedState.Grimoire, defaulting to an empty collection if null.
-        var rituals = SharedState.Grimoire?.Rituals ?? new ObservableCollection<Ritual>();
+        var rituals = _grimoireManager.Rituals;
 
-        // Filter and order rituals:
-        // 1. .Where(r => r.DateTime >= DateTime.Today): Filters rituals to include only those
-        //    whose DateTime property is today or in the future.
-        // 2. .OrderBy(r => r.DateTime): Sorts the remaining rituals by their DateTime in ascending order.
-        foreach (var r in rituals.Where(r => r.DateTime >= DateTime.Today).OrderBy(r => r.DateTime))
+        foreach (var r in rituals.Where(r => r.DateTime.Date >= DateTime.Today).OrderBy(r => r.DateTime))
         {
             Upcoming.Add(r);
         }

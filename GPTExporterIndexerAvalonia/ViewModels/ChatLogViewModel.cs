@@ -1,28 +1,27 @@
+// FILE: GPTExporterIndexerAvalonia/ViewModels/ChatLogViewModel.cs
+// REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging; // New using
 using CodexEngine.ChatGPTLogManager.Models;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
-
-// Assuming SharedState is in the same or an accessible namespace(which it is, in SharedState.cs).
-// If not, you might need: using GPTExporterIndexerAvalonia.Services; or similar
-// For this example, I'll assume it's directly accessible.
-// If SharedState is a new file, we'll create a placeholder for it below.
+using GPTExporterIndexerAvalonia.ViewModels.Messages; // New using
+using System; // For StringComparison
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-public partial class ChatLogViewModel : ObservableObject
+// This ViewModel now implements IRecipient to receive messages
+public partial class ChatLogViewModel : ObservableObject, IRecipient<SelectedMapEntryChangedMessage>
 {
     public ObservableCollection<ChatMessage> Logs { get; } = new();
     public ObservableCollection<ChatMessage> FilteredLogs { get; } = new();
 
-    // Constructor where SharedState is utilized
-    public ChatLogViewModel()
+    // Constructor now takes the messenger and registers for messages
+    public ChatLogViewModel(IMessenger messenger)
     {
-        // This line registers this instance of ChatLogViewModel with SharedState.
-        // It implies SharedState is a static class or a singleton instance.
-        SharedState.ChatLogs = this;
+        messenger.RegisterAll(this); // Registers this instance to receive messages
     }
 
     [ObservableProperty]
@@ -33,9 +32,17 @@ public partial class ChatLogViewModel : ObservableObject
         FilterLogs();
     }
 
+    // This method is called by the Messenger when a new SelectedMapEntryChangedMessage is sent
+    public void Receive(SelectedMapEntryChangedMessage message)
+    {
+        // Update the filter based on the title of the newly selected map entry
+        Filter = message.Value?.Title;
+    }
+
     [RelayCommand]
     private void Load()
     {
+        // Load logic remains the same
         var path = "chatlog.json";
         if (!File.Exists(path))
             return;
