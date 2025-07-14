@@ -30,22 +30,6 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
     [ObservableProperty]
     private Ritual? _selectedRitual;
 
-    [ObservableProperty]
-    private string? _ritualTitle;
-
-    partial void OnSelectedRitualChanged(Ritual? value)
-    {
-        RitualTitle = value?.Title;
-    }
-
-    partial void OnRitualTitleChanged(string? value)
-    {
-        if (SelectedRitual != null && value != null)
-        {
-            SelectedRitual.Title = value;
-        }
-    }
-
     // This new method handles the incoming message from the MainWindowViewModel
     public void Receive(AddNewRitualMessage message)
     {
