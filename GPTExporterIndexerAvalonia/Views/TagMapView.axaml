@@ -48,14 +48,14 @@
                                             
                                             <StackPanel Spacing="3">
                                                 <Button Content="Preview Snippet"
-                                                          Command="{Binding DataContext.PreviewEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                                          CommandParameter="{Binding}" />
+                                                        Command="{Binding DataContext.PreviewEntryCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                        CommandParameter="{Binding}" />
                                                 <Button Content="Open in Editor"
-                                                          Command="{Binding DataContext.OpenEntryInEditorCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                                          CommandParameter="{Binding}" />
+                                                        Command="{Binding DataContext.OpenEntryInEditorCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                        CommandParameter="{Binding}" />
                                             </StackPanel>
                                         </StackPanel>
-                                        </Border>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

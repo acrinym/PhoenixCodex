@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CodexEngine.Parsing;
 using CodexEngine.AmandaMapCore.Models;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Linq;
@@ -30,6 +31,11 @@ public partial class AmandaMapViewModel : ObservableObject,
 
     // The old collection is no longer used by the new workflow but is kept for now.
     public ObservableCollection<BaseMapEntry> Entries { get; } = new();
+
+    /// <summary>
+    /// Collection of entries grouped by their <see cref="NumberedMapEntry.EntryType"/>.
+    /// </summary>
+    public ObservableCollection<EntryTypeGroup> GroupedEntries { get; } = new();
     
     [ObservableProperty]
     private BaseMapEntry? _selectedEntry;
@@ -39,6 +45,8 @@ public partial class AmandaMapViewModel : ObservableObject,
         _messenger = messenger;
         _dialogService = dialogService;
         _messenger.RegisterAll(this); // Registers this instance to receive all messages it implements a handler for
+
+        UpdateGroupedEntries();
     }
     
     // This is the new method that handles receiving a parsed entry from the MainWindowViewModel
@@ -65,6 +73,8 @@ public partial class AmandaMapViewModel : ObservableObject,
         {
             ProcessedEntries.Add(entry);
         }
+
+        UpdateGroupedEntries();
     }
     
     // This message is from a legacy workflow and is no longer the primary way data is populated.
@@ -89,5 +99,18 @@ public partial class AmandaMapViewModel : ObservableObject,
     private void Load()
     {
         // This logic is now handled by the new Search->Process workflow.
+    }
+
+    /// <summary>
+    /// Regenerates the <see cref="GroupedEntries"/> collection from <see cref="ProcessedEntries"/>.
+    /// </summary>
+    private void UpdateGroupedEntries()
+    {
+        GroupedEntries.Clear();
+        var groups = ProcessedEntries.GroupBy(e => e.EntryType);
+        foreach (var group in groups)
+        {
+            GroupedEntries.Add(new EntryTypeGroup(group.Key, group.OrderBy(e => e.Number)));
+        }
     }
 }

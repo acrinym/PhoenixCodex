@@ -17,6 +17,7 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
     public ObservableCollection<Ritual> Rituals { get; } = new();
     public ObservableCollection<Ingredient> Ingredients { get; } = new();
     public ObservableCollection<Servitor> Servitors { get; } = new();
+    public ObservableCollection<Spirit> Spirits { get; } = new();
 
     public GrimoireManagerViewModel(IMessenger messenger)
     {
@@ -33,9 +34,13 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
     [ObservableProperty]
     private string? _ritualTitle;
 
+    [ObservableProperty]
+    private DateTime _ritualDate;
+
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;
+        RitualDate = value?.DateTime ?? DateTime.Now;
     }
 
     partial void OnRitualTitleChanged(string? value)
@@ -43,6 +48,25 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
         if (SelectedRitual != null && value != null)
         {
             SelectedRitual.Title = value;
+        }
+    }
+
+    partial void OnRitualDateChanged(DateTime value)
+    {
+        if (SelectedRitual != null)
+        {
+            SelectedRitual.DateTime = value;
+            SortRituals();
+        }
+    }
+
+    private void SortRituals()
+    {
+        var sortedRituals = new ObservableCollection<Ritual>(Rituals.OrderBy(r => r.DateTime));
+        Rituals.Clear();
+        foreach (var r in sortedRituals)
+        {
+            Rituals.Add(r);
         }
     }
 
@@ -108,5 +132,17 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
     private void RemoveServitor(Servitor? servitor)
     {
         if (servitor != null) { Servitors.Remove(servitor); }
+    }
+
+    [RelayCommand]
+    private void AddSpirit()
+    {
+        Spirits.Add(new Spirit { Name = "New Spirit", Purpose = string.Empty });
+    }
+
+    [RelayCommand]
+    private void RemoveSpirit(Spirit? spirit)
+    {
+        if (spirit != null) { Spirits.Remove(spirit); }
     }
 }

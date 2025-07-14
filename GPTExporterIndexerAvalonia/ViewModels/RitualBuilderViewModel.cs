@@ -2,8 +2,7 @@
 // REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CodexEngine.RitualForge.Models;
-using AvaloniaWebView;
+using Avalonia.WebView;
 using System.Threading.Tasks;
 using System.IO;
 using System;
@@ -56,7 +55,7 @@ public partial class RitualBuilderViewModel : ObservableObject
 
         try
         {
-            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML 
+            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML
             // and returns the scene data as a JSON string.
             var result = await Builder.ExecuteScriptAsync("window.saveScene();");
 

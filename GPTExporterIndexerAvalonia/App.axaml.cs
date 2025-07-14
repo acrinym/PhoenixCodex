@@ -17,7 +17,7 @@ public partial class App : Application
 {
     public new static App Current => (App)Application.Current!;
     public IServiceProvider Services { get; private set; } = null!;
-    
+
     public override void Initialize()
     {
         DebugLogger.Log("==================================================");
@@ -60,7 +60,7 @@ public partial class App : Application
 
         // Register Renderers
         services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-        
+
         // Register ViewModels
         services.AddSingleton<GrimoireManagerViewModel>();
         services.AddTransient<TimelineViewModel>();
@@ -70,7 +70,7 @@ public partial class App : Application
         services.AddTransient<TagMapViewModel>();
         services.AddTransient<YamlInterpreterViewModel>();
         services.AddTransient<MainWindowViewModel>();
-        
+
         // Register Views (for the ViewLocator)
         services.AddTransient<MainWindow>();
         services.AddTransient<GrimoireManagerView>();
