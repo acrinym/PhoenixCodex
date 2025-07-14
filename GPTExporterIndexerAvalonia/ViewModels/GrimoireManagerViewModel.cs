@@ -33,9 +33,13 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
     [ObservableProperty]
     private string? _ritualTitle;
 
+    [ObservableProperty]
+    private DateTime _ritualDate;
+
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;
+        RitualDate = value?.DateTime ?? DateTime.Now;
     }
 
     partial void OnRitualTitleChanged(string? value)
@@ -43,6 +47,25 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
         if (SelectedRitual != null && value != null)
         {
             SelectedRitual.Title = value;
+        }
+    }
+
+    partial void OnRitualDateChanged(DateTime value)
+    {
+        if (SelectedRitual != null)
+        {
+            SelectedRitual.DateTime = value;
+            SortRituals();
+        }
+    }
+
+    private void SortRituals()
+    {
+        var sortedRituals = new ObservableCollection<Ritual>(Rituals.OrderBy(r => r.DateTime));
+        Rituals.Clear();
+        foreach (var r in sortedRituals)
+        {
+            Rituals.Add(r);
         }
     }
 
