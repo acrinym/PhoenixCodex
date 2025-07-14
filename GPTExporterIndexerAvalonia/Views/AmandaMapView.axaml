@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             xmlns:models="clr-namespace:CodexEngine.AmandaMapCore.Models;assembly=CodexEngine"
              x:Class="GPTExporterIndexerAvalonia.Views.AmandaMapView"
              DataContext="{Binding AmandaMapViewModel}">
     <Design.DataContext>
@@ -13,15 +14,20 @@
         </StackPanel>
         <Button Content="Load" Command="{Binding LoadCommand}" />
         <ScrollViewer Height="250">
-            <ItemsControl ItemsSource="{Binding Entries}" >
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
+            <TreeView ItemsSource="{Binding GroupedEntries}">
+                <TreeView.Resources>
+                    <DataTemplate DataType="{x:Type models:NumberedMapEntry}">
                         <Border BorderBrush="Violet" BorderThickness="1" Margin="2" Padding="2">
-                             <TextBlock Text="{Binding Title}" />
+                            <TextBlock Text="{Binding Title}" />
                         </Border>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                </TreeView.Resources>
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Entries}">
+                        <TextBlock Text="{Binding EntryType}" FontWeight="Bold" />
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
         </ScrollViewer>
     </StackPanel>
 </UserControl>

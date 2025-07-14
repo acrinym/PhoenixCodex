@@ -21,6 +21,7 @@
         <TextBox Text="{Binding RitualTitle}" />
         <TextBlock Text="Date" />
         <DatePicker SelectedDate="{Binding RitualDate}" />
+        <TextBox Text="{Binding SelectedRitual.Title}" />
         <Button Content="Add" Command="{Binding AddRitualCommand}" />
         <Button Content="Remove" Command="{Binding RemoveRitualCommand}" />
 
