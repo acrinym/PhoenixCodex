@@ -3,7 +3,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.RitualForge.Models;
-using Avalonia.WebView;
+using Avalonia.Controls;
 using System.Threading.Tasks;
 using System.IO;
 using System;
@@ -18,9 +18,9 @@ namespace GPTExporterIndexerAvalonia.ViewModels;
 public partial class RitualBuilderViewModel : ObservableObject
 {
     /// <summary>
-    /// A reference to the WebView control in the View. This should be set from the code-behind.
+    /// A reference to the NativeWebView control in the View. This should be set from the code-behind.
     /// </summary>
-    public WebView? Builder { get; set; }
+    public NativeWebView? Builder { get; set; }
 
     /// <summary>
     /// Holds any error message that occurs during initialization so

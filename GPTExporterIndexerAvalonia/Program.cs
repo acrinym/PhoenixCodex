@@ -3,7 +3,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using Avalonia.WebView.Desktop;
+using Avalonia.Controls.WebView;
 using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia;
@@ -38,6 +38,5 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace()
-            .UseReactiveUI()
-            .UseDesktopWebView();
+            .UseReactiveUI();
 }
