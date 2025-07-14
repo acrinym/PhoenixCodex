@@ -1,8 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-// Note: Unused 'using' statements have been removed.
-
 namespace GPTExporterIndexerAvalonia.Views;
 public partial class TagMapView : UserControl
 {
@@ -15,6 +13,7 @@ public partial class TagMapView : UserControl
     {
         AvaloniaXamlLoader.Load(this);
     }
-
-    // The entire "OnBrowse" method has been removed from this file.
+    
+    // The entire "OnBrowse" method has been removed from this file 
+    // as its logic was moved to the TagMapViewModel's "BrowseAndLoadCommand".
 }
