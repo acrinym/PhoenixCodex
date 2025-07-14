@@ -1,8 +1,8 @@
 using Avalonia.Controls;
-using Avalonia.Controls.WebView; // Make sure you have this using statement
+using AvaloniaWebView; // Correct namespace for WebView.Avalonia
 using Avalonia.Markup.Xaml;
 using GPTExporterIndexerAvalonia.ViewModels; // Make sure you have this using statement
-using RitualOS.Services; // Assuming DebugLogger is here
+using GPTExporterIndexerAvalonia.Services;
 using System;
 
 namespace GPTExporterIndexerAvalonia.Views
