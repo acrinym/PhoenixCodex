@@ -21,7 +21,9 @@ public interface IDialogService
     Task<string?> ShowOpenFileDialogAsync(string title, FileFilter filter);
 
     /// <summary>
-    /// Displays a simple message dialog to the user.
+    /// Displays a simple message box to the user.
     /// </summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message content.</param>
     Task ShowMessageAsync(string title, string message);
 }

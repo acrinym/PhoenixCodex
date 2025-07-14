@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using MessageBox.Avalonia;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -63,21 +64,11 @@ public class DialogService : IDialogService
     public async Task ShowMessageAsync(string title, string message)
     {
         var mainWindow = GetMainWindow();
-        if (mainWindow is null) return;
+        if (mainWindow is null)
+            return;
 
-        var dialog = new Window
-        {
-            Title = title,
-            Width = 400,
-            Height = 200,
-            Content = new TextBlock
-            {
-                Text = message,
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(20)
-            }
-        };
-
-        await dialog.ShowDialog(mainWindow);
+        var msgBox = MessageBox.Avalonia.MessageBoxManager
+            .GetMessageBoxStandardWindow(title, message);
+        await msgBox.ShowDialog(mainWindow);
     }
 }
