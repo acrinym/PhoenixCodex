@@ -15,7 +15,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <TextBlock Text="Title" />
-        <TextBox Text="{Binding RitualTitle}" />
+        <TextBox Text="{Binding SelectedRitual.Title}" />
         <Button Content="Add" Command="{Binding AddRitualCommand}" />
         <Button Content="Remove" Command="{Binding RemoveRitualCommand}" />
 
