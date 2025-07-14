@@ -49,7 +49,7 @@ public partial class RitualBuilderViewModel : ObservableObject
 
         try
         {
-            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML 
+            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML
             // and returns the scene data as a JSON string.
             var result = await Builder.ExecuteScriptAsync("window.saveScene();");
 
@@ -59,6 +59,7 @@ public partial class RitualBuilderViewModel : ObservableObject
         catch (Exception ex)
         {
             DebugLogger.Log($"Error saving ritual scene: {ex.Message}");
+            ErrorMessage = "Failed to save the ritual scene.";
         }
     }
 
@@ -95,6 +96,7 @@ public partial class RitualBuilderViewModel : ObservableObject
         catch (Exception ex)
         {
             DebugLogger.Log($"Error loading ritual scene: {ex.Message}");
+            ErrorMessage = "Failed to load the ritual scene.";
         }
     }
 }
