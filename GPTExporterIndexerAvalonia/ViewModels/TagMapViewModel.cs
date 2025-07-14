@@ -12,6 +12,7 @@ using System.Diagnostics;
 using GPTExporterIndexerAvalonia.Services;
 using System.Threading.Tasks;
 
+
 namespace GPTExporterIndexerAvalonia.ViewModels;
 public partial class TagMapEntry
 {
@@ -66,12 +67,12 @@ public partial class TagMapViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(path))
         {
             FilePath = path;
-            Load(); // Call the existing Load method
+            await Load(); // Call the existing Load method
         }
     }
 
     [RelayCommand]
-    private void Load()
+    private async Task Load()
     {
         Documents.Clear();
         if (string.IsNullOrWhiteSpace(FilePath) || !File.Exists(FilePath))
@@ -95,7 +96,8 @@ public partial class TagMapViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to load tag map: {ex.Message}");
+            DebugLogger.Log($"TagMapViewModel: Failed to load tag map '{FilePath}'. Error: {ex.Message}");
+            await _dialogService.ShowMessageAsync("Tag Map Load Error", $"Failed to load tag map:\n{ex.Message}");
         }
         FilterDocuments();
     }

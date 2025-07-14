@@ -4,6 +4,7 @@ using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Globalization;
 using CodexEngine.Parsing;
+using CodexEngine.Services;
 
 namespace CodexEngine.Parsing
 {
@@ -71,7 +72,11 @@ namespace CodexEngine.Parsing
                     DateTime = date
                 };
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                DebugLogger.Log(ex.Message);
+                return null;
+            }
         }
         
         private NumberedMapEntry? ParseNumberedEntry(string text, Match initialMatch)
@@ -95,7 +100,11 @@ namespace CodexEngine.Parsing
                     _ => new ThresholdEntry { Title = title, RawContent = text, Number = number, Date = date } 
                 };
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                DebugLogger.Log(ex.Message);
+                return null;
+            }
         }
     }
 }

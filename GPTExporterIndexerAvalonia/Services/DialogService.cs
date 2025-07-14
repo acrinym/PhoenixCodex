@@ -59,4 +59,25 @@ public class DialogService : IDialogService
 
         return result.FirstOrDefault()?.Path.LocalPath;
     }
+
+    public async Task ShowMessageAsync(string title, string message)
+    {
+        var mainWindow = GetMainWindow();
+        if (mainWindow is null) return;
+
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 400,
+            Height = 200,
+            Content = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(20)
+            }
+        };
+
+        await dialog.ShowDialog(mainWindow);
+    }
 }

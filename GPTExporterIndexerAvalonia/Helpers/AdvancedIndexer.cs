@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.Helpers;
 
@@ -70,7 +71,10 @@ public static class AdvancedIndexer
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"AdvancedIndexer: error reading tag map - {ex}");
+            }
         }
 
         foreach (var file in Directory.EnumerateFiles(folderPath, "*", SearchOption.AllDirectories))
@@ -79,7 +83,15 @@ public static class AdvancedIndexer
             if (ext != ".txt" && ext != ".json" && ext != ".md")
                 continue;
             string text;
-            try { text = File.ReadAllText(file); } catch { continue; }
+            try
+            {
+                text = File.ReadAllText(file);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log(ex.Message);
+                continue;
+            }
 
             var relative = Path.GetRelativePath(folderPath, file);
             var detail = new FileDetail
@@ -163,7 +175,15 @@ public static class AdvancedIndexer
     {
         var snippets = new List<string>();
         string[] lines;
-        try { lines = File.ReadAllLines(filePath); } catch { return snippets; }
+        try
+        {
+            lines = File.ReadAllLines(filePath);
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log(ex.Message);
+            return snippets;
+        }
         var lowerPhrase = phrase.ToLowerInvariant();
         for (int i = 0; i < lines.Length; i++)
         {

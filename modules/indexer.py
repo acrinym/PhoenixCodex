@@ -136,10 +136,6 @@ def search_with_context(
     use_nlp: bool = False,
 ) -> Tuple[List[tuple], str | None]:
     """Search and also collect context snippets from each matching file."""
-    search_fn = (
-        nlp_search_with_persistent_index if use_nlp else search_with_persistent_index
-    )
-
     search_fn = nlp_search_with_persistent_index if use_nlp else search_with_persistent_index
     results, err = search_fn(phrase, loaded_index, case_sensitive, search_logic)
     if err:
