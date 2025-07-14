@@ -1,7 +1,7 @@
 using Avalonia.Controls;
-using AvaloniaWebView; // Correct namespace for WebView.Avalonia
+using AvaloniaWebView;
 using Avalonia.Markup.Xaml;
-using GPTExporterIndexerAvalonia.ViewModels; // Make sure you have this using statement
+using GPTExporterIndexerAvalonia.ViewModels;
 using GPTExporterIndexerAvalonia.Services;
 using System;
 
