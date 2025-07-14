@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using System;
 using GPTExporterIndexerAvalonia.Services;
@@ -9,7 +10,7 @@ using Avalonia.LogicalTree;
 
 namespace GPTExporterIndexerAvalonia.Views.Controls
 {
-    public class ErrorBoundary : ContentControl
+    public partial class ErrorBoundary : UserControl
     {
         // FIXED: The method argument is TemplateAppliedEventArgs, not AppliedStyles
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -22,7 +23,7 @@ namespace GPTExporterIndexerAvalonia.Views.Controls
                 // If the child (e.g., RitualBuilderView) is going to crash,
                 // it will happen here.
                 (Content as ISetLogicalParent)?.SetParent(this);
-                (Content as IControl)?.ApplyTemplate();
+                (Content as Control)?.ApplyTemplate();
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.IO;
 using YamlDotNet.Serialization;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -41,7 +42,10 @@ public partial class YamlInterpreterViewModel : ObservableObject
                     Items.Add(child);
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"YamlInterpreterViewModel.Load error: {ex}");
+        }
     }
 
     private static YamlNode ConvertToNode(string name, object value)
