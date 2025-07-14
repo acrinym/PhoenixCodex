@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.Helpers;
 
@@ -24,7 +25,15 @@ public static class SimpleIndexer
             if (ext != ".txt" && ext != ".json" && ext != ".md")
                 continue;
             string text;
-            try { text = File.ReadAllText(file); } catch { continue; }
+            try
+            {
+                text = File.ReadAllText(file);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log(ex.Message);
+                continue;
+            }
 
             foreach (Match m in TokenPattern.Matches(text))
             {
