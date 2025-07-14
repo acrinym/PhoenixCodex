@@ -7,6 +7,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using GPTExporterIndexerAvalonia.ViewModels;
 using System.Text.Json;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.Reading;
 
@@ -28,7 +29,10 @@ public static class TagMapImporter
                 if (arr != null)
                     entries.AddRange(arr);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"TagMapImporter: Failed to load JSON '{path}'. Error: {ex.Message}");
+            }
             return entries;
         }
 
@@ -59,7 +63,11 @@ public static class TagMapImporter
                 entries.Add(CreateEntry(record));
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"TagMapImporter: Failed to load CSV '{path}'. Error: {ex.Message}");
+            throw;
+        }
     }
 
     private static void LoadExcel(string path, List<TagMapEntry> entries)
@@ -99,7 +107,11 @@ public static class TagMapImporter
                 entries.Add(CreateEntry(record));
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"TagMapImporter: Failed to load Excel '{path}'. Error: {ex.Message}");
+            throw;
+        }
     }
 
     private static string? GetCellValue(Cell cell, SharedStringTable? shared)
