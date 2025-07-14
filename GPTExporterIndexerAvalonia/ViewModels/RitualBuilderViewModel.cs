@@ -3,7 +3,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.RitualForge.Models;
-using AvaloniaWebView;
+using Avalonia.WebView;
 using System.Threading.Tasks;
 using System.IO;
 using System;

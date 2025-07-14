@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using AvaloniaWebView;
+using Avalonia.WebView;
 using Avalonia.Markup.Xaml;
 using GPTExporterIndexerAvalonia.ViewModels;
 using GPTExporterIndexerAvalonia.Services;
