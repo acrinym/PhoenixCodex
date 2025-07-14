@@ -7,6 +7,7 @@ using AvaloniaWebView;
 using System.Threading.Tasks;
 using System.IO;
 using System;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -48,7 +49,7 @@ public partial class RitualBuilderViewModel : ObservableObject
 
         try
         {
-            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML 
+            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML
             // and returns the scene data as a JSON string.
             var result = await Builder.ExecuteScriptAsync("window.saveScene();");
 
@@ -57,8 +58,8 @@ public partial class RitualBuilderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            // TODO: Implement proper error logging or display a message to the user.
-            Console.WriteLine($"Error saving ritual scene: {ex.Message}");
+            DebugLogger.Log($"Error saving ritual scene: {ex.Message}");
+            ErrorMessage = "Failed to save the ritual scene.";
         }
     }
 
@@ -94,8 +95,8 @@ public partial class RitualBuilderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            // TODO: Implement proper error logging.
-            Console.WriteLine($"Error loading ritual scene: {ex.Message}");
+            DebugLogger.Log($"Error loading ritual scene: {ex.Message}");
+            ErrorMessage = "Failed to load the ritual scene.";
         }
     }
 }
