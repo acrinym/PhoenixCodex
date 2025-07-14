@@ -39,7 +39,8 @@ The **YAML Interpreter** tab lets you load `.yaml` files and inspect their keys 
 Enter a file path, click **Load**, and the entries will be parsed using **YamlDotNet** so you can browse ritual templates directly inside the app.
 
 Building the Application
-Install the .NET 8 SDK on your system. On Ubuntu, you can do this with the following commands:
+Both **GPTExporterIndexerAvalonia** and **CodexEngine** require the .NET&nbsp;8 SDK. Make sure it is installed before running `dotnet build` or `dotnet run`.
+Install the SDK on your system. On Ubuntu, you can do this with the following commands:
 
 Bash
 
