@@ -2,7 +2,6 @@
 // REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CodexEngine.RitualForge.Models;
 using Avalonia.WebView;
 using System.Threading.Tasks;
 using System.IO;
@@ -17,6 +16,13 @@ namespace GPTExporterIndexerAvalonia.ViewModels;
 /// </summary>
 public partial class RitualBuilderViewModel : ObservableObject
 {
+    private readonly IDialogService _dialogService;
+
+    public RitualBuilderViewModel(IDialogService dialogService)
+    {
+        _dialogService = dialogService;
+    }
+
     /// <summary>
     /// A reference to the WebView control in the View. This should be set from the code-behind.
     /// </summary>
@@ -59,7 +65,9 @@ public partial class RitualBuilderViewModel : ObservableObject
         catch (Exception ex)
         {
             DebugLogger.Log($"Error saving ritual scene: {ex.Message}");
-            ErrorMessage = "Failed to save the ritual scene.";
+            await _dialogService.ShowMessageAsync(
+                "Save Error",
+                $"Failed to save ritual scene.\n{ex.Message}");
         }
     }
 
@@ -96,7 +104,9 @@ public partial class RitualBuilderViewModel : ObservableObject
         catch (Exception ex)
         {
             DebugLogger.Log($"Error loading ritual scene: {ex.Message}");
-            ErrorMessage = "Failed to load the ritual scene.";
+            await _dialogService.ShowMessageAsync(
+                "Load Error",
+                $"Failed to load ritual scene.\n{ex.Message}");
         }
     }
 }
