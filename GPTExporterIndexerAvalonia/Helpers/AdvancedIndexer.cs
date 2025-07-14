@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.Helpers;
 
@@ -70,7 +71,10 @@ public static class AdvancedIndexer
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"AdvancedIndexer: error reading tag map - {ex}");
+            }
         }
 
         foreach (var file in Directory.EnumerateFiles(folderPath, "*", SearchOption.AllDirectories))
