@@ -32,4 +32,12 @@ namespace CodexEngine.GrimoireCore.Models
         public required string VisualDescription { get; set; }
         public DateTime AnchorDate { get; set; }
     }
+
+    public class Spirit
+    {
+        public required string Name { get; set; }
+        public required string Purpose { get; set; }
+        public string? Domain { get; set; }
+        public string? Description { get; set; }
+    }
 }

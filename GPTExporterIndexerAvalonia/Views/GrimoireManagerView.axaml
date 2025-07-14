@@ -44,5 +44,18 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Button Content="Add Servitor" Command="{Binding AddServitorCommand}" />
+
+        <TextBlock Text="Spirits" Margin="0,10,0,0" FontWeight="Bold" />
+        <ListBox ItemsSource="{Binding Spirits}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBox Width="150" Text="{Binding Name}" />
+                        <Button Content="X" Command="{Binding DataContext.RemoveSpiritCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button Content="Add Spirit" Command="{Binding AddSpiritCommand}" />
     </StackPanel>
 </UserControl>
