@@ -19,4 +19,9 @@ public interface IDialogService
 
     // FIXED: Replaced obsolete FileDialogFilter with our new record type.
     Task<string?> ShowOpenFileDialogAsync(string title, FileFilter filter);
+
+    /// <summary>
+    /// Displays a simple message dialog to the user.
+    /// </summary>
+    Task ShowMessageAsync(string title, string message);
 }

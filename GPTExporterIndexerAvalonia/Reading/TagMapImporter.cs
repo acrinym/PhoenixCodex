@@ -31,7 +31,7 @@ public static class TagMapImporter
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"TagMapImporter.Load json error: {ex}");
+                DebugLogger.Log($"TagMapImporter: Failed to load JSON '{path}'. Error: {ex.Message}");
             }
             return entries;
         }
@@ -65,7 +65,8 @@ public static class TagMapImporter
         }
         catch (Exception ex)
         {
-            DebugLogger.Log($"TagMapImporter.LoadCsv error: {ex}");
+            DebugLogger.Log($"TagMapImporter: Failed to load CSV '{path}'. Error: {ex.Message}");
+            throw;
         }
     }
 
@@ -108,7 +109,8 @@ public static class TagMapImporter
         }
         catch (Exception ex)
         {
-            DebugLogger.Log($"TagMapImporter.LoadExcel error: {ex}");
+            DebugLogger.Log($"TagMapImporter: Failed to load Excel '{path}'. Error: {ex.Message}");
+            throw;
         }
     }
 

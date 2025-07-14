@@ -89,3 +89,8 @@ If you wish to recreate their functionality, you may port the logic into C# or
 another language of your choice, or simply run them with Python 3.10+. If you do
 not need them, these files can be ignored or removed without affecting any of
 the .NET projects.
+If you do use the legacy scripts, install dependencies from `requirements.txt` first.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
