@@ -73,7 +73,7 @@ public static class AdvancedIndexer
             }
             catch (Exception ex)
             {
-                DebugLogger.Log(ex.Message);
+                DebugLogger.Log($"AdvancedIndexer: error reading tag map - {ex}");
             }
         }
 
