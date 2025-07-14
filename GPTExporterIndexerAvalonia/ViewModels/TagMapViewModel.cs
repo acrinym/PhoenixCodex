@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Linq;
+using GPTExporterIndexerAvalonia.Helpers;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -36,9 +37,18 @@ public partial class TagMapViewModel : ObservableObject
             return;
         try
         {
-            var json = File.ReadAllText(FilePath);
-            var entries = JsonSerializer.Deserialize<TagMapEntry[]>(json);
-            if (entries == null)
+            List<TagMapEntry> entries;
+            var ext = Path.GetExtension(FilePath).ToLowerInvariant();
+            if (ext == ".json")
+            {
+                var json = File.ReadAllText(FilePath);
+                entries = JsonSerializer.Deserialize<TagMapEntry[]>(json)?.ToList() ?? new List<TagMapEntry>();
+            }
+            else
+            {
+                entries = TagMapLoader.Load(FilePath);
+            }
+            if (entries.Count == 0)
                 return;
             foreach (var group in entries.GroupBy(e => e.Document))
             {
