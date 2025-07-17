@@ -2,7 +2,7 @@
 // REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Avalonia.Controls;
+using Avalonia.WebView;
 using System.Threading.Tasks;
 using System.IO;
 using System;
@@ -24,9 +24,9 @@ public partial class RitualBuilderViewModel : ObservableObject
     }
 
     /// <summary>
-    /// A reference to the NativeWebView control in the View. This should be set from the code-behind.
+    /// A reference to the WebView control in the View. This should be set from the code-behind.
     /// </summary>
-    public NativeWebView? Builder { get; set; }
+    public WebView? Builder { get; set; }
 
     /// <summary>
     /// Holds any error message that occurs during initialization so

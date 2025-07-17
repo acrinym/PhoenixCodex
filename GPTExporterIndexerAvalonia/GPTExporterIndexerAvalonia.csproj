@@ -24,9 +24,8 @@
       Additional controls and frameworks that enhance the UI.
     -->
     <PackageReference Include="Avalonia.HtmlRenderer" Version="11.0.0" />
-    <!-- Updated per Avalonia documentation. Use the new cross-platform
-         WebView package. -->
-    <PackageReference Include="Avalonia.Controls.WebView" Version="11.0.0" />
+    <!-- Revert to the widely available WebView.Avalonia packages -->
+    <PackageReference Include="WebView.Avalonia" Version="11.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 
     <!-- 
@@ -36,6 +35,8 @@
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageReference Include="VersOne.Epub" Version="3.3.4" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
+    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.10.8" />
     <PackageReference Include="YamlDotNet" Version="15.1.2" />
     
     <!-- 
