@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Linq;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using GPTExporterIndexerAvalonia.ViewModels.Messages;
 using GPTExporterIndexerAvalonia.Services;
 using System.Threading.Tasks;
-using CodexEngine.Parsing.Models; // <-- THIS IS THE MISSING USING DIRECTIVE
+using CodexEngine.Parsing.Models;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -36,9 +38,25 @@ public partial class AmandaMapViewModel : ObservableObject,
     /// Collection of entries grouped by their <see cref="NumberedMapEntry.EntryType"/>.
     /// </summary>
     public ObservableCollection<EntryTypeGroup> GroupedEntries { get; } = new();
+
+    /// <summary>
+    /// Flattened display items for the ListView
+    /// </summary>
+    public ObservableCollection<DisplayItem> DisplayItems { get; } = new();
+
+    /// <summary>
+    /// Entry groups for internal management
+    /// </summary>
+    public ObservableCollection<EntryTypeGroup> EntryGroups { get; } = new();
     
     [ObservableProperty]
     private BaseMapEntry? _selectedEntry;
+
+    [ObservableProperty]
+    private NumberedMapEntry? _selectedNumberedEntry;
+
+    [ObservableProperty]
+    private DisplayItem? _selectedDisplayItem;
 
     public AmandaMapViewModel(IMessenger messenger, IDialogService dialogService)
     {
@@ -46,6 +64,9 @@ public partial class AmandaMapViewModel : ObservableObject,
         _dialogService = dialogService;
         _messenger.RegisterAll(this); // Registers this instance to receive all messages it implements a handler for
 
+        // Set up collection change handlers
+        EntryGroups.CollectionChanged += (s, e) => UpdateDisplayItems();
+        
         UpdateGroupedEntries();
     }
     
@@ -75,6 +96,7 @@ public partial class AmandaMapViewModel : ObservableObject,
         }
 
         UpdateGroupedEntries();
+        LoadEntries(ProcessedEntries);
     }
     
     // This message is from a legacy workflow and is no longer the primary way data is populated.
@@ -113,4 +135,100 @@ public partial class AmandaMapViewModel : ObservableObject,
             GroupedEntries.Add(new EntryTypeGroup(group.Key, group.OrderBy(e => e.Number)));
         }
     }
+
+    /// <summary>
+    /// Loads entries and creates the hierarchical structure
+    /// </summary>
+    public void LoadEntries(IEnumerable<NumberedMapEntry> entries)
+    {
+        var grouped = entries.GroupBy(e => e.EntryType)
+                            .Select(g => new EntryTypeGroup(g.Key, g.OrderBy(e => e.Number)))
+                            .OrderBy(g => g.EntryType);
+        
+        EntryGroups.Clear();
+        foreach (var group in grouped)
+            EntryGroups.Add(group);
+        
+        UpdateDisplayItems();
+    }
+
+    /// <summary>
+    /// Toggles the expansion state of a group
+    /// </summary>
+    public void ToggleGroupExpansion(EntryTypeGroup group)
+    {
+        group.IsExpanded = !group.IsExpanded;
+        UpdateDisplayItems();
+    }
+
+    /// <summary>
+    /// Updates the flattened display items list
+    /// </summary>
+    private void UpdateDisplayItems()
+    {
+        DisplayItems.Clear();
+        foreach (var group in EntryGroups)
+        {
+            DisplayItems.Add(new DisplayItem
+            {
+                DisplayText = $"{group.EntryType} ({group.Entries.Count})",
+                IndentLevel = 0,
+                IsGroup = true,
+                Group = group
+            });
+            
+            if (group.IsExpanded)
+            {
+                foreach (var entry in group.Entries)
+                {
+                    DisplayItems.Add(new DisplayItem
+                    {
+                        DisplayText = $"{entry.EntryType} {entry.Number}: {entry.Title}",
+                        IndentLevel = 1,
+                        IsGroup = false,
+                        Entry = entry
+                    });
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles item selection from the ListView
+    /// </summary>
+    partial void OnSelectedDisplayItemChanged(DisplayItem? value)
+    {
+        if (value?.Entry != null)
+        {
+            SelectedNumberedEntry = value.Entry;
+        }
+    }
+
+    /// <summary>
+    /// Command to handle item clicks in the ListView
+    /// </summary>
+    [RelayCommand]
+    private void HandleItemClick(DisplayItem item)
+    {
+        if (item.IsGroup && item.Group != null)
+        {
+            ToggleGroupExpansion(item.Group);
+        }
+        else if (item.Entry != null)
+        {
+            SelectedNumberedEntry = item.Entry;
+        }
+    }
+}
+
+/// <summary>
+/// Display item for the flattened ListView
+/// </summary>
+public class DisplayItem
+{
+    public string DisplayText { get; set; } = string.Empty; // e.g., "Threshold (5)" or "Threshold 54: Some Title"
+    public int IndentLevel { get; set; } // 0 for groups, 1 for entries
+    public bool IsGroup { get; set; }
+    public EntryTypeGroup? Group { get; set; } // Null for entries
+    public NumberedMapEntry? Entry { get; set; } // Null for groups
 }

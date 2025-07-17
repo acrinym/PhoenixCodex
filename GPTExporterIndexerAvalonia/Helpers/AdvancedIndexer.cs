@@ -47,17 +47,37 @@ public static class AdvancedIndexer
         public string? Preview { get; set; }
     }
 
-    private class TagMapEntry
-    {
-        public string? Document { get; set; }
-        public string? Category { get; set; }
-        public string? Preview { get; set; }
-    }
+    // Using TagMapEntry from TagMapGenerator.cs
 
-    public static void BuildIndex(string folderPath, string indexPath)
+    public static void BuildIndex(string folderPath, string indexPath, IProgressService? progressService = null)
     {
         var tokens = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var files = new Dictionary<string, FileDetail>(StringComparer.OrdinalIgnoreCase);
+
+        progressService?.StartOperation("Index Building");
+
+        // Load existing index if it exists
+        Index? existingIndex = null;
+        if (File.Exists(indexPath))
+        {
+            try
+            {
+                var existingJson = File.ReadAllText(indexPath);
+                existingIndex = JsonSerializer.Deserialize<Index>(existingJson);
+                if (existingIndex != null)
+                {
+                    // Copy existing data
+                    tokens = new Dictionary<string, HashSet<string>>(existingIndex.Tokens, StringComparer.OrdinalIgnoreCase);
+                    files = new Dictionary<string, FileDetail>(existingIndex.Files, StringComparer.OrdinalIgnoreCase);
+                    DebugLogger.Log($"Loaded existing index with {files.Count} files and {tokens.Count} tokens");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Error loading existing index: {ex.Message}");
+                // Continue with fresh index if loading fails
+            }
+        }
 
         var tagLookup = new Dictionary<string, TagMapEntry>(StringComparer.OrdinalIgnoreCase);
         var tagPath = Path.Combine(folderPath, "tagmap.json");
@@ -82,11 +102,60 @@ public static class AdvancedIndexer
             }
         }
 
-        foreach (var file in Directory.EnumerateFiles(folderPath, "*", SearchOption.AllDirectories))
+        int processedFiles = 0;
+        int skippedFiles = 0;
+        int newFiles = 0;
+        int modifiedFiles = 0;
+
+        var allFiles = Directory.EnumerateFiles(folderPath, "*", SearchOption.AllDirectories).ToList();
+        var supportedFiles = allFiles.Where(f => 
+        {
+            var ext = Path.GetExtension(f).ToLowerInvariant();
+            return ext == ".txt" || ext == ".json" || ext == ".md";
+        }).ToList();
+
+        progressService?.ReportProgress(0, "Scanning files", 0, supportedFiles.Count);
+
+        for (int i = 0; i < supportedFiles.Count; i++)
+        {
+            var file = supportedFiles[i];
         {
             var ext = Path.GetExtension(file).ToLowerInvariant();
             if (ext != ".txt" && ext != ".json" && ext != ".md")
                 continue;
+
+            // Skip very large files to prevent indexing from getting stuck
+            var fileInfo = new FileInfo(file);
+            if (fileInfo.Length > 50 * 1024 * 1024) // 50MB limit
+            {
+                DebugLogger.Log($"Skipping large file: {Path.GetFileName(file)} ({fileInfo.Length / (1024 * 1024)}MB)");
+                continue;
+            }
+
+            var relative = Path.GetRelativePath(folderPath, file);
+            var currentModified = File.GetLastWriteTimeUtc(file).Ticks;
+
+            // Check if file needs to be re-indexed
+            if (files.TryGetValue(relative, out var existingDetail))
+            {
+                if (existingDetail.Modified == currentModified)
+                {
+                    // File hasn't changed, skip indexing
+                    skippedFiles++;
+                    continue;
+                }
+                else
+                {
+                    // File has been modified, remove old tokens
+                    RemoveFileTokens(tokens, relative);
+                    modifiedFiles++;
+                }
+            }
+            else
+            {
+                newFiles++;
+            }
+
             string text;
             try
             {
@@ -98,11 +167,10 @@ public static class AdvancedIndexer
                 continue;
             }
 
-            var relative = Path.GetRelativePath(folderPath, file);
             var detail = new FileDetail
             {
                 Filename = Path.GetFileName(file),
-                Modified = File.GetLastWriteTimeUtc(file).Ticks
+                Modified = currentModified
             };
             if (tagLookup.TryGetValue(relative, out var info) || tagLookup.TryGetValue(detail.Filename, out info))
             {
@@ -111,6 +179,7 @@ public static class AdvancedIndexer
             }
             files[relative] = detail;
 
+            // Index the file content
             foreach (Match m in TokenPattern.Matches(text))
             {
                 var token = m.Value.ToLowerInvariant();
@@ -121,10 +190,83 @@ public static class AdvancedIndexer
                 }
                 set.Add(relative);
             }
+
+            processedFiles++;
+            
+            // Report progress
+            var progress = (double)i / supportedFiles.Count * 100;
+            progressService?.ReportProgress(progress, $"Processing {Path.GetFileName(file)}", i + 1, supportedFiles.Count);
+            
+            // Log progress every 100 files
+            if (processedFiles % 100 == 0)
+            {
+                DebugLogger.Log($"Indexing progress: {processedFiles} files processed, {skippedFiles} skipped");
+            }
         }
+
+        // Remove files that no longer exist
+        var filesToRemove = new List<string>();
+        foreach (var fileEntry in files)
+        {
+            var fullPath = Path.Combine(folderPath, fileEntry.Key);
+            if (!File.Exists(fullPath))
+            {
+                filesToRemove.Add(fileEntry.Key);
+            }
+        }
+
+        foreach (var fileToRemove in filesToRemove)
+        {
+            RemoveFileTokens(tokens, fileToRemove);
+            files.Remove(fileToRemove);
+        }
+
+        progressService?.ReportProgress(95, "Saving index");
+
         var index = new Index { Tokens = tokens, Files = files };
         var options = new JsonSerializerOptions { WriteIndented = true };
         File.WriteAllText(indexPath, JsonSerializer.Serialize(index, options));
+
+        DebugLogger.Log($"Indexing complete: {processedFiles} files processed, {skippedFiles} skipped, {newFiles} new, {modifiedFiles} modified, {filesToRemove.Count} removed");
+        progressService?.CompleteOperation();
+    }
+
+    public static void BuildIndexFull(string folderPath, string indexPath, IProgressService? progressService = null)
+    {
+        // Delete existing index to force full rebuild
+        if (File.Exists(indexPath))
+        {
+            try
+            {
+                File.Delete(indexPath);
+                DebugLogger.Log("Deleted existing index for full rebuild");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Error deleting existing index: {ex.Message}");
+            }
+        }
+
+        // Call the regular BuildIndex method which will now start fresh
+        BuildIndex(folderPath, indexPath, progressService);
+    }
+
+    private static void RemoveFileTokens(Dictionary<string, HashSet<string>> tokens, string filePath)
+    {
+        var tokensToRemove = new List<string>();
+        foreach (var tokenEntry in tokens)
+        {
+            tokenEntry.Value.Remove(filePath);
+            if (tokenEntry.Value.Count == 0)
+            {
+                tokensToRemove.Add(tokenEntry.Key);
+            }
+        }
+
+        foreach (var tokenToRemove in tokensToRemove)
+        {
+            tokens.Remove(tokenToRemove);
+        }
     }
 
     public static IEnumerable<SearchResult> Search(string indexPath, string phrase, SearchOptions? options = null)

@@ -2,7 +2,7 @@
 // REFACTORED
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Avalonia.WebView;
+// using Avalonia.WebView;
 using System.Threading.Tasks;
 using System.IO;
 using System;
@@ -26,7 +26,7 @@ public partial class RitualBuilderViewModel : ObservableObject
     /// <summary>
     /// A reference to the WebView control in the View. This should be set from the code-behind.
     /// </summary>
-    public WebView? Builder { get; set; }
+    // public WebView? Builder { get; set; }
 
     /// <summary>
     /// Holds any error message that occurs during initialization so
@@ -47,66 +47,14 @@ public partial class RitualBuilderViewModel : ObservableObject
     [RelayCommand]
     private async Task Save()
     {
-        // CONFLICT RESOLVED: Using 'Builder is null' is a cleaner, more modern null check.
-        if (Builder is null)
-        {
-            return;
-        }
-
-        try
-        {
-            // Assumes the JavaScript function 'window.saveScene()' exists in the loaded HTML
-            // and returns the scene data as a JSON string.
-            var result = await Builder.ExecuteScriptAsync("window.saveScene();");
-
-            // Save the resulting JSON to the predefined ScenePath.
-            await File.WriteAllTextAsync(ScenePath, result ?? "{}");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.Log($"Error saving ritual scene: {ex.Message}");
-            await _dialogService.ShowMessageAsync(
-                "Save Error",
-                $"Failed to save ritual scene.\n{ex.Message}");
-        }
+        // WebView functionality temporarily disabled
+        await Task.CompletedTask;
     }
 
     [RelayCommand]
     private async Task Load()
     {
-        if (Builder is null)
-        {
-            return;
-        }
-
-        if (!File.Exists(ScenePath))
-        {
-            // If the file doesn't exist, there's nothing to load.
-            return;
-        }
-
-        try
-        {
-            var json = await File.ReadAllTextAsync(ScenePath);
-
-            // Sanitize the JSON string for use in a JavaScript literal.
-            var escapedJson = json
-                .Replace("\\", "\\\\")
-                .Replace("`", "\\`")
-                .Replace("'", "\\'")
-                .Replace("\"", "\\\"");
-
-            // Construct the script to call the 'window.loadScene' function in the WebView.
-            var script = $"window.loadScene(`{escapedJson}`);";
-
-            await Builder.ExecuteScriptAsync(script);
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.Log($"Error loading ritual scene: {ex.Message}");
-            await _dialogService.ShowMessageAsync(
-                "Load Error",
-                $"Failed to load ritual scene.\n{ex.Message}");
-        }
+        // WebView functionality temporarily disabled
+        await Task.CompletedTask;
     }
 }

@@ -99,13 +99,27 @@ public static class TagMapLoader
             Document = dict.GetValueOrDefault("Document") ?? string.Empty,
             Category = dict.GetValueOrDefault("Category") ?? string.Empty,
             Preview = dict.GetValueOrDefault("Marker Preview"),
+            Title = dict.GetValueOrDefault("Title") ?? dict.GetValueOrDefault("Document") ?? string.Empty
         };
+        
         if (int.TryParse(dict.GetValueOrDefault("Line #"), out var line))
             entry.Line = line;
+            
         if (DateTime.TryParse(dict.GetValueOrDefault("Date"), out var dt))
         {
-            // For now Date is not stored in TagMapEntry, but you could extend it
+            entry.Date = dt;
         }
+        
+        // Extract tags if available
+        var tagsStr = dict.GetValueOrDefault("Tags");
+        if (!string.IsNullOrWhiteSpace(tagsStr))
+        {
+            entry.Tags = tagsStr.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .ToList();
+        }
+        
         list.Add(entry);
     }
 }

@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Avalonia.WebView;
+// using Avalonia.WebView;
 using Avalonia.Markup.Xaml;
 using GPTExporterIndexerAvalonia.ViewModels;
 using GPTExporterIndexerAvalonia.Services;
@@ -28,33 +28,8 @@ namespace GPTExporterIndexerAvalonia.Views
             base.OnAttachedToVisualTree(e);
             DebugLogger.Log("[RitualBuilderView] OnAttachedToVisualTree started.");
 
-            try
-            {
-                if (DataContext is RitualBuilderViewModel vm)
-                {
-                    var webView = this.FindControl<WebView>("Builder");
-                    if (webView is null)
-                    {
-                        DebugLogger.Log("FATAL: Could not find WebView control named 'Builder'.");
-                        return;
-                    }
-
-                    DebugLogger.Log("[RitualBuilderView] WebView control found.");
-                    
-                    // Assign the control to the ViewModel
-                    vm.Builder = webView;
-                    DebugLogger.Log("[RitualBuilderView] Assigned WebView to ViewModel. OnAttachedToVisualTree completed.");
-                }
-            }
-            catch (Exception ex)
-            {
-                // This is the correct way to handle the error logging.
-                DebugLogger.Log($"!!! FATAL RITUAL BUILDER ATTACH CRASH !!!\n{ex}");
-                if (DataContext is RitualBuilderViewModel vm)
-                {
-                    vm.ErrorMessage = $"Failed to initialize ritual builder: {ex.Message}";
-                }
-            }
+            // WebView functionality temporarily disabled
+            DebugLogger.Log("[RitualBuilderView] WebView functionality temporarily disabled.");
         }
     }
 }

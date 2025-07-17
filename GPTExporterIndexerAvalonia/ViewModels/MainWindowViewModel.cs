@@ -33,6 +33,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IFileParsingService _fileParsingService;
     private readonly IDialogService _dialogService;
     private readonly IEntryParserService _entryParserService;
+    private readonly IProgressService _progressService;
 
     // Sub-ViewModels for tabs
     public GrimoireManagerViewModel GrimoireViewModel { get; }
@@ -62,6 +63,12 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _indexContent = "Index has not been viewed yet. Click 'View Index' to load it.";
     [ObservableProperty] private string? _selectedFileContent;
 
+    // Progress reporting properties
+    [ObservableProperty] private bool _isOperationInProgress;
+    [ObservableProperty] private double _progressPercentage;
+    [ObservableProperty] private string _progressMessage = "Ready";
+    [ObservableProperty] private string _progressDetails = "";
+
     public ObservableCollection<Bitmap> Pages { get; } = new();
     private readonly BookReader _reader = new();
     public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
@@ -88,6 +95,18 @@ public partial class MainWindowViewModel : ObservableObject
         _fileParsingService = fileParsingService;
         _dialogService = dialogService;
         _entryParserService = entryParserService;
+        
+        // Initialize progress service
+        _progressService = new ProgressService(
+            (percentage, message, details) => 
+            {
+                ProgressPercentage = percentage;
+                ProgressMessage = message;
+                ProgressDetails = details;
+            },
+            (isInProgress) => IsOperationInProgress = isInProgress,
+            (error) => Status = $"Error: {error}"
+        );
 
         GrimoireViewModel = grimoireViewModel;
         TimelineViewModel = timelineViewModel;
@@ -173,10 +192,29 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         IndexFolder = folderPath;
-        Status = $"Building index for '{Path.GetFileName(IndexFolder)}'...";
-        await _indexingService.BuildIndexAsync(IndexFolder, true);
+        Status = $"Building index incrementally for '{Path.GetFileName(IndexFolder)}'...";
+        await _indexingService.BuildIndexAsync(IndexFolder, true, _progressService);
         Status = "Index build complete.";
         DebugLogger.Log($"MainWindowViewModel: Index build process completed for folder: {IndexFolder}");
+    }
+
+    [RelayCommand]
+    private async Task BuildIndexFull()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Build Index Full' command initiated.");
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Index");
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            Status = "Index operation cancelled.";
+            DebugLogger.Log("MainWindowViewModel: Folder selection was cancelled.");
+            return;
+        }
+
+        IndexFolder = folderPath;
+        Status = $"Building full index for '{Path.GetFileName(IndexFolder)}'...";
+        await _indexingService.BuildIndexFullAsync(IndexFolder, true, _progressService);
+        Status = "Full index build complete.";
+        DebugLogger.Log($"MainWindowViewModel: Full index build process completed for folder: {IndexFolder}");
     }
 
     [RelayCommand]
@@ -329,5 +367,124 @@ public partial class MainWindowViewModel : ObservableObject
         
         BookFile = filePath;
         BookContent = await File.ReadAllTextAsync(BookFile);
+    }
+
+    [RelayCommand]
+    private async Task ExtractAmandaMapEntries()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Extract AmandaMap Entries' command initiated.");
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Extract AmandaMap Entries");
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            Status = "AmandaMap extraction cancelled.";
+            DebugLogger.Log("MainWindowViewModel: Folder selection for AmandaMap extraction was cancelled.");
+            return;
+        }
+
+        Status = $"Extracting AmandaMap entries from '{Path.GetFileName(folderPath)}'...";
+        DebugLogger.Log($"MainWindowViewModel: Starting AmandaMap extraction from folder: {folderPath}");
+        
+        try
+        {
+            var entries = await Task.Run(() => CodexEngine.Parsing.AmandaMapExtractor.ExtractFromFolder(folderPath));
+            
+            // Send all extracted entries to the AmandaMap view model
+            foreach (var entry in entries)
+            {
+                _messenger.Send(new AddNewAmandaMapEntryMessage(entry));
+            }
+            
+            Status = $"Extracted {entries.Count} AmandaMap entries from {Path.GetFileName(folderPath)}.";
+            DebugLogger.Log($"MainWindowViewModel: AmandaMap extraction complete. Found {entries.Count} entries.");
+        }
+        catch (Exception ex)
+        {
+            Status = $"Error extracting AmandaMap entries: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Error during AmandaMap extraction: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task AnalyzeFolder()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Analyze Folder' command initiated.");
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Analyze");
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            Status = "Folder analysis cancelled.";
+            DebugLogger.Log("MainWindowViewModel: Folder selection for analysis was cancelled.");
+            return;
+        }
+
+        Status = $"Analyzing folder '{Path.GetFileName(folderPath)}'...";
+        DebugLogger.Log($"MainWindowViewModel: Starting folder analysis: {folderPath}");
+        
+        try
+        {
+            await Task.Run(() => Helpers.IndexDiagnostics.AnalyzeFolder(folderPath));
+            Status = $"Analysis complete for {Path.GetFileName(folderPath)}. Check Debug tab for details.";
+            DebugLogger.Log($"MainWindowViewModel: Folder analysis complete.");
+        }
+        catch (Exception ex)
+        {
+            Status = $"Error analyzing folder: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Error during folder analysis: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task GenerateTagMap()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Generate TagMap' command initiated.");
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Generate TagMap");
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            Status = "TagMap generation cancelled.";
+            DebugLogger.Log("MainWindowViewModel: Folder selection for tagmap generation was cancelled.");
+            return;
+        }
+
+        Status = $"Generating tagmap for '{Path.GetFileName(folderPath)}'...";
+        DebugLogger.Log($"MainWindowViewModel: Starting tagmap generation: {folderPath}");
+        
+        try
+        {
+            var entries = await Task.Run(() => TagMapGenerator.GenerateTagMap(folderPath, false, _progressService));
+            Status = $"TagMap generation complete. Generated {entries.Count} entries.";
+            DebugLogger.Log($"MainWindowViewModel: TagMap generation complete with {entries.Count} entries.");
+        }
+        catch (Exception ex)
+        {
+            Status = $"Error generating tagmap: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Error during tagmap generation: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task UpdateTagMap()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Update TagMap' command initiated.");
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Update TagMap");
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            Status = "TagMap update cancelled.";
+            DebugLogger.Log("MainWindowViewModel: Folder selection for tagmap update was cancelled.");
+            return;
+        }
+
+        Status = $"Updating tagmap for '{Path.GetFileName(folderPath)}'...";
+        DebugLogger.Log($"MainWindowViewModel: Starting tagmap update: {folderPath}");
+        
+        try
+        {
+            await Task.Run(() => TagMapGenerator.UpdateTagMap(folderPath, _progressService));
+            Status = "TagMap update complete.";
+            DebugLogger.Log($"MainWindowViewModel: TagMap update complete.");
+        }
+        catch (Exception ex)
+        {
+            Status = $"Error updating tagmap: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Error during tagmap update: {ex.Message}");
+        }
     }
 }
