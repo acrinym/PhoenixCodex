@@ -4,7 +4,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using MessageBox.Avalonia;
+// Updated namespace for the MessageBox package
+using MsBox.Avalonia;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,8 +68,9 @@ public class DialogService : IDialogService
         if (mainWindow is null)
             return;
 
-        var msgBox = MessageBox.Avalonia.MessageBoxManager
-            .GetMessageBoxStandardWindow(title, message);
-        await msgBox.ShowDialog(mainWindow);
+        var msgBox = MsBox.Avalonia.MessageBoxManager
+            .GetMessageBoxStandard(title, message);
+        // Display as a window since the library offers ShowWindowAsync without parameters
+        await msgBox.ShowWindowAsync();
     }
 }

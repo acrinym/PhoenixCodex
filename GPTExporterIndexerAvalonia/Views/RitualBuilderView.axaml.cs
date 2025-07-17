@@ -1,5 +1,6 @@
 using Avalonia.Controls;
-using Avalonia.Controls;
+// Use the new WebView control namespace
+using AvaloniaWebView;
 using Avalonia.Markup.Xaml;
 using GPTExporterIndexerAvalonia.ViewModels;
 using GPTExporterIndexerAvalonia.Services;
@@ -32,18 +33,18 @@ namespace GPTExporterIndexerAvalonia.Views
             {
                 if (DataContext is RitualBuilderViewModel vm)
                 {
-                    var webView = this.FindControl<NativeWebView>("Builder");
+                    var webView = this.FindControl<WebView>("Builder");
                     if (webView is null)
                     {
-                        DebugLogger.Log("FATAL: Could not find NativeWebView control named 'Builder'.");
+                        DebugLogger.Log("FATAL: Could not find WebView control named 'Builder'.");
                         return;
                     }
 
-                    DebugLogger.Log("[RitualBuilderView] NativeWebView control found.");
+                    DebugLogger.Log("[RitualBuilderView] WebView control found.");
                     
                     // Assign the control to the ViewModel
                     vm.Builder = webView;
-                    DebugLogger.Log("[RitualBuilderView] Assigned NativeWebView to ViewModel. OnAttachedToVisualTree completed.");
+                    DebugLogger.Log("[RitualBuilderView] Assigned WebView to ViewModel. OnAttachedToVisualTree completed.");
                 }
             }
             catch (Exception ex)

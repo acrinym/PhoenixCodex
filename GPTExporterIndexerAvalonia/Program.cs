@@ -3,7 +3,8 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using Avalonia.Controls.WebView;
+// Updated to use the new cross-platform WebView packages
+using Avalonia.WebView.Desktop;
 using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia;
@@ -38,5 +39,6 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace()
-            .UseReactiveUI();
+            .UseReactiveUI()
+            .UseDesktopWebView();
 }

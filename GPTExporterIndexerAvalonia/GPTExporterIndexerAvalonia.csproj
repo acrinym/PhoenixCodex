@@ -26,7 +26,13 @@
     <PackageReference Include="Avalonia.HtmlRenderer" Version="11.0.0" />
     <!-- Updated per Avalonia documentation. Use the new cross-platform
          WebView package. -->
-    <PackageReference Include="Avalonia.Controls.WebView" Version="11.0.0" />
+    <!-- Switched to the new package name `WebView.Avalonia` since
+         `Avalonia.Controls.WebView` has been deprecated. -->
+    <PackageReference Include="WebView.Avalonia" Version="11.0.0.1" />
+    <!-- Desktop-specific WebView implementation -->
+    <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0.1" />
+    <!-- Simple dialog boxes -->
+    <PackageReference Include="MessageBox.Avalonia" Version="3.1.6" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 
     <!-- 
