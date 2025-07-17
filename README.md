@@ -23,6 +23,7 @@ Searches the generated index with basic context snippets in the results.
 Provides advanced search options, including:
 Case sensitivity
 Fuzzy matching
+File extension filter
 AND/OR logic
 Allows you to open any matching file directly from the search results list.
 Includes a book reader tab for loading Markdown or text files.
