@@ -22,6 +22,11 @@ public class SearchOptions
     public bool UseFuzzy { get; set; }
     public bool UseAnd { get; set; } = true;
     public int ContextLines { get; set; } = 1;
+    /// <summary>
+    /// Optional file extension filter like ".md" or ".txt".
+    /// When provided only matching files are returned.
+    /// </summary>
+    public string? ExtensionFilter { get; set; }
 }
 
 public static class AdvancedIndexer
@@ -158,6 +163,12 @@ public static class AdvancedIndexer
             yield break;
         foreach (var rel in result)
         {
+            if (!string.IsNullOrWhiteSpace(options.ExtensionFilter))
+            {
+                var ext = Path.GetExtension(rel);
+                if (!ext.Equals(options.ExtensionFilter, StringComparison.OrdinalIgnoreCase))
+                    continue;
+            }
             var fullPath = Path.Combine(Path.GetDirectoryName(indexPath)!, rel);
             var snippets = ExtractSnippets(fullPath, phrase, options.ContextLines);
             index.Files.TryGetValue(rel, out var detail);

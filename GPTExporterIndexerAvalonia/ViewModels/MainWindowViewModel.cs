@@ -51,6 +51,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private bool _useFuzzy;
     [ObservableProperty] private bool _useAnd = true;
     [ObservableProperty] private int _contextLines = 1;
+    [ObservableProperty] private string _extensionFilter = string.Empty;
     [ObservableProperty] private SearchResult? _selectedResult;
     [ObservableProperty] private string _selectedFile = string.Empty;
     [ObservableProperty] private string _parseFilePath = string.Empty;
@@ -184,7 +185,14 @@ public partial class MainWindowViewModel : ObservableObject
         Status = $"Searching for '{Query}'...";
         DebugLogger.Log($"MainWindowViewModel: Kicking off search for query: '{Query}'");
         Results.Clear();
-        var opts = new SearchOptions { CaseSensitive = CaseSensitive, UseFuzzy = UseFuzzy, UseAnd = UseAnd, ContextLines = ContextLines };
+        var opts = new SearchOptions
+        {
+            CaseSensitive = CaseSensitive,
+            UseFuzzy = UseFuzzy,
+            UseAnd = UseAnd,
+            ContextLines = ContextLines,
+            ExtensionFilter = string.IsNullOrWhiteSpace(ExtensionFilter) ? null : ExtensionFilter
+        };
         var indexPath = Path.Combine(IndexFolder, "index.json");
         if (!File.Exists(indexPath))
         {
