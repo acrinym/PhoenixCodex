@@ -28,6 +28,15 @@ AND/OR logic
 Allows you to open any matching file directly from the search results list.
 Includes a book reader tab for loading Markdown or text files.
 Provides a legacy tool tab to launch the original Python utility.
+Dataset Builder
+---------------
+Use `dataset_builder.py` to collect paragraphs mentioning **AmandaMap** or **Phoenix Codex**. Run it with a folder and optional output file:
+
+```bash
+python dataset_builder.py <folder> --output dataset.json
+```
+The script writes a JSON array listing each file path, type, and text match.
+
 TagMap Tab
 -----------
 The **TagMap** tab manages tag entries that point back to lines in your source documents.
