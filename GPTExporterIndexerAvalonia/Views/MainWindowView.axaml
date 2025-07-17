@@ -38,6 +38,7 @@
                     <CheckBox Content="Case Sensitive" IsChecked="{Binding CaseSensitive}" />
                     <CheckBox Content="Fuzzy Match" IsChecked="{Binding UseFuzzy}" />
                     <Button Content="Search" Command="{Binding SearchCommand}" Classes="Primary"/>
+                    <Button Content="Clear Results" Command="{Binding ClearSearchCommand}" Margin="5,0,0,0"/>
                 </StackPanel>
             </StackPanel>
 

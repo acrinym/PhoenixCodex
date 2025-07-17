@@ -203,6 +203,16 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ClearSearch()
+    {
+        Results.Clear();
+        SelectedResult = null;
+        SelectedFileContent = null;
+        Status = "Search results cleared.";
+        DebugLogger.Log("MainWindowViewModel: Search results cleared by user.");
+    }
+
+    [RelayCommand]
     private void OpenSelected()
     {
         if (SelectedResult == null) return;
