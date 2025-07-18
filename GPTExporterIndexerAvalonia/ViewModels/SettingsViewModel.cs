@@ -62,12 +62,18 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService = settingsService;
         _settings = _settingsService.Settings;
         
-        // Subscribe to property changes to mark as dirty
+        // Subscribe to property changes to mark as dirty and auto-save
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName != nameof(IsDirty))
             {
                 IsDirty = true;
+                // Auto-save settings when they change
+                if (e.PropertyName?.StartsWith("Settings.") == true || 
+                    e.PropertyName == nameof(SelectedTheme))
+                {
+                    _ = Task.Run(async () => await SaveSettingsAsync());
+                }
             }
         };
     }
@@ -78,6 +84,8 @@ public partial class SettingsViewModel : ObservableObject
         {
             Settings.Theme = value;
             IsDirty = true;
+            // Auto-save when theme changes
+            _ = Task.Run(async () => await SaveSettingsAsync());
         }
     }
 

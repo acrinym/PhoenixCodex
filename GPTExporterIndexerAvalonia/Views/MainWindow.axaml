@@ -43,6 +43,12 @@
                     </controls:ErrorBoundary>
                 </TabItem>
 
+                <TabItem Header="📅 AmandaMap Timeline">
+                    <controls:ErrorBoundary>
+                        <views:AmandaMapTimelineView/>
+                    </controls:ErrorBoundary>
+                </TabItem>
+
                 <TabItem Header="TagMap">
                     <controls:ErrorBoundary>
                         <views:TagMapView/>

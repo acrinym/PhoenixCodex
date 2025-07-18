@@ -173,7 +173,7 @@
                 <StackPanel Spacing="16">
                     <TextBlock Text="Quick Presets" Classes="Label"/>
                     
-                    <WrapPanel Spacing="8">
+                    <WrapPanel>
                         <Button Content="☀️ Light Mode" 
                                 Classes="Secondary"
                                 Command="{Binding SetThemeCommand}"

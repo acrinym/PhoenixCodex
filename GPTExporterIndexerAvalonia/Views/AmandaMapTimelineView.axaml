@@ -1,0 +1,177 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             x:Class="GPTExporterIndexerAvalonia.Views.AmandaMapTimelineView"
+             DataContext="{Binding AmandaMapTimelineViewModel}">
+    
+    <Design.DataContext>
+        <vm:AmandaMapTimelineViewModel />
+    </Design.DataContext>
+    
+    <Grid ColumnDefinitions="400,*" Margin="20">
+        
+        <!-- Left Panel - Calendar and Controls -->
+        <Border Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Margin="0,0,10,0">
+            <StackPanel Margin="16">
+                
+                <!-- Header -->
+                <TextBlock Text="📅 Timeline Navigation" 
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           Margin="0,0,0,16"/>
+                
+                <!-- Date Selection -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Selected Date:" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,8"/>
+                    <DatePicker SelectedDate="{Binding SelectedDate}"
+                                FontSize="14"/>
+                </StackPanel>
+                
+                <!-- Entry Type Filter -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Entry Type Filter:" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,8"/>
+                    <ComboBox ItemsSource="{Binding AvailableEntryTypes}"
+                              SelectedItem="{Binding SelectedEntryType}"
+                              FontSize="14"/>
+                </StackPanel>
+                
+                <!-- Navigation Controls -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Navigation:" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,8"/>
+                    <Grid ColumnDefinitions="*,*,*">
+                        <Button Content="⬅️ Previous" 
+                                Command="{Binding NavigateToPreviousEntryCommand}"
+                                Classes="Secondary"/>
+                        <Button Content="📅 Today" 
+                                Command="{Binding NavigateToTodayCommand}"
+                                Classes="Secondary"/>
+                        <Button Content="Next ➡️" 
+                                Command="{Binding NavigateToNextEntryCommand}"
+                                Classes="Secondary"/>
+                    </Grid>
+                </StackPanel>
+                
+                <!-- Statistics -->
+                <Border Background="{DynamicResource SecondaryBrush}"
+                        CornerRadius="6"
+                        Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="📊 Timeline Statistics" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="{Binding TimelineEntries.Count, StringFormat='Total Entries: {0}'}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="{Binding SelectedDateEntries.Count, StringFormat='Selected Date: {0}'}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="{Binding SelectedDate, StringFormat='Current Date: {0:MMM dd, yyyy}'}"
+                                   Margin="0,2"/>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </Border>
+        
+        <!-- Right Panel - Timeline Entries -->
+        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+            <Grid RowDefinitions="Auto,*" Margin="16">
+                
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                    <TextBlock Text="📋 Timeline Entries" 
+                               FontSize="18" 
+                               FontWeight="Bold" 
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding SelectedDate, StringFormat='Showing entries for {0:MMMM dd, yyyy}'}"
+                               Foreground="{DynamicResource MutedBrush}"/>
+                </StackPanel>
+                
+                <!-- Entries List -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding SelectedDateEntries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SecondaryBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Margin="0,0,0,12"
+                                        Padding="16">
+                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                                        
+                                        <!-- Entry Icon and Type -->
+                                        <StackPanel Grid.Row="0" Grid.Column="0" 
+                                                    Margin="0,0,12,0"
+                                                    HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding EntryType, Converter={StaticResource EntryTypeToIconConverter}}"
+                                                       FontSize="24"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding EntryType}"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Entry Details -->
+                                        <StackPanel Grid.Row="0" Grid.Column="1">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontWeight="Bold"
+                                                       FontSize="16"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,4"/>
+                                            <TextBlock Text="{Binding Number, StringFormat='Entry #{0}'}"
+                                                       Foreground="{DynamicResource MutedBrush}"
+                                                       FontSize="12"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Entry Content Preview -->
+                                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                                   Text="{Binding RawContent}"
+                                                   TextWrapping="Wrap"
+                                                   MaxLines="3"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{DynamicResource MutedBrush}"
+                                                   FontSize="13"
+                                                   Margin="0,8,0,0"/>
+                                        
+                                        <!-- Actions -->
+                                        <StackPanel Grid.Row="2" Grid.Column="1" 
+                                                    Orientation="Horizontal" 
+                                                    HorizontalAlignment="Right"
+                                                    Margin="0,12,0,0">
+                                            <Button Content="📖 View Details" 
+                                                    Classes="Secondary"
+                                                    Command="{Binding $parent[UserControl].DataContext.ViewEntryDetailsCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Margin="0,0,8,0"/>
+                                            <Button Content="✏️ Edit" 
+                                                    Classes="Secondary"
+                                                    Command="{Binding $parent[UserControl].DataContext.EditEntryCommand}"
+                                                    CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                        
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                
+            </Grid>
+        </Border>
+        
+    </Grid>
+</UserControl> 

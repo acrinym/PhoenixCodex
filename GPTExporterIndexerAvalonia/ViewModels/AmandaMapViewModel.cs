@@ -24,6 +24,7 @@ public partial class AmandaMapViewModel : ObservableObject,
 {
     private readonly IMessenger _messenger;
     private readonly IDialogService _dialogService;
+    private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
     private string _filePath = string.Empty;
@@ -58,10 +59,11 @@ public partial class AmandaMapViewModel : ObservableObject,
     [ObservableProperty]
     private DisplayItem? _selectedDisplayItem;
 
-    public AmandaMapViewModel(IMessenger messenger, IDialogService dialogService)
+    public AmandaMapViewModel(IMessenger messenger, IDialogService dialogService, ISettingsService settingsService)
     {
         _messenger = messenger;
         _dialogService = dialogService;
+        _settingsService = settingsService;
         _messenger.RegisterAll(this); // Registers this instance to receive all messages it implements a handler for
 
         // Set up collection change handlers
@@ -129,7 +131,11 @@ public partial class AmandaMapViewModel : ObservableObject,
     private void UpdateGroupedEntries()
     {
         GroupedEntries.Clear();
-        var groups = ProcessedEntries.GroupBy(e => e.EntryType);
+        // Apply content filtering based on settings
+        var filteredEntries = ProcessedEntries.Where(entry => 
+            !_settingsService.ShouldHideContent(entry.EntryType, null));
+        
+        var groups = filteredEntries.GroupBy(e => e.EntryType);
         foreach (var group in groups)
         {
             GroupedEntries.Add(new EntryTypeGroup(group.Key, group.OrderBy(e => e.Number)));
@@ -137,11 +143,15 @@ public partial class AmandaMapViewModel : ObservableObject,
     }
 
     /// <summary>
-    /// Loads entries and creates the hierarchical structure
+    /// Loads entries and creates the hierarchical structure with content filtering
     /// </summary>
     public void LoadEntries(IEnumerable<NumberedMapEntry> entries)
     {
-        var grouped = entries.GroupBy(e => e.EntryType)
+        // Apply content filtering based on settings
+        var filteredEntries = entries.Where(entry => 
+            !_settingsService.ShouldHideContent(entry.EntryType, null));
+        
+        var grouped = filteredEntries.GroupBy(e => e.EntryType)
                             .Select(g => new EntryTypeGroup(g.Key, g.OrderBy(e => e.Number)))
                             .OrderBy(g => g.EntryType);
         

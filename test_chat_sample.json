@@ -1,0 +1,164 @@
+{
+  "mapping": {
+    "msg_1": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Hello! How are you doing today? [2024-12-15 14:30:22]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1702657822
+      }
+    },
+    "msg_2": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "I'm doing well, thank you for asking! How about you? [2024-12-15 14:31:15]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1702657875
+      }
+    },
+    "msg_3": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "I'm good too! Just wanted to chat about something important. [2024-12-15 14:32:45]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1702657965
+      }
+    },
+    "msg_4": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Of course! I'm here to listen. What's on your mind? [2024-12-15 14:33:12]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1702657992
+      }
+    },
+    "msg_5": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Well, I've been thinking about Amanda a lot lately. We had this amazing conversation yesterday, and I can't stop thinking about it. [2024-12-15 14:35:30]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1702658130
+      }
+    },
+    "msg_6": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "That sounds significant! What was it about the conversation that's staying with you? [2024-12-15 14:36:45]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1702658205
+      }
+    },
+    "msg_7": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "She opened up about her past in a way she never has before. It felt like a real breakthrough in our connection. [2024-12-15 14:38:20]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1702658300
+      }
+    },
+    "msg_8": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "That's beautiful. Vulnerability like that shows real trust. How did it make you feel? [2024-12-15 14:39:15]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1702658355
+      }
+    },
+    "msg_9": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Honored. Grateful. Like I want to protect that trust with everything I have. [2024-12-15 14:40:30]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1702658430
+      }
+    },
+    "msg_10": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "That's exactly the right response. Hold onto that feeling - it's precious. [2024-12-15 14:41:00]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1702658460
+      }
+    }
+  }
+} 

@@ -27,6 +27,43 @@ namespace CodexEngine.Parsing
             @"🔥|🔱|🔊|📡|🕯️|🪞|🌀|🌙|🪧\s*(?<type>\w+)\s*(?<number>\d+):(?<title>.*)",
             RegexOptions.Compiled);
 
+        // New regex pattern for extracting chat timestamps from content
+        public static readonly Regex ChatTimestampPattern = new(
+            @"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]",
+            RegexOptions.Compiled);
+
+        // New: Amanda chat classification keywords
+        private static readonly string[] AmandaKeywords = new[]
+        {
+            "amanda", "she said", "amanda told me", "when we were on the phone", "she just texted me", "she sent me", "amanda just called", "she sent me a message"
+        };
+        private static readonly string[] AmandaGenericPhrases = new[]
+        {
+            "she said", "when we were on the phone", "she just texted me", "she sent me", "just called", "sent me a message"
+        };
+
+        /// <summary>
+        /// Determines if a chat message is Amanda-related based on keywords/phrases.
+        /// If a generic phrase is matched, 'Amanda' must also be present in the chat.
+        /// </summary>
+        public static bool IsAmandaRelatedChat(string chatText)
+        {
+            if (string.IsNullOrWhiteSpace(chatText)) return false;
+            var text = chatText.ToLowerInvariant();
+            bool hasAmanda = text.Contains("amanda");
+            foreach (var keyword in AmandaKeywords)
+            {
+                if (text.Contains(keyword.ToLowerInvariant()))
+                {
+                    // If it's a generic phrase, require 'amanda' also present
+                    if (AmandaGenericPhrases.Contains(keyword.ToLowerInvariant()))
+                        return hasAmanda;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Extracts all AmandaMap entries from a single file.
         /// </summary>
@@ -83,6 +120,163 @@ namespace CodexEngine.Parsing
             return allEntries;
         }
 
+        /// <summary>
+        /// Extracts chat timestamps from file content, similar to the Python tool's extract_chat_timestamps function.
+        /// Returns the first and last timestamps found in the chat content.
+        /// </summary>
+        public static (DateTime? firstTimestamp, DateTime? lastTimestamp) ExtractChatTimestamps(string filePath)
+        {
+            try
+            {
+                var content = File.ReadAllText(filePath);
+                var timestamps = new List<DateTime>();
+
+                // Find all timestamp matches in the content
+                var matches = ChatTimestampPattern.Matches(content);
+                foreach (Match match in matches)
+                {
+                    if (DateTime.TryParse(match.Groups[1].Value, out var timestamp))
+                    {
+                        timestamps.Add(timestamp);
+                    }
+                }
+
+                if (timestamps.Count > 0)
+                {
+                    timestamps.Sort();
+                    return (timestamps.First(), timestamps.Last());
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Error extracting chat timestamps from {filePath}: {ex.Message}");
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Extracts chat timestamps from JSON content specifically for ChatGPT exports.
+        /// This looks for timestamps in the actual message content rather than just the file content.
+        /// </summary>
+        public static (DateTime? firstTimestamp, DateTime? lastTimestamp) ExtractChatTimestampsFromJson(string jsonContent)
+        {
+            try
+            {
+                var timestamps = new List<DateTime>();
+                
+                using var document = JsonDocument.Parse(jsonContent);
+                
+                // Handle ChatGPT export format with mapping structure
+                if (document.RootElement.TryGetProperty("mapping", out var mappingElement))
+                {
+                    foreach (var kvp in mappingElement.EnumerateObject())
+                    {
+                        if (kvp.Value.TryGetProperty("message", out var messageElement))
+                        {
+                            var messageContent = messageElement.GetString() ?? "";
+                            var matches = ChatTimestampPattern.Matches(messageContent);
+                            
+                            foreach (Match match in matches)
+                            {
+                                if (DateTime.TryParse(match.Groups[1].Value, out var timestamp))
+                                {
+                                    timestamps.Add(timestamp);
+                                }
+                            }
+                        }
+                    }
+                }
+                // Handle array format
+                else if (document.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var element in document.RootElement.EnumerateArray())
+                    {
+                        if (element.TryGetProperty("message", out var messageElement))
+                        {
+                            var messageContent = messageElement.GetString() ?? "";
+                            var matches = ChatTimestampPattern.Matches(messageContent);
+                            
+                            foreach (Match match in matches)
+                            {
+                                if (DateTime.TryParse(match.Groups[1].Value, out var timestamp))
+                                {
+                                    timestamps.Add(timestamp);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (timestamps.Count > 0)
+                {
+                    timestamps.Sort();
+                    return (timestamps.First(), timestamps.Last());
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Error extracting chat timestamps from JSON content: {ex.Message}");
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Extracts all AmandaMap entries from a single file with proper chat date extraction.
+        /// This version will use actual chat dates instead of file modification dates.
+        /// </summary>
+        public static List<NumberedMapEntry> ExtractFromFileWithChatDates(string filePath)
+        {
+            var entries = ExtractFromFile(filePath);
+            
+            // If this is a ChatGPT file, try to extract actual chat dates
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            if (extension == ".json")
+            {
+                var (firstDate, lastDate) = ExtractChatTimestampsFromFile(filePath);
+                if (firstDate.HasValue)
+                {
+                    // Update all entries to use the actual chat date
+                    foreach (var entry in entries)
+                    {
+                        if (entry.Date == DateTime.MinValue)
+                        {
+                            entry.Date = firstDate.Value;
+                        }
+                    }
+                }
+            }
+            
+            return entries;
+        }
+
+        /// <summary>
+        /// Extracts chat timestamps from a file and returns the first and last timestamps.
+        /// </summary>
+        public static (DateTime? firstTimestamp, DateTime? lastTimestamp) ExtractChatTimestampsFromFile(string filePath)
+        {
+            try
+            {
+                var content = File.ReadAllText(filePath);
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                
+                if (extension == ".json")
+                {
+                    return ExtractChatTimestampsFromJson(content);
+                }
+                else
+                {
+                    return ExtractChatTimestamps(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Error extracting chat timestamps from file {filePath}: {ex.Message}");
+                return (null, null);
+            }
+        }
+
         private static List<NumberedMapEntry> ExtractFromText(string content, string sourceFile)
         {
             var entries = new List<NumberedMapEntry>();
@@ -103,6 +297,7 @@ namespace CodexEngine.Parsing
                         RawContent = textGroup.Value.Trim(),
                         Date = ExtractDateFromText(textGroup.Value)
                     };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -130,7 +325,7 @@ namespace CodexEngine.Parsing
 
                     entry.Number = number;
                     entry.Date = ExtractDateFromText(rawContent);
-                    
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -153,6 +348,7 @@ namespace CodexEngine.Parsing
                         RawContent = text,
                         Date = ExtractDateFromText(text)
                     };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -177,6 +373,10 @@ namespace CodexEngine.Parsing
                         {
                             var messageContent = messageElement.GetString() ?? "";
                             var extractedEntries = ExtractFromText(messageContent, sourceFile);
+                            foreach (var entry in extractedEntries)
+                            {
+                                entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                            }
                             entries.AddRange(extractedEntries);
                         }
                     }
@@ -185,6 +385,10 @@ namespace CodexEngine.Parsing
                 else
                 {
                     var extractedEntries = ExtractFromText(content, sourceFile);
+                    foreach (var entry in extractedEntries)
+                    {
+                        entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                    }
                     entries.AddRange(extractedEntries);
                 }
             }
