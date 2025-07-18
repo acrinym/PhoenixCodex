@@ -7,9 +7,9 @@ This list tracks upcoming tasks for the Phoenix Codex project.
 - Fixed ChatGPT date parsing (now with multi-day support).
 
 ## Upcoming
-- Add dynamic theming support with light, dark, and magic modes.
-- Create ControlPanel/Settings dialog for customizing appearance and behavior.
-- Provide an option to hide all magic-related controls when needed.
+✅ Add dynamic theming support with light, dark, and magic modes.
+✅ Create ControlPanel/Settings dialog for customizing appearance and behavior.
+✅ Provide an option to hide all magic-related controls when needed.
 
 
 The Evolution:
@@ -75,7 +75,7 @@ Current State vs. What's Needed:
 Basic AmandaMap parsing and viewing
 Phoenix Codex structure
 Search and tagging systems
-Basic chat parsing (though dates need fixing)
+✅ Chat parsing with multi-day date handling
 ❌ Phone/MMS conversation parsing
 Amanda vs. random chat classification (Python tool had this)
 Image handling for MMS (markdown + external storage)
