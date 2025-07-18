@@ -1,5 +1,5 @@
 Phoenix Codex: Development Roadmap & Log
-As of: July 6, 2025
+As of: July 18, 2025
 
 This document tracks the current features, the next set of features in development, and future ideas for the Phoenix Codex application.
 
@@ -34,11 +34,11 @@ Data->UI Workflow: A messaging system is in place to send newly parsed entries f
 ⏩ Phase 2: UI Polish & Bug Squashing (In Progress)
 This phase focuses on fixing the bugs identified in the last round of testing and implementing the requested UI enhancements to make the application more usable.
 
-Bug Fix: Ritual Builder Crash: Diagnose and resolve the persistent, low-level crash when clicking the Ritual Builder tab.
+✅ Bug Fix: Ritual Builder Crash resolved when opening the Ritual Builder tab.
 
-Bug Fix: Grimoire Title Display: The title of a "New Ritual" in the list does not update when edited. This will be fixed by making the Ritual model observable.
+✅ Bug Fix: Grimoire Title Display now updates correctly when the ritual name changes.
 
-Bug Fix: TagMap Data Loading: The TagMap view loads empty placeholders instead of data. This will be fixed by improving the data importer and its error logging.
+✅ Bug Fix: TagMap Data Loading corrected by improving the data importer and logging.
 
 Feature: Full Grimoire Management:
 
@@ -51,6 +51,9 @@ Add a DatePicker to allow editing the date of a selected ritual.
 Feature: AmandaMap UI Polish:
 
 The entries in the AmandaMap view will be displayed in groups based on their Type (e.g., Thresholds, WhisperedFlames).
+Feature: Dynamic Theming & Settings Panel:
+- ControlPanel and Settings dialog allow theme selection.
+- Toggle to hide magic-related buttons when needed.
 
 🗺️ Phase 3: Advanced Features & QOL (Future Ideas)
 These are ideas we have discussed but are scheduled for after Phase 2 is complete.
