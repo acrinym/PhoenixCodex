@@ -32,6 +32,38 @@ namespace CodexEngine.Parsing
             @"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]",
             RegexOptions.Compiled);
 
+        // New: Amanda chat classification keywords
+        private static readonly string[] AmandaKeywords = new[]
+        {
+            "amanda", "she said", "amanda told me", "when we were on the phone", "she just texted me", "she sent me", "amanda just called", "she sent me a message"
+        };
+        private static readonly string[] AmandaGenericPhrases = new[]
+        {
+            "she said", "when we were on the phone", "she just texted me", "she sent me", "just called", "sent me a message"
+        };
+
+        /// <summary>
+        /// Determines if a chat message is Amanda-related based on keywords/phrases.
+        /// If a generic phrase is matched, 'Amanda' must also be present in the chat.
+        /// </summary>
+        public static bool IsAmandaRelatedChat(string chatText)
+        {
+            if (string.IsNullOrWhiteSpace(chatText)) return false;
+            var text = chatText.ToLowerInvariant();
+            bool hasAmanda = text.Contains("amanda");
+            foreach (var keyword in AmandaKeywords)
+            {
+                if (text.Contains(keyword.ToLowerInvariant()))
+                {
+                    // If it's a generic phrase, require 'amanda' also present
+                    if (AmandaGenericPhrases.Contains(keyword.ToLowerInvariant()))
+                        return hasAmanda;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Extracts all AmandaMap entries from a single file.
         /// </summary>
@@ -265,6 +297,7 @@ namespace CodexEngine.Parsing
                         RawContent = textGroup.Value.Trim(),
                         Date = ExtractDateFromText(textGroup.Value)
                     };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -292,7 +325,7 @@ namespace CodexEngine.Parsing
 
                     entry.Number = number;
                     entry.Date = ExtractDateFromText(rawContent);
-                    
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -315,6 +348,7 @@ namespace CodexEngine.Parsing
                         RawContent = text,
                         Date = ExtractDateFromText(text)
                     };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -339,6 +373,10 @@ namespace CodexEngine.Parsing
                         {
                             var messageContent = messageElement.GetString() ?? "";
                             var extractedEntries = ExtractFromText(messageContent, sourceFile);
+                            foreach (var entry in extractedEntries)
+                            {
+                                entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                            }
                             entries.AddRange(extractedEntries);
                         }
                     }
@@ -347,6 +385,10 @@ namespace CodexEngine.Parsing
                 else
                 {
                     var extractedEntries = ExtractFromText(content, sourceFile);
+                    foreach (var entry in extractedEntries)
+                    {
+                        entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                    }
                     entries.AddRange(extractedEntries);
                 }
             }

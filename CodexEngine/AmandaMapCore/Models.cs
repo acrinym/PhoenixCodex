@@ -30,6 +30,11 @@ namespace CodexEngine.AmandaMapCore.Models
         /// The full, raw text block that this entry was parsed from.
         /// </summary>
         public required string RawContent { get; set; }
+
+        /// <summary>
+        /// True if this entry is classified as Amanda-related chat.
+        /// </summary>
+        public bool IsAmandaRelated { get; set; } = false;
     }
 
     // Concrete classes for each type of entry.

@@ -4,6 +4,7 @@ This list tracks upcoming tasks for the Phoenix Codex project.
 
 ## Completed
 - Addressed numerous stability issues across the UI and services.
+- Fixed ChatGPT date parsing (now with multi-day support).
 
 ## Upcoming
 - Add dynamic theming support with light, dark, and magic modes.
@@ -26,7 +27,6 @@ Spiritual/magical work, personal growth, etc.
 Often intersects with Amanda but serves your own development
 Phase 4: Advanced Search & Context Extraction
 Save specific paragraphs/context from any documents
-Fix ChatGPT date parsing (extraction date vs. actual chat date)
 Build a searchable knowledge base across all sources
 The Core Vision:
 You're building a personal relationship and spiritual development tracking system that can:
@@ -40,11 +40,9 @@ Looking at the codebase, it seems like:
 ✅ Basic AmandaMap parsing and viewing is working
 ✅ Phoenix Codex structure is in place
 ✅ Search and tagging systems exist
-❌ ChatGPT date correction isn't implemented yet
 ❌ Advanced context extraction might need refinement
 ❌ The Python and C# tools might not be fully integrated
 Next Logical Steps:
-Fix the ChatGPT date parsing - This seems like a critical missing piece
 Integrate the Python and C# workflows - Ensure seamless data flow
 Enhance the timeline view - Better visualization of relationship progression
 Improve context extraction - More intelligent paragraph/section saving
@@ -78,16 +76,13 @@ Basic AmandaMap parsing and viewing
 Phoenix Codex structure
 Search and tagging systems
 Basic chat parsing (though dates need fixing)
-❌ Missing/Needs Work:
-ChatGPT date correction (extraction date vs. actual chat date)
-Phone/MMS conversation parsing
+❌ Phone/MMS conversation parsing
 Amanda vs. random chat classification (Python tool had this)
 Image handling for MMS (markdown + external storage)
 Comprehensive encyclopedia views
 Advanced timeline visualization
 Cross-referencing between all data sources
 Next Steps Priority:
-Fix ChatGPT date parsing - This is blocking proper timeline construction
 Re-implement Amanda chat classification - Separate relationship chats from random ones
 Add phone/MMS parsing capabilities - Expand beyond just ChatGPT
 Build encyclopedia views - Start with Amanda profile and relationship timeline
