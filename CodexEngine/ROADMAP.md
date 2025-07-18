@@ -1,5 +1,5 @@
 Phoenix Codex: Development Roadmap & Log
-As of: July 18, 2025
+As of: July 19, 2025
 
 This document tracks the current features, the next set of features in development, and future ideas for the Phoenix Codex application.
 
@@ -51,9 +51,12 @@ Add a DatePicker to allow editing the date of a selected ritual.
 Feature: AmandaMap UI Polish:
 
 The entries in the AmandaMap view will be displayed in groups based on their Type (e.g., Thresholds, WhisperedFlames).
-Feature: Dynamic Theming & Settings Panel:
-- ControlPanel and Settings dialog allow theme selection.
-- Toggle to hide magic-related buttons when needed.
+✅ Dynamic Theming & Settings Panel:
+  - ControlPanel now manages theme selection with light, dark, magic, and custom modes.
+  - Settings dialog lets you tweak fonts, colors, and visual effects.
+  - Optional "Hide Magic" toggle removes occult-themed controls when enabled.
+✅ Progress Reporting System:
+  - Indexing and TagMap generation now display a progress bar with status messages.
 
 🗺️ Phase 3: Advanced Features & QOL (Future Ideas)
 These are ideas we have discussed but are scheduled for after Phase 2 is complete.
