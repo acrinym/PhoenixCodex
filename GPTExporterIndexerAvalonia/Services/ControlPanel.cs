@@ -199,13 +199,87 @@ namespace GPTExporterIndexerAvalonia.Services
             var app = Avalonia.Application.Current;
             if (app == null) return;
 
-            // For now, we'll use a simpler approach that works with the existing style system
-            // The theme switching will be implemented by updating the App.xaml styles
-            // This is a placeholder for the dynamic theme switching functionality
+            try
+            {
+                // Apply the theme by updating the application's resources
+                var resources = app.Resources;
+                
+                switch (_selectedTheme.ToLowerInvariant())
+                {
+                    case "light":
+                        ApplyLightTheme(resources);
+                        break;
+                    case "dark":
+                        ApplyDarkTheme(resources);
+                        break;
+                    case "magic":
+                        ApplyMagicTheme(resources);
+                        break;
+                    case "custom":
+                        ApplyCustomTheme(resources);
+                        break;
+                    default:
+                        ApplyMagicTheme(resources); // Default to magic theme
+                        break;
+                }
+                
+                DebugLogger.Log($"Theme applied: {_selectedTheme}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Error applying theme: {ex.Message}");
+            }
+        }
+
+        private void ApplyLightTheme(IResourceDictionary resources)
+        {
+            resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            resources["ForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33));
+            resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+            resources["SecondaryBrush"] = new SolidColorBrush(Color.FromRgb(245, 245, 245));
+            resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224));
+            resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            resources["MutedBrush"] = new SolidColorBrush(Color.FromRgb(117, 117, 117));
+        }
+
+        private void ApplyDarkTheme(IResourceDictionary resources)
+        {
+            resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33));
+            resources["ForegroundBrush"] = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(66, 165, 245));
+            resources["SecondaryBrush"] = new SolidColorBrush(Color.FromRgb(48, 48, 48));
+            resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(66, 66, 66));
+            resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(48, 48, 48));
+            resources["MutedBrush"] = new SolidColorBrush(Color.FromRgb(189, 189, 189));
+        }
+
+        private void ApplyMagicTheme(IResourceDictionary resources)
+        {
+            resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(18, 18, 30));
+            resources["ForegroundBrush"] = new SolidColorBrush(Color.FromRgb(230, 230, 250));
+            resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(123, 104, 238));
+            resources["SecondaryBrush"] = new SolidColorBrush(Color.FromRgb(30, 30, 45));
+            resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(70, 70, 100));
+            resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(25, 25, 40));
+            resources["MutedBrush"] = new SolidColorBrush(Color.FromRgb(180, 180, 200));
+        }
+
+        private void ApplyCustomTheme(IResourceDictionary resources)
+        {
+            if (_customBackground != null)
+                resources["BackgroundBrush"] = _customBackground;
+            if (_customForeground != null)
+                resources["ForegroundBrush"] = _customForeground;
+            if (_customAccent != null)
+                resources["AccentBrush"] = _customAccent;
             
-            // TODO: Implement proper dynamic theme switching
-            // For now, we'll just log the theme change
-            DebugLogger.Log($"Theme changed to: {_selectedTheme}");
+            // Generate secondary colors based on custom colors
+            if (_customBackground != null)
+                resources["SecondaryBrush"] = CreateSecondaryBrush(_customBackground);
+            if (_customBackground != null)
+                resources["BorderBrush"] = CreateBorderBrush(_customBackground);
+            if (_customForeground != null)
+                resources["MutedBrush"] = CreateMutedBrush(_customForeground);
         }
 
         private object CreateCustomTheme()

@@ -33,6 +33,11 @@ public partial class App : Application
     {
         DebugLogger.Log("Framework initialization starting.");
         Services = ConfigureServices();
+        
+        // Load settings on startup
+        var settingsService = Services.GetRequiredService<ISettingsService>();
+        _ = Task.Run(async () => await settingsService.LoadSettingsAsync());
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             DebugLogger.Log("Application lifetime is IClassicDesktopStyleApplicationLifetime.");
@@ -70,6 +75,7 @@ public partial class App : Application
         services.AddSingleton<GrimoireManagerViewModel>();
         services.AddTransient<TimelineViewModel>();
         services.AddTransient<AmandaMapViewModel>();
+        services.AddTransient<AmandaMapTimelineViewModel>();
         services.AddTransient<ChatLogViewModel>();
         services.AddTransient<RitualBuilderViewModel>();
         services.AddTransient<TagMapViewModel>();
@@ -82,6 +88,7 @@ public partial class App : Application
         services.AddTransient<GrimoireManagerView>();
         services.AddTransient<TimelineView>();
         services.AddTransient<AmandaMapView>();
+        services.AddTransient<AmandaMapTimelineView>();
         services.AddTransient<TagMapView>();
         services.AddTransient<YamlInterpreterView>();
         services.AddTransient<ChatLogView>();

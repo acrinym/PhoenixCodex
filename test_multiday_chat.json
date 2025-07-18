@@ -1,0 +1,260 @@
+{
+  "mapping": {
+    "msg_1": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Hey Amanda, how are you doing? [2024-02-04 20:30:22]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707082222
+      }
+    },
+    "msg_2": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "I'm doing okay, just tired from work. How about you? [2024-02-04 20:32:15]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707082335
+      }
+    },
+    "msg_3": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "I'm good! Just wanted to check in. We should catch up soon. [2024-02-04 20:35:45]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707082545
+      }
+    },
+    "msg_4": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "That sounds great! I'd love to catch up. [2024-02-04 20:37:12]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707082632
+      }
+    },
+    "msg_5": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Good morning! Did you sleep well? [2024-02-05 08:15:30]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707135330
+      }
+    },
+    "msg_6": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Morning! Yes, I slept pretty well. How about you? [2024-02-05 08:18:45]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707135525
+      }
+    },
+    "msg_7": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Pretty good! I had some interesting dreams. [2024-02-05 08:22:20]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707135740
+      }
+    },
+    "msg_8": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Oh? What were they about? [2024-02-05 08:25:15]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707135915
+      }
+    },
+    "msg_9": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "You were in them actually. We were talking about something important. [2024-02-05 08:28:30]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707136110
+      }
+    },
+    "msg_10": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "That's interesting! I wonder what it means. [2024-02-05 08:30:00]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707136200
+      }
+    },
+    "msg_11": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Hey, I've been thinking about what we talked about yesterday. [2024-02-06 19:45:30]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707242730
+      }
+    },
+    "msg_12": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Me too. It's been on my mind. [2024-02-06 19:48:15]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707242895
+      }
+    },
+    "msg_13": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "I think we should talk about it in person. [2024-02-06 19:50:45]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707243045
+      }
+    },
+    "msg_14": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "I agree. When can we meet? [2024-02-06 19:52:20]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707243140
+      }
+    },
+    "msg_15": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "How about this weekend? [2024-02-06 19:55:00]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "user"
+        },
+        "create_time": 1707243300
+      }
+    },
+    "msg_16": {
+      "message": {
+        "content": [
+          {
+            "content_type": "text",
+            "parts": [
+              "Perfect. I'm looking forward to it. [2024-02-06 19:57:30]"
+            ]
+          }
+        ],
+        "author": {
+          "role": "assistant"
+        },
+        "create_time": 1707243450
+      }
+    }
+  }
+} 

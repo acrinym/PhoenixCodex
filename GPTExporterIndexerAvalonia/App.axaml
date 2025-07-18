@@ -17,6 +17,8 @@
         <converters:CornerRadiusConverter x:Key="CornerRadiusConverter"/>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
+        <converters:IsZeroConverter x:Key="IsZeroConverter"/>
+        <converters:EntryTypeToIconConverter x:Key="EntryTypeToIconConverter"/>
     </Application.Resources>
     
     <Application.Styles>
