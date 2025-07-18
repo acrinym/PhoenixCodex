@@ -43,6 +43,7 @@ public partial class MainWindowViewModel : ObservableObject
     public YamlInterpreterViewModel YamlInterpreterViewModel { get; }
     public ChatLogViewModel ChatLogViewModel { get; }
     public RitualBuilderViewModel RitualBuilderViewModel { get; }
+    public SettingsViewModel SettingsViewModel { get; }
     
     // Properties for the UI
     [ObservableProperty] private string _indexFolder = string.Empty;
@@ -87,7 +88,8 @@ public partial class MainWindowViewModel : ObservableObject
         TagMapViewModel tagMapViewModel,
         YamlInterpreterViewModel yamlInterpreterViewModel,
         ChatLogViewModel chatLogViewModel,
-        RitualBuilderViewModel ritualBuilderViewModel)
+        RitualBuilderViewModel ritualBuilderViewModel,
+        SettingsViewModel settingsViewModel)
     {
         _messenger = messenger; // <-- ASSIGN THE MESSENGER
         _indexingService = indexingService;
@@ -115,6 +117,7 @@ public partial class MainWindowViewModel : ObservableObject
         YamlInterpreterViewModel = yamlInterpreterViewModel;
         ChatLogViewModel = chatLogViewModel;
         RitualBuilderViewModel = ritualBuilderViewModel;
+        SettingsViewModel = settingsViewModel;
         
         DebugLogger.Log("MainWindowViewModel created and all services/sub-ViewModels injected.");
     }

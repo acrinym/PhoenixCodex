@@ -119,7 +119,6 @@ public static class AdvancedIndexer
         for (int i = 0; i < supportedFiles.Count; i++)
         {
             var file = supportedFiles[i];
-        {
             var ext = Path.GetExtension(file).ToLowerInvariant();
             if (ext != ".txt" && ext != ".json" && ext != ".md")
                 continue;

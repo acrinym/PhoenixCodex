@@ -83,13 +83,18 @@
                 <Button Content="Process as AmandaMap Entry" Command="{Binding ProcessAsAmandaMapEntryCommand}" Classes="Primary"/>
             </StackPanel>
             
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <Border BorderBrush="LightGray" BorderThickness="1" Padding="5">
                 <TextBox Text="{Binding SelectedFileContent}"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          IsReadOnly="True"
-                         FontFamily="monospace"/>
-            </ScrollViewer>
+                         FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+                         FontSize="11"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         SelectionBrush="LightBlue"
+                         SelectionForegroundBrush="Black"/>
+            </Border>
         </DockPanel>
 
     </Grid>

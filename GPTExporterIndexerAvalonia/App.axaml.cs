@@ -55,6 +55,7 @@ public partial class App : Application
         services.AddSingleton<IFileParsingService, FileParsingService>();
         services.AddSingleton<IExportService, ExportService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
         // THIS IS THE REQUIRED LINE TO FIX THE CRASH
         services.AddSingleton<IEntryParserService, EntryParserService>();
 
@@ -69,6 +70,7 @@ public partial class App : Application
         services.AddTransient<RitualBuilderViewModel>();
         services.AddTransient<TagMapViewModel>();
         services.AddTransient<YamlInterpreterViewModel>();
+        services.AddTransient<SettingsViewModel>();
         services.AddTransient<MainWindowViewModel>();
 
         // Register Views (for the ViewLocator)
@@ -80,6 +82,7 @@ public partial class App : Application
         services.AddTransient<YamlInterpreterView>();
         services.AddTransient<ChatLogView>();
         services.AddTransient<RitualBuilderView>();
+        services.AddTransient<SettingsView>();
 
         return services.BuildServiceProvider();
     }

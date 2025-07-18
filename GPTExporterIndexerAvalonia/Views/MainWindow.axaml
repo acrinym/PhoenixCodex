@@ -66,6 +66,12 @@
                         <views:RitualBuilderView/>
                     </controls:ErrorBoundary>
                 </TabItem>
+
+                <TabItem Header="Settings">
+                    <controls:ErrorBoundary>
+                        <views:SettingsView/>
+                    </controls:ErrorBoundary>
+                </TabItem>
                 
             </TabControl>
         </Border>

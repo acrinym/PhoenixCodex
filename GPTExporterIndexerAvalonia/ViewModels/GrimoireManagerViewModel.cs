@@ -35,12 +35,12 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
     private string? _ritualTitle;
 
     [ObservableProperty]
-    private DateTime _ritualDate;
+    private DateTime? _ritualDate;
 
     partial void OnSelectedRitualChanged(Ritual? value)
     {
         RitualTitle = value?.Title;
-        RitualDate = value?.DateTime ?? DateTime.Now;
+        RitualDate = value?.DateTime;
     }
 
     partial void OnRitualTitleChanged(string? value)
@@ -51,11 +51,11 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
         }
     }
 
-    partial void OnRitualDateChanged(DateTime value)
+    partial void OnRitualDateChanged(DateTime? value)
     {
-        if (SelectedRitual != null)
+        if (SelectedRitual != null && value.HasValue)
         {
-            SelectedRitual.DateTime = value;
+            SelectedRitual.DateTime = value.Value;
             SortRituals();
         }
     }

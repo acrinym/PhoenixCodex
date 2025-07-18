@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GPTExporterIndexerAvalonia.Views.Controls.SelectableTextBlock">
+    <TextBox x:Name="PART_TextBox"
+             AcceptsReturn="True"
+             TextWrapping="Wrap"
+             IsReadOnly="True"
+             Background="Transparent"
+             BorderThickness="0"
+             FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+             FontSize="11"
+             SelectionBrush="LightBlue"
+             SelectionForegroundBrush="Black"/>
+</UserControl> 
