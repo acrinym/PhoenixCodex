@@ -73,10 +73,10 @@
                             
                             <!-- Foreground Color -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Text Color" Classes="Label"/>
+                                <TextBlock Text="Text Color (Custom Foreground)" Classes="Label"/>
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBox Text="{Binding CustomForeground, Converter={StaticResource BrushConverter}}"
-                                             Grid.Column="0"/>
+                                             Grid.Column="0" Watermark="#000000 or color name"/>
                                     <Button Content="Pick Color" 
                                             Grid.Column="1" 
                                             Margin="8,0,0,0"

@@ -62,7 +62,18 @@
                 </StackPanel>
             </StackPanel>
 
-            <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}" Margin="0,10,0,0">
+            <ListBox ItemsSource="{Binding Results}"
+                     SelectedItem="{Binding SelectedResult}"
+                     SelectedItems="{Binding SelectedResults, Mode=TwoWay}"
+                     SelectionMode="Multiple"
+                     Margin="0,10,0,0">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Move Selected Files..." Command="{Binding MoveFilesCommand}" />
+                        <MenuItem Header="Copy Selected Files..." Command="{Binding CopyFilesCommand}" />
+                        <MenuItem Header="Delete Selected Files" Command="{Binding DeleteFilesCommand}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border Classes="Card" Margin="0,0,5,5">

@@ -63,4 +63,10 @@ public class AppSettings
         { "field pulse", "energy shift" },
         { "symbolic moment", "meaningful event" }
     };
+
+    // File Operation Settings
+    public string MoveCopyDefaultAction { get; set; } = "Ask"; // "Ask", "Move", "Copy"
+    public string OverwriteBehavior { get; set; } = "Prompt"; // "Prompt", "Overwrite", "Skip"
+    public bool LogFileOperations { get; set; } = true;
+    public bool ConfirmDelete { get; set; } = true;
 } 

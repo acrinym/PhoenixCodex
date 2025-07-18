@@ -25,6 +25,15 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDirty = false;
 
+    [ObservableProperty]
+    private string _moveCopyDefaultAction;
+    [ObservableProperty]
+    private string _overwriteBehavior;
+    [ObservableProperty]
+    private bool _logFileOperations;
+    [ObservableProperty]
+    private bool _confirmDelete;
+
     public ObservableCollection<string> AvailableThemes { get; } = new()
     {
         "Magic",
@@ -61,6 +70,10 @@ public partial class SettingsViewModel : ObservableObject
     {
         _settingsService = settingsService;
         _settings = _settingsService.Settings;
+        _moveCopyDefaultAction = _settings.MoveCopyDefaultAction;
+        _overwriteBehavior = _settings.OverwriteBehavior;
+        _logFileOperations = _settings.LogFileOperations;
+        _confirmDelete = _settings.ConfirmDelete;
         
         // Subscribe to property changes to mark as dirty and auto-save
         PropertyChanged += (s, e) =>
@@ -74,6 +87,11 @@ public partial class SettingsViewModel : ObservableObject
                 {
                     _ = Task.Run(async () => await SaveSettingsAsync());
                 }
+                // Sync new file operation settings to AppSettings
+                if (e.PropertyName == nameof(MoveCopyDefaultAction)) _settings.MoveCopyDefaultAction = MoveCopyDefaultAction;
+                if (e.PropertyName == nameof(OverwriteBehavior)) _settings.OverwriteBehavior = OverwriteBehavior;
+                if (e.PropertyName == nameof(LogFileOperations)) _settings.LogFileOperations = LogFileOperations;
+                if (e.PropertyName == nameof(ConfirmDelete)) _settings.ConfirmDelete = ConfirmDelete;
             }
         };
     }

@@ -194,6 +194,31 @@
                 </StackPanel>
             </Border>
             
+            <!-- File Operation Settings Section -->
+            <Border Background="#2A2A3E" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="File Operation Settings" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Default Action:" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" SelectedItem="{Binding MoveCopyDefaultAction}" Width="120">
+                            <ComboBoxItem Content="Ask"/>
+                            <ComboBoxItem Content="Move"/>
+                            <ComboBoxItem Content="Copy"/>
+                        </ComboBox>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Overwrite Behavior:" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding OverwriteBehavior}" Width="120">
+                            <ComboBoxItem Content="Prompt"/>
+                            <ComboBoxItem Content="Overwrite"/>
+                            <ComboBoxItem Content="Skip"/>
+                        </ComboBox>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Log File Operations:" VerticalAlignment="Center"/>
+                        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding LogFileOperations}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Confirm Delete:" VerticalAlignment="Center"/>
+                        <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding ConfirmDelete}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            
             <!-- Action Buttons -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Reset to Defaults" Command="{Binding ResetToDefaultsCommand}" Classes="Secondary"/>

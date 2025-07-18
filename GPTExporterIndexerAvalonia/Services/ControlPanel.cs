@@ -69,12 +69,9 @@ namespace GPTExporterIndexerAvalonia.Services
                 if (_customForeground != value)
                 {
                     _customForeground = value;
-                    if (_selectedTheme == "Custom")
-                    {
-                        UpdateTheme();
-                        OnPropertyChanged();
-                        SaveSettings();
-                    }
+                    UpdateTheme(); // Ensure theme updates live
+                    OnPropertyChanged();
+                    SaveSettings();
                 }
             }
         }
@@ -269,7 +266,7 @@ namespace GPTExporterIndexerAvalonia.Services
             if (_customBackground != null)
                 resources["BackgroundBrush"] = _customBackground;
             if (_customForeground != null)
-                resources["ForegroundBrush"] = _customForeground;
+                resources["ForegroundBrush"] = _customForeground; // Always override
             if (_customAccent != null)
                 resources["AccentBrush"] = _customAccent;
             

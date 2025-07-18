@@ -63,6 +63,8 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _bookContent = string.Empty;
     [ObservableProperty] private string _indexContent = "Index has not been viewed yet. Click 'View Index' to load it.";
     [ObservableProperty] private string? _selectedFileContent;
+    [ObservableProperty]
+    private IList<SearchResult> _selectedResults = new List<SearchResult>();
 
     // Progress reporting properties
     [ObservableProperty] private bool _isOperationInProgress;
@@ -489,5 +491,135 @@ public partial class MainWindowViewModel : ObservableObject
             Status = $"Error updating tagmap: {ex.Message}";
             DebugLogger.Log($"MainWindowViewModel: Error during tagmap update: {ex.Message}");
         }
+    }
+
+    [RelayCommand]
+    private async Task MoveFiles()
+    {
+        if (SelectedResults == null || SelectedResults.Count == 0)
+        {
+            await _dialogService.ShowMessageAsync("No Files Selected", "Please select one or more files to move.");
+            return;
+        }
+        var settings = SettingsViewModel;
+        var destFolder = await _dialogService.ShowOpenFolderDialogAsync("Select Destination Folder for Move");
+        if (string.IsNullOrWhiteSpace(destFolder)) return;
+        var movedFiles = new List<string>();
+        foreach (var result in SelectedResults)
+        {
+            var srcPath = Path.Combine(IndexFolder, result.File);
+            var destPath = Path.Combine(destFolder, Path.GetFileName(result.File));
+            try
+            {
+                if (File.Exists(destPath))
+                {
+                    if (settings.OverwriteBehavior == "Skip")
+                        continue;
+                    if (settings.OverwriteBehavior == "Prompt")
+                    {
+                        await _dialogService.ShowMessageAsync("File Exists", $"File '{Path.GetFileName(destPath)}' already exists. Skipping.");
+                        continue;
+                    }
+                    // Overwrite
+                    File.Delete(destPath);
+                }
+                File.Move(srcPath, destPath);
+                movedFiles.Add(destPath);
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowMessageAsync("Move Error", $"Failed to move '{srcPath}': {ex.Message}");
+            }
+        }
+        if (settings.LogFileOperations)
+        {
+            var logPath = Path.Combine(destFolder, "PhoenixCodex_MovedFiles.txt");
+            File.AppendAllLines(logPath, movedFiles);
+        }
+        await _dialogService.ShowMessageAsync("Move Complete", $"Moved {movedFiles.Count} files to {destFolder}.");
+    }
+
+    [RelayCommand]
+    private async Task CopyFiles()
+    {
+        if (SelectedResults == null || SelectedResults.Count == 0)
+        {
+            await _dialogService.ShowMessageAsync("No Files Selected", "Please select one or more files to copy.");
+            return;
+        }
+        var settings = SettingsViewModel;
+        var destFolder = await _dialogService.ShowOpenFolderDialogAsync("Select Destination Folder for Copy");
+        if (string.IsNullOrWhiteSpace(destFolder)) return;
+        var copiedFiles = new List<string>();
+        foreach (var result in SelectedResults)
+        {
+            var srcPath = Path.Combine(IndexFolder, result.File);
+            var destPath = Path.Combine(destFolder, Path.GetFileName(result.File));
+            try
+            {
+                if (File.Exists(destPath))
+                {
+                    if (settings.OverwriteBehavior == "Skip")
+                        continue;
+                    if (settings.OverwriteBehavior == "Prompt")
+                    {
+                        await _dialogService.ShowMessageAsync("File Exists", $"File '{Path.GetFileName(destPath)}' already exists. Skipping.");
+                        continue;
+                    }
+                    // Overwrite
+                    File.Delete(destPath);
+                }
+                File.Copy(srcPath, destPath);
+                copiedFiles.Add(destPath);
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowMessageAsync("Copy Error", $"Failed to copy '{srcPath}': {ex.Message}");
+            }
+        }
+        if (settings.LogFileOperations)
+        {
+            var logPath = Path.Combine(destFolder, "PhoenixCodex_CopiedFiles.txt");
+            File.AppendAllLines(logPath, copiedFiles);
+        }
+        await _dialogService.ShowMessageAsync("Copy Complete", $"Copied {copiedFiles.Count} files to {destFolder}.");
+    }
+
+    [RelayCommand]
+    private async Task DeleteFiles()
+    {
+        if (SelectedResults == null || SelectedResults.Count == 0)
+        {
+            await _dialogService.ShowMessageAsync("No Files Selected", "Please select one or more files to delete.");
+            return;
+        }
+        var settings = SettingsViewModel;
+        if (settings.ConfirmDelete)
+        {
+            await _dialogService.ShowMessageAsync("Confirm Delete", $"This will permanently delete {SelectedResults.Count} files. Proceed?");
+        }
+        var deletedFiles = new List<string>();
+        foreach (var result in SelectedResults)
+        {
+            var srcPath = Path.Combine(IndexFolder, result.File);
+            try
+            {
+                if (File.Exists(srcPath))
+                {
+                    File.Delete(srcPath);
+                    deletedFiles.Add(srcPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowMessageAsync("Delete Error", $"Failed to delete '{srcPath}': {ex.Message}");
+            }
+        }
+        if (settings.LogFileOperations)
+        {
+            var logPath = Path.Combine(IndexFolder, "PhoenixCodex_DeletedFiles.txt");
+            File.AppendAllLines(logPath, deletedFiles);
+        }
+        await _dialogService.ShowMessageAsync("Delete Complete", $"Deleted {deletedFiles.Count} files.");
     }
 }
