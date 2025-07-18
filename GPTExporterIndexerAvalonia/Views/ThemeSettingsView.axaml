@@ -1,0 +1,265 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="using:GPTExporterIndexerAvalonia.Converters"
+             x:Class="GPTExporterIndexerAvalonia.Views.ThemeSettingsView">
+    
+    <UserControl.Resources>
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+        <converters:BrushConverter x:Key="BrushConverter"/>
+        <converters:FontSizeConverter x:Key="FontSizeConverter"/>
+        <converters:CornerRadiusConverter x:Key="CornerRadiusConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
+    </UserControl.Resources>
+    
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="20">
+            
+            <!-- Header -->
+            <Border Classes="Card">
+                <StackPanel>
+                    <TextBlock Text="🎨 Theme Settings" 
+                               Classes="Header" 
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Customize the appearance of Phoenix Codex to match your preferences."
+                               Classes="Caption" 
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Theme Selection -->
+            <Border Classes="Card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Theme Selection" Classes="Label"/>
+                    
+                    <ComboBox ItemsSource="{Binding AvailableThemes}"
+                              SelectedItem="{Binding SelectedTheme}"
+                              Width="200"
+                              HorizontalAlignment="Left">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource ThemePreviewConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
+                    <TextBlock Text="Choose from predefined themes or create your own custom theme."
+                               Classes="Caption"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Custom Theme Settings -->
+            <Border Classes="Card" 
+                    IsVisible="{Binding SelectedTheme, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Custom}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Custom Theme" Classes="Label"/>
+                    
+                    <!-- Color Settings -->
+                    <Expander Header="🎨 Color Settings" IsExpanded="True">
+                        <StackPanel Spacing="12" Margin="0,8">
+                            
+                            <!-- Background Color -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Background Color" Classes="Label"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding CustomBackground, Converter={StaticResource BrushConverter}}"
+                                             Grid.Column="0"/>
+                                    <Button Content="Pick Color" 
+                                            Grid.Column="1" 
+                                            Margin="8,0,0,0"
+                                            Classes="Secondary"/>
+                                </Grid>
+                            </StackPanel>
+                            
+                            <!-- Foreground Color -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Text Color" Classes="Label"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding CustomForeground, Converter={StaticResource BrushConverter}}"
+                                             Grid.Column="0"/>
+                                    <Button Content="Pick Color" 
+                                            Grid.Column="1" 
+                                            Margin="8,0,0,0"
+                                            Classes="Secondary"/>
+                                </Grid>
+                            </StackPanel>
+                            
+                            <!-- Accent Color -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Accent Color" Classes="Label"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding CustomAccent, Converter={StaticResource BrushConverter}}"
+                                             Grid.Column="0"/>
+                                    <Button Content="Pick Color" 
+                                            Grid.Column="1" 
+                                            Margin="8,0,0,0"
+                                            Classes="Secondary"/>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                    
+                    <!-- Typography Settings -->
+                    <Expander Header="📝 Typography" IsExpanded="True">
+                        <StackPanel Spacing="12" Margin="0,8">
+                            
+                            <!-- Font Family -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Font Family" Classes="Label"/>
+                                <ComboBox ItemsSource="{Binding AvailableFonts}"
+                                          SelectedItem="{Binding FontFamily}"
+                                          Width="200"
+                                          HorizontalAlignment="Left"/>
+                            </StackPanel>
+                            
+                            <!-- Font Size -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Font Size" Classes="Label"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding FontSize, Converter={StaticResource FontSizeConverter}}"
+                                             Grid.Column="0"/>
+                                    <TextBlock Text="px" 
+                                               Grid.Column="1" 
+                                               VerticalAlignment="Center"
+                                               Margin="8,0,0,0"
+                                               Classes="Caption"/>
+                                </Grid>
+                                <Slider Value="{Binding FontSize}"
+                                        Minimum="8"
+                                        Maximum="32"
+                                        TickFrequency="2"
+                                        IsSnapToTickEnabled="True"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                    
+                    <!-- Visual Effects -->
+                    <Expander Header="✨ Visual Effects" IsExpanded="True">
+                        <StackPanel Spacing="12" Margin="0,8">
+                            
+                            <!-- Corner Radius -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Corner Radius" Classes="Label"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding CornerRadius, Converter={StaticResource CornerRadiusConverter}}"
+                                             Grid.Column="0"/>
+                                    <TextBlock Text="px" 
+                                               Grid.Column="1" 
+                                               VerticalAlignment="Center"
+                                               Margin="8,0,0,0"
+                                               Classes="Caption"/>
+                                </Grid>
+                                <Slider Value="{Binding CornerRadius}"
+                                        Minimum="0"
+                                        Maximum="20"
+                                        TickFrequency="2"
+                                        IsSnapToTickEnabled="True"/>
+                            </StackPanel>
+                            
+                            <!-- Use Gradients -->
+                            <CheckBox Content="Use Gradient Backgrounds"
+                                      IsChecked="{Binding UseGradients}"/>
+                            
+                            <!-- Enable Animations -->
+                            <CheckBox Content="Enable Animations"
+                                      IsChecked="{Binding EnableAnimations}"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+            
+            <!-- Quick Theme Presets -->
+            <Border Classes="Card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Quick Presets" Classes="Label"/>
+                    
+                    <WrapPanel Spacing="8">
+                        <Button Content="☀️ Light Mode" 
+                                Classes="Secondary"
+                                Command="{Binding SetThemeCommand}"
+                                CommandParameter="Light"/>
+                        
+                        <Button Content="🌙 Dark Mode" 
+                                Classes="Secondary"
+                                Command="{Binding SetThemeCommand}"
+                                CommandParameter="Dark"/>
+                        
+                        <Button Content="✨ Magic Mode" 
+                                Classes="Secondary"
+                                Command="{Binding SetThemeCommand}"
+                                CommandParameter="Magic"/>
+                        
+                        <Button Content="🎨 Custom" 
+                                Classes="Secondary"
+                                Command="{Binding SetThemeCommand}"
+                                CommandParameter="Custom"/>
+                    </WrapPanel>
+                    
+                    <TextBlock Text="Click any preset to quickly switch themes."
+                               Classes="Caption"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Theme Preview -->
+            <Border Classes="Card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Theme Preview" Classes="Label"/>
+                    
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Sample Content" 
+                                       Classes="Header"/>
+                            <TextBlock Text="This is how your content will look with the selected theme."
+                                       Classes="Caption"/>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Primary Button" Classes="Primary"/>
+                                <Button Content="Secondary Button" Classes="Secondary"/>
+                                <Button Content="Danger Button" Classes="Danger"/>
+                            </StackPanel>
+                            
+                            <TextBox Text="Sample text input"/>
+                            
+                            <ComboBox ItemsSource="['Option 1', 'Option 2', 'Option 3']"
+                                      SelectedIndex="0"
+                                      Width="150"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+            
+            <!-- Actions -->
+            <Border Classes="Card">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Actions" Classes="Label"/>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="💾 Save Settings" 
+                                Classes="Primary"
+                                Command="{Binding SaveSettingsCommand}"/>
+                        
+                        <Button Content="🔄 Reset to Defaults" 
+                                Classes="Secondary"
+                                Command="{Binding ResetSettingsCommand}"/>
+                        
+                        <Button Content="📤 Export Theme" 
+                                Classes="Secondary"
+                                Command="{Binding ExportThemeCommand}"/>
+                        
+                        <Button Content="📥 Import Theme" 
+                                Classes="Secondary"
+                                Command="{Binding ImportThemeCommand}"/>
+                    </StackPanel>
+                    
+                    <TextBlock Text="Your theme settings are automatically saved and will be restored when you restart the application."
+                               Classes="Caption"/>
+                </StackPanel>
+            </Border>
+            
+        </StackPanel>
+    </ScrollViewer>
+</UserControl> 

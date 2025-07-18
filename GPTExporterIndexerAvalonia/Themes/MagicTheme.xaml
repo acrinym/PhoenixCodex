@@ -1,0 +1,278 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Color Palette - Mystical Purple Theme -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#1a0c24"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#e0e0e0"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#7B68EE"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#2a1c3d"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#4A2C6D"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2a1c3d"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#c0c0ff"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#27AE60"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#F39C12"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#E74C3C"/>
+    
+    <!-- Typography -->
+    <FontFamily x:Key="AppFont">Segoe UI</FontFamily>
+    <x:Double x:Key="FontSizeNormal">14</x:Double>
+    <x:Double x:Key="FontSizeSmall">12</x:Double>
+    <x:Double x:Key="FontSizeLarge">16</x:Double>
+    <x:Double x:Key="FontSizeHeader">20</x:Double>
+    
+    <!-- Window Styling -->
+    <Style Selector="Window">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#1a0c24" Offset="0" />
+                    <GradientStop Color="#0c023b" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+    </Style>
+    
+    <!-- TextBlock Styling -->
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+    </Style>
+    
+    <Style Selector="TextBlock.Header">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeHeader}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+    
+    <Style Selector="TextBlock.Label">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+    
+    <Style Selector="TextBlock.Caption">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Setter Property="Margin" Value="0,4"/>
+    </Style>
+    
+    <!-- Button Styling -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="#592474"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="#8c4fb5"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+    
+    <Style Selector="Button:pointerover">
+        <Setter Property="Background" Value="#6a2a85"/>
+        <Setter Property="BorderBrush" Value="#9c5fc5"/>
+    </Style>
+    
+    <Style Selector="Button:pressed">
+        <Setter Property="Background" Value="#4a1a64"/>
+        <Setter Property="BorderBrush" Value="#7c3f95"/>
+    </Style>
+    
+    <Style Selector="Button.Primary">
+        <Setter Property="Background" Value="#8c4fb5"/>
+        <Setter Property="BorderBrush" Value="#a05fc5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+    <Style Selector="Button.Primary:pointerover">
+        <Setter Property="Background" Value="#9c5fc5"/>
+        <Setter Property="BorderBrush" Value="#b06fd5"/>
+    </Style>
+    
+    <Style Selector="Button.Secondary">
+        <Setter Property="Background" Value="#3a1c5d"/>
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+        <Setter Property="BorderBrush" Value="#5a2c7d"/>
+    </Style>
+    
+    <Style Selector="Button.Secondary:pointerover">
+        <Setter Property="Background" Value="#4a2c6d"/>
+        <Setter Property="BorderBrush" Value="#6a3c8d"/>
+    </Style>
+    
+    <Style Selector="Button.Accent">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+    <Style Selector="Button.Danger">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+    <!-- TextBox Styling -->
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="Foreground" Value="#e0e0e0"/>
+        <Setter Property="BorderBrush" Value="#4a2c6d"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="SelectionBrush" Value="#8c4fb5"/>
+        <Setter Property="SelectionForegroundBrush" Value="White"/>
+    </Style>
+    
+    <Style Selector="TextBox:focus">
+        <Setter Property="BorderBrush" Value="#8c4fb5"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <!-- CheckBox Styling -->
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="#e0e0e0"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+    
+    <!-- ListBox Styling -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="#4a2c6d"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="8"/>
+    </Style>
+    
+    <Style Selector="ListBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#e0e0e0"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+    
+    <Style Selector="ListBoxItem:selected">
+        <Setter Property="Background" Value="#4a2c6d"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    
+    <Style Selector="ListBoxItem:pointerover">
+        <Setter Property="Background" Value="#3a1c5d"/>
+    </Style>
+    
+    <!-- ComboBox Styling -->
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="Foreground" Value="#e0e0e0"/>
+        <Setter Property="BorderBrush" Value="#4a2c6d"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="MinHeight" Value="40"/>
+    </Style>
+    
+    <Style Selector="ComboBox:focus">
+        <Setter Property="BorderBrush" Value="#8c4fb5"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <!-- Slider Styling -->
+    <Style Selector="Slider">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="Foreground" Value="#8c4fb5"/>
+        <Setter Property="Margin" Value="8"/>
+    </Style>
+    
+    <!-- NumericUpDown Styling -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="Foreground" Value="#e0e0e0"/>
+        <Setter Property="BorderBrush" Value="#4a2c6d"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="MinHeight" Value="40"/>
+    </Style>
+    
+    <Style Selector="NumericUpDown:focus">
+        <Setter Property="BorderBrush" Value="#8c4fb5"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <!-- Expander Styling -->
+    <Style Selector="Expander">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="#4a2c6d"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Margin" Value="0,4"/>
+    </Style>
+    
+    <Style Selector="Expander:expanded">
+        <Setter Property="Background" Value="#2a1c3d"/>
+    </Style>
+    
+    <!-- ProgressBar Styling -->
+    <Style Selector="ProgressBar">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="Foreground" Value="#8c4fb5"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Height" Value="8"/>
+    </Style>
+    
+    <!-- ScrollViewer Styling -->
+    <Style Selector="ScrollViewer">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    
+    <!-- Card Styling -->
+    <Style Selector="Border.Card">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="BorderBrush" Value="#4a2c6d"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,4"/>
+    </Style>
+    
+    <!-- TabControl Styling -->
+    <Style Selector="TabControl">
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+    </Style>
+    
+    <Style Selector="TabItem">
+        <Setter Property="Background" Value="#2a1c3d"/>
+        <Setter Property="Foreground" Value="#c0c0ff"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="Margin" Value="2,0"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="CornerRadius" Value="6,6,0,0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    
+    <Style Selector="TabItem:selected">
+        <Setter Property="Background" Value="#4a2c6d"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+</ResourceDictionary> 

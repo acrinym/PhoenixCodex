@@ -11,6 +11,12 @@
     <Application.Resources>
         <local:ViewLocator x:Key="ViewLocator"/>
         <converters:StringNullOrEmptyToBoolConverter x:Key="StringNullOrEmptyToBoolConverter"/>
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+        <converters:BrushConverter x:Key="BrushConverter"/>
+        <converters:FontSizeConverter x:Key="FontSizeConverter"/>
+        <converters:CornerRadiusConverter x:Key="CornerRadiusConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
     </Application.Resources>
     
     <Application.Styles>

@@ -72,6 +72,12 @@
                         <views:SettingsView/>
                     </controls:ErrorBoundary>
                 </TabItem>
+
+                <TabItem Header="🎨 Theme">
+                    <controls:ErrorBoundary>
+                        <views:ThemeSettingsView/>
+                    </controls:ErrorBoundary>
+                </TabItem>
                 
             </TabControl>
         </Border>

@@ -23,6 +23,10 @@ public partial class App : Application
         DebugLogger.Log("==================================================");
         DebugLogger.Log("Application Initializing...");
         AvaloniaXamlLoader.Load(this);
+        
+        // Initialize the ControlPanel for dynamic theming
+        var controlPanel = GPTExporterIndexerAvalonia.Services.ControlPanel.Instance;
+        DebugLogger.Log("ControlPanel initialized for dynamic theming.");
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -83,6 +87,7 @@ public partial class App : Application
         services.AddTransient<ChatLogView>();
         services.AddTransient<RitualBuilderView>();
         services.AddTransient<SettingsView>();
+        services.AddTransient<ThemeSettingsView>();
 
         return services.BuildServiceProvider();
     }
