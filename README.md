@@ -1,6 +1,6 @@
 Phoenix Codex 🪶
 The Phoenix Codex is a suite of tools for sorting, indexing, and visualizing the AmandaMap. It is composed of a main Avalonia UI application and a shared core library.
-Updated: July 18, 2025
+Updated: July 19, 2025
 
 ## Python Scripts
 
@@ -29,9 +29,16 @@ AND/OR logic
 Allows you to open any matching file directly from the search results list.
 Includes a book reader tab for loading Markdown or text files.
 Provides a legacy tool tab to launch the original Python utility.
-- Dynamic theming with light, dark, and magic modes managed from the Settings dialog.
-- Optional "Hide Magic" setting removes magic-related buttons when needed.
-- Settings panel lets you adjust appearance and general preferences.
+- Dynamic theming with **Light**, **Dark**, and **Magic** modes.
+- Fully customizable theme settings with fonts, colors, and corner radius.
+- Quick preset buttons in the Settings panel for fast theme switching.
+- Optional "Hide Magic" toggle removes occult-themed controls when needed.
+- Real-time progress bar and status messages during indexing and TagMap generation.
+
+Settings and Theming
+--------------------
+Open the **Settings** dialog from the Control Panel to tweak fonts, colors, and animations.
+Select from preset **Light**, **Dark**, or **Magic** themes or build your own custom look.
 Dataset Builder
 ---------------
 Use `dataset_builder.py` to harvest paragraphs mentioning **AmandaMap**, **Phoenix Codex**, or **Whispered Flame**, plus numbered threshold entries. The script scans `.md`, `.txt`, and `.json` files. Run it with a folder and optional output file:

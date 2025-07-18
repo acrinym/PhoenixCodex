@@ -4,6 +4,13 @@ This list tracks upcoming tasks for the Phoenix Codex project.
 
 ## Completed
 - Addressed numerous stability issues across the UI and services.
+- Implemented dynamic theming with light, dark, magic, and custom modes.
+- Added ControlPanel/Settings dialog for customizing appearance.
+- Added "Hide Magic" toggle to remove magic-related controls when needed.
+- Implemented progress reporting with a real-time progress bar and status messages.
+- Implemented theme import/export features.
+- Polished AmandaMap grouping UI.
+- Added AmandaMap timeline view for visualizing entry dates.
 - Fixed ChatGPT date parsing (now with multi-day support).
 
 ## Upcoming
@@ -88,3 +95,4 @@ Add phone/MMS parsing capabilities - Expand beyond just ChatGPT
 Build encyclopedia views - Start with Amanda profile and relationship timeline
 Enhance timeline visualization - Better chronological representation
 Add image handling - For MMS and any other media
+
