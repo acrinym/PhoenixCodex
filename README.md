@@ -34,6 +34,7 @@ Provides a legacy tool tab to launch the original Python utility.
 - Quick preset buttons in the Settings panel for fast theme switching.
 - Optional "Hide Magic" toggle removes occult-themed controls when needed.
 - Real-time progress bar and status messages during indexing and TagMap generation.
+- Import and export custom themes as JSON files for easy sharing.
 
 Settings and Theming
 --------------------
@@ -41,12 +42,12 @@ Open the **Settings** dialog from the Control Panel to tweak fonts, colors, and 
 Select from preset **Light**, **Dark**, or **Magic** themes or build your own custom look.
 Dataset Builder
 ---------------
-Use `dataset_builder.py` to harvest paragraphs mentioning **AmandaMap**, **Phoenix Codex**, or **Whispered Flame**, plus numbered threshold entries. The script scans `.md`, `.txt`, and `.json` files. Run it with a folder and optional output file:
+Use `dataset_builder.py` to harvest paragraphs mentioning **AmandaMap**, **Phoenix Codex**, or **Whispered Flame**, plus numbered threshold entries. The script scans `.md`, `.txt`, and `.json` files and now offers optional CSV output.
 
 ```bash
-python dataset_builder.py <folder> --output dataset.json
+python dataset_builder.py <folder> --output dataset.json --csv
 ```
-The script writes a JSON array listing each file path, type, and text match.
+The script writes a JSON array listing each file path, type, and text match. If `--csv` is supplied, a companion `dataset.csv` is generated.
 
 TagMap Tab
 -----------
