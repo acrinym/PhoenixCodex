@@ -152,14 +152,18 @@
                                                     Orientation="Horizontal" 
                                                     HorizontalAlignment="Right"
                                                     Margin="0,12,0,0">
-                                            <Button Content="📖 View Details" 
+                                            <Button Content="📖 View Details"
                                                     Classes="Secondary"
                                                     Command="{Binding $parent[UserControl].DataContext.ViewEntryDetailsCommand}"
                                                     CommandParameter="{Binding}"
                                                     Margin="0,0,8,0"/>
-                                            <Button Content="✏️ Edit" 
+                                            <Button Content="✏️ Edit"
                                                     Classes="Secondary"
                                                     Command="{Binding $parent[UserControl].DataContext.EditEntryCommand}"
+                                                    CommandParameter="{Binding}"/>
+                                            <Button Content="📂 Open File"
+                                                    Classes="Secondary"
+                                                    Command="{Binding $parent[UserControl].DataContext.OpenSourceFileCommand}"
                                                     CommandParameter="{Binding}"/>
                                         </StackPanel>
                                         

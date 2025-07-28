@@ -8,6 +8,8 @@
         <DatePicker SelectedDate="{Binding Date}" />
         <TextBlock Text="Description" />
         <TextBox AcceptsReturn="True" TextWrapping="Wrap" Height="100" Text="{Binding Description}" />
+        <TextBlock Text="Source File" />
+        <TextBox Text="{Binding SourceFile}" IsReadOnly="True" />
         <Expander Header="Field Encoding">
             <StackPanel>
                 <TextBlock Text="Signal" />
