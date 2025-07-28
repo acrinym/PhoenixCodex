@@ -71,4 +71,14 @@ public class DialogService : IDialogService
             .GetMessageBoxStandardWindow(title, message);
         await msgBox.ShowDialog(mainWindow);
     }
+
+    public async Task<string?> ShowInputDialogAsync(string title, string prompt, string defaultText = "")
+    {
+        var mainWindow = GetMainWindow();
+        if (mainWindow is null)
+            return null;
+
+        var dialog = new Views.Dialogs.InputDialog(title, prompt, defaultText);
+        return await dialog.ShowDialog<string?>(mainWindow);
+    }
 }

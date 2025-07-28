@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.PhoenixEntries;
+using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -34,6 +35,7 @@ public partial class EntryDetailViewModel : ObservableObject
     private bool _visibleToAmanda;
 
     public EntryBase? BoundEntry { get; private set; }
+    public NumberedMapEntry? BoundAmandaEntry { get; private set; }
 
     public void Load(EntryBase entry)
     {
@@ -48,6 +50,19 @@ public partial class EntryDetailViewModel : ObservableObject
         Status = entry.Status;
         MirrorToAmandaMap = entry.MirrorToAmandaMap;
         VisibleToAmanda = entry.VisibleToAmanda;
+    }
+
+    public void Load(NumberedMapEntry entry)
+    {
+        BoundAmandaEntry = entry;
+        Title = entry.Title;
+        Date = entry.Date;
+        Description = entry.RawContent;
+        FieldEncoding = new();
+        Tags.Clear();
+        Status = EntryStatus.Unknown;
+        MirrorToAmandaMap = false;
+        VisibleToAmanda = false;
     }
 
     [RelayCommand]
@@ -65,14 +80,22 @@ public partial class EntryDetailViewModel : ObservableObject
     [RelayCommand]
     private void Save()
     {
-        if (BoundEntry is null) return;
-        BoundEntry.Title = Title;
-        BoundEntry.Date = Date;
-        BoundEntry.Description = Description;
-        BoundEntry.FieldEncoding = FieldEncoding;
-        BoundEntry.Tags = new List<string>(Tags);
-        BoundEntry.Status = Status;
-        BoundEntry.MirrorToAmandaMap = MirrorToAmandaMap;
-        BoundEntry.VisibleToAmanda = VisibleToAmanda;
+        if (BoundEntry is not null)
+        {
+            BoundEntry.Title = Title;
+            BoundEntry.Date = Date;
+            BoundEntry.Description = Description;
+            BoundEntry.FieldEncoding = FieldEncoding;
+            BoundEntry.Tags = new List<string>(Tags);
+            BoundEntry.Status = Status;
+            BoundEntry.MirrorToAmandaMap = MirrorToAmandaMap;
+            BoundEntry.VisibleToAmanda = VisibleToAmanda;
+        }
+        if (BoundAmandaEntry is not null)
+        {
+            BoundAmandaEntry.Title = Title;
+            BoundAmandaEntry.Date = Date;
+            BoundAmandaEntry.RawContent = Description;
+        }
     }
 }

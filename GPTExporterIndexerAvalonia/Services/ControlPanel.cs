@@ -284,12 +284,6 @@ namespace GPTExporterIndexerAvalonia.Services
                 resources["MutedBrush"] = CreateMutedBrush(_customForeground);
         }
 
-        private object CreateCustomTheme()
-        {
-            // TODO: Implement custom theme creation
-            // For now, return null as a placeholder
-            return null;
-        }
 
         private IBrush CreateSecondaryBrush(IBrush background)
         {
