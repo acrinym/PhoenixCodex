@@ -68,6 +68,7 @@ public partial class EntryDetailViewModel : ObservableObject
         MirrorToAmandaMap = false;
         VisibleToAmanda = false;
         SourceFile = entry.SourceFile;
+
     }
 
     [RelayCommand]
