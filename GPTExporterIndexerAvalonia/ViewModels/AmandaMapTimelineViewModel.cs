@@ -6,6 +6,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using GPTExporterIndexerAvalonia.ViewModels.Messages;
+using GPTExporterIndexerAvalonia.Services;
+using System.IO;
+using System.Diagnostics;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -225,5 +228,23 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
         if (entry is null) return;
         await ViewEntryDetailsAsync(entry);
         Refresh();
+    }
+
+    /// <summary>
+    /// Open the source file for an entry using the OS default application.
+    /// </summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void OpenSourceFile(NumberedMapEntry entry)
+    {
+        if (entry?.SourceFile is null || !System.IO.File.Exists(entry.SourceFile))
+            return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(entry.SourceFile) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Failed to open source file: {ex.Message}");
+        }
     }
 }

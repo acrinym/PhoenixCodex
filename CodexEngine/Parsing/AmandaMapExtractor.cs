@@ -78,11 +78,15 @@ namespace CodexEngine.Parsing
 
                 if (extension == ".json")
                 {
-                    entries.AddRange(ExtractFromJson(content, filePath));
+                    var list = ExtractFromJson(content, filePath);
+                    foreach (var e in list) e.SourceFile = filePath;
+                    entries.AddRange(list);
                 }
                 else
                 {
-                    entries.AddRange(ExtractFromText(content, filePath));
+                    var list = ExtractFromText(content, filePath);
+                    foreach (var e in list) e.SourceFile = filePath;
+                    entries.AddRange(list);
                 }
             }
             catch (Exception ex)
@@ -295,7 +299,8 @@ namespace CodexEngine.Parsing
                         Number = number,
                         Title = $"AmandaMap Threshold {number}",
                         RawContent = textGroup.Value.Trim(),
-                        Date = ExtractDateFromText(textGroup.Value)
+                        Date = ExtractDateFromText(textGroup.Value),
+                        SourceFile = sourceFile
                     };
                     entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
@@ -326,6 +331,7 @@ namespace CodexEngine.Parsing
                     entry.Number = number;
                     entry.Date = ExtractDateFromText(rawContent);
                     entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                    entry.SourceFile = sourceFile;
                     entries.Add(entry);
                 }
             }
@@ -346,7 +352,8 @@ namespace CodexEngine.Parsing
                         Number = number,
                         Title = ExtractTitleFromText(text),
                         RawContent = text,
-                        Date = ExtractDateFromText(text)
+                        Date = ExtractDateFromText(text),
+                        SourceFile = sourceFile
                     };
                     entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
@@ -376,6 +383,7 @@ namespace CodexEngine.Parsing
                             foreach (var entry in extractedEntries)
                             {
                                 entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                                entry.SourceFile = sourceFile;
                             }
                             entries.AddRange(extractedEntries);
                         }
@@ -388,6 +396,7 @@ namespace CodexEngine.Parsing
                     foreach (var entry in extractedEntries)
                     {
                         entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                        entry.SourceFile = sourceFile;
                     }
                     entries.AddRange(extractedEntries);
                 }

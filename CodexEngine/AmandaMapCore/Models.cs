@@ -32,6 +32,12 @@ namespace CodexEngine.AmandaMapCore.Models
         public required string RawContent { get; set; }
 
         /// <summary>
+        /// Optional path of the source file this entry came from.
+        /// Useful for opening the original document from the UI.
+        /// </summary>
+        public string? SourceFile { get; set; }
+
+        /// <summary>
         /// True if this entry is classified as Amanda-related chat.
         /// </summary>
         public bool IsAmandaRelated { get; set; } = false;

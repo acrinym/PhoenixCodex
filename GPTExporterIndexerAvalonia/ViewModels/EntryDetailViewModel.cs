@@ -34,6 +34,9 @@ public partial class EntryDetailViewModel : ObservableObject
     [ObservableProperty]
     private bool _visibleToAmanda;
 
+    [ObservableProperty]
+    private string? _sourceFile;
+
     public EntryBase? BoundEntry { get; private set; }
     public NumberedMapEntry? BoundAmandaEntry { get; private set; }
 
@@ -50,6 +53,21 @@ public partial class EntryDetailViewModel : ObservableObject
         Status = entry.Status;
         MirrorToAmandaMap = entry.MirrorToAmandaMap;
         VisibleToAmanda = entry.VisibleToAmanda;
+        SourceFile = null;
+    }
+
+    public void Load(NumberedMapEntry entry)
+    {
+        BoundAmandaEntry = entry;
+        Title = entry.Title;
+        Date = entry.Date;
+        Description = entry.RawContent;
+        FieldEncoding = new();
+        Tags.Clear();
+        Status = EntryStatus.Unknown;
+        MirrorToAmandaMap = false;
+        VisibleToAmanda = false;
+        SourceFile = entry.SourceFile;
     }
 
     public void Load(NumberedMapEntry entry)
