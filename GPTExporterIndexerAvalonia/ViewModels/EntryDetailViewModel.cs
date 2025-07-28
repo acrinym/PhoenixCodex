@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CodexEngine.PhoenixEntries;
+using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -33,7 +34,11 @@ public partial class EntryDetailViewModel : ObservableObject
     [ObservableProperty]
     private bool _visibleToAmanda;
 
+    [ObservableProperty]
+    private string? _sourceFile;
+
     public EntryBase? BoundEntry { get; private set; }
+    public NumberedMapEntry? BoundAmandaEntry { get; private set; }
 
     public void Load(EntryBase entry)
     {
@@ -48,6 +53,21 @@ public partial class EntryDetailViewModel : ObservableObject
         Status = entry.Status;
         MirrorToAmandaMap = entry.MirrorToAmandaMap;
         VisibleToAmanda = entry.VisibleToAmanda;
+        SourceFile = null;
+    }
+
+    public void Load(NumberedMapEntry entry)
+    {
+        BoundAmandaEntry = entry;
+        Title = entry.Title;
+        Date = entry.Date;
+        Description = entry.RawContent;
+        FieldEncoding = new();
+        Tags.Clear();
+        Status = EntryStatus.Unknown;
+        MirrorToAmandaMap = false;
+        VisibleToAmanda = false;
+        SourceFile = entry.SourceFile;
     }
 
     [RelayCommand]
@@ -63,16 +83,48 @@ public partial class EntryDetailViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void OpenSourceFile()
+    {
+        if (string.IsNullOrWhiteSpace(SourceFile) || !System.IO.File.Exists(SourceFile))
+            return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(SourceFile!) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Failed to open source file: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task CopySourcePathAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(SourceFile) && Avalonia.Application.Current?.Clipboard is { } clipboard)
+        {
+            await clipboard.SetTextAsync(SourceFile);
+        }
+    }
+
+    [RelayCommand]
     private void Save()
     {
-        if (BoundEntry is null) return;
-        BoundEntry.Title = Title;
-        BoundEntry.Date = Date;
-        BoundEntry.Description = Description;
-        BoundEntry.FieldEncoding = FieldEncoding;
-        BoundEntry.Tags = new List<string>(Tags);
-        BoundEntry.Status = Status;
-        BoundEntry.MirrorToAmandaMap = MirrorToAmandaMap;
-        BoundEntry.VisibleToAmanda = VisibleToAmanda;
+        if (BoundEntry is not null)
+        {
+            BoundEntry.Title = Title;
+            BoundEntry.Date = Date;
+            BoundEntry.Description = Description;
+            BoundEntry.FieldEncoding = FieldEncoding;
+            BoundEntry.Tags = new List<string>(Tags);
+            BoundEntry.Status = Status;
+            BoundEntry.MirrorToAmandaMap = MirrorToAmandaMap;
+            BoundEntry.VisibleToAmanda = VisibleToAmanda;
+        }
+        if (BoundAmandaEntry is not null)
+        {
+            BoundAmandaEntry.Title = Title;
+            BoundAmandaEntry.Date = Date;
+            BoundAmandaEntry.RawContent = Description;
+        }
     }
 }

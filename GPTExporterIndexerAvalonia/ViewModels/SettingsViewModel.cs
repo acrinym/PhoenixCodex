@@ -12,6 +12,7 @@ namespace GPTExporterIndexerAvalonia.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private AppSettings _settings;
@@ -66,9 +67,10 @@ public partial class SettingsViewModel : ObservableObject
         "#BB8FCE"  // Lavender
     };
 
-    public SettingsViewModel(ISettingsService settingsService)
+    public SettingsViewModel(ISettingsService settingsService, IDialogService dialogService)
     {
         _settingsService = settingsService;
+        _dialogService = dialogService;
         _settings = _settingsService.Settings;
         _moveCopyDefaultAction = _settings.MoveCopyDefaultAction;
         _overwriteBehavior = _settings.OverwriteBehavior;
@@ -146,13 +148,12 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddHiddenCategory()
+    private async Task AddHiddenCategoryAsync()
     {
-        // This would open a dialog to add a new hidden category
-        // For now, we'll just add a placeholder
-        if (!Settings.HiddenCategories.Contains("New Category"))
+        var result = await _dialogService.ShowInputDialogAsync("Add Hidden Category", "Category name:");
+        if (!string.IsNullOrWhiteSpace(result) && !Settings.HiddenCategories.Contains(result))
         {
-            Settings.HiddenCategories.Add("New Category");
+            Settings.HiddenCategories.Add(result);
             IsDirty = true;
         }
     }
@@ -168,12 +169,12 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddHiddenTag()
+    private async Task AddHiddenTagAsync()
     {
-        // This would open a dialog to add a new hidden tag
-        if (!Settings.HiddenTags.Contains("New Tag"))
+        var result = await _dialogService.ShowInputDialogAsync("Add Hidden Tag", "Tag name:");
+        if (!string.IsNullOrWhiteSpace(result) && !Settings.HiddenTags.Contains(result))
         {
-            Settings.HiddenTags.Add("New Tag");
+            Settings.HiddenTags.Add(result);
             IsDirty = true;
         }
     }
@@ -189,14 +190,16 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddMagicTermReplacement()
+    private async Task AddMagicTermReplacementAsync()
     {
-        // This would open a dialog to add a new magic term replacement
-        if (!Settings.MagicTermReplacements.ContainsKey("new term"))
-        {
-            Settings.MagicTermReplacements.Add("new term", "replacement");
-            IsDirty = true;
-        }
+        var term = await _dialogService.ShowInputDialogAsync("Add Replacement", "Magic term:");
+        if (string.IsNullOrWhiteSpace(term))
+            return;
+        var replacement = await _dialogService.ShowInputDialogAsync("Replacement", "Replace with:");
+        if (string.IsNullOrWhiteSpace(replacement))
+            return;
+        Settings.MagicTermReplacements[term] = replacement;
+        IsDirty = true;
     }
 
     [RelayCommand]

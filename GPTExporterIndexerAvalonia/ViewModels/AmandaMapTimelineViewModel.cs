@@ -4,7 +4,11 @@ using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using GPTExporterIndexerAvalonia.ViewModels.Messages;
+using GPTExporterIndexerAvalonia.Services;
+using System.IO;
+using System.Diagnostics;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -203,19 +207,44 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     /// View entry details
     /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private void ViewEntryDetails(NumberedMapEntry entry)
+    private async Task ViewEntryDetailsAsync(NumberedMapEntry entry)
     {
-        // TODO: Implement entry details view
-        // This could open a dialog or navigate to the AmandaMap tab
+        if (entry is null) return;
+        var vm = new EntryDetailViewModel();
+        vm.Load(entry);
+        var window = new Views.Dialogs.EntryDetailWindow { DataContext = vm, Title = $"Entry #{entry.Number}" };
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            await window.ShowDialog(desktop.MainWindow);
+        }
     }
 
     /// <summary>
     /// Edit entry
     /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private void EditEntry(NumberedMapEntry entry)
+    private async Task EditEntryAsync(NumberedMapEntry entry)
     {
-        // TODO: Implement entry editing
-        // This could open an edit dialog
+        if (entry is null) return;
+        await ViewEntryDetailsAsync(entry);
+        Refresh();
     }
-} 
+
+    /// <summary>
+    /// Open the source file for an entry using the OS default application.
+    /// </summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void OpenSourceFile(NumberedMapEntry entry)
+    {
+        if (entry?.SourceFile is null || !System.IO.File.Exists(entry.SourceFile))
+            return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(entry.SourceFile) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Failed to open source file: {ex.Message}");
+        }
+    }
+}

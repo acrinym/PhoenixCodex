@@ -26,4 +26,12 @@ public interface IDialogService
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message content.</param>
     Task ShowMessageAsync(string title, string message);
+
+    /// <summary>
+    /// Prompt the user for a single line of text.
+    /// </summary>
+    /// <param name="title">Dialog title.</param>
+    /// <param name="prompt">Prompt message.</param>
+    /// <param name="defaultText">Optional default input value.</param>
+    Task<string?> ShowInputDialogAsync(string title, string prompt, string defaultText = "");
 }
