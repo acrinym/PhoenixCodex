@@ -68,19 +68,7 @@ public partial class EntryDetailViewModel : ObservableObject
         MirrorToAmandaMap = false;
         VisibleToAmanda = false;
         SourceFile = entry.SourceFile;
-    }
 
-    public void Load(NumberedMapEntry entry)
-    {
-        BoundAmandaEntry = entry;
-        Title = entry.Title;
-        Date = entry.Date;
-        Description = entry.RawContent;
-        FieldEncoding = new();
-        Tags.Clear();
-        Status = EntryStatus.Unknown;
-        MirrorToAmandaMap = false;
-        VisibleToAmanda = false;
     }
 
     [RelayCommand]
@@ -93,6 +81,30 @@ public partial class EntryDetailViewModel : ObservableObject
     private void RemoveTag(string tag)
     {
         Tags.Remove(tag);
+    }
+
+    [RelayCommand]
+    private void OpenSourceFile()
+    {
+        if (string.IsNullOrWhiteSpace(SourceFile) || !System.IO.File.Exists(SourceFile))
+            return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(SourceFile!) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Failed to open source file: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task CopySourcePathAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(SourceFile) && Avalonia.Application.Current?.Clipboard is { } clipboard)
+        {
+            await clipboard.SetTextAsync(SourceFile);
+        }
     }
 
     [RelayCommand]

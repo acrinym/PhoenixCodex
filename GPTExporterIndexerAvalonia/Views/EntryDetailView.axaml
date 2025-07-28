@@ -9,7 +9,11 @@
         <TextBlock Text="Description" />
         <TextBox AcceptsReturn="True" TextWrapping="Wrap" Height="100" Text="{Binding Description}" />
         <TextBlock Text="Source File" />
-        <TextBox Text="{Binding SourceFile}" IsReadOnly="True" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBox Text="{Binding SourceFile}" IsReadOnly="True" Width="250"/>
+            <Button Content="Open" Command="{Binding OpenSourceFileCommand}"/>
+            <Button Content="Copy" Command="{Binding CopySourcePathCommand}"/>
+        </StackPanel>
         <Expander Header="Field Encoding">
             <StackPanel>
                 <TextBlock Text="Signal" />
