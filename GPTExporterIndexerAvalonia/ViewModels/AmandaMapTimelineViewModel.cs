@@ -4,6 +4,7 @@ using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using GPTExporterIndexerAvalonia.ViewModels.Messages;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
@@ -203,19 +204,26 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     /// View entry details
     /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private void ViewEntryDetails(NumberedMapEntry entry)
+    private async Task ViewEntryDetailsAsync(NumberedMapEntry entry)
     {
-        // TODO: Implement entry details view
-        // This could open a dialog or navigate to the AmandaMap tab
+        if (entry is null) return;
+        var vm = new EntryDetailViewModel();
+        vm.Load(entry);
+        var window = new Views.Dialogs.EntryDetailWindow { DataContext = vm, Title = $"Entry #{entry.Number}" };
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            await window.ShowDialog(desktop.MainWindow);
+        }
     }
 
     /// <summary>
     /// Edit entry
     /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private void EditEntry(NumberedMapEntry entry)
+    private async Task EditEntryAsync(NumberedMapEntry entry)
     {
-        // TODO: Implement entry editing
-        // This could open an edit dialog
+        if (entry is null) return;
+        await ViewEntryDetailsAsync(entry);
+        Refresh();
     }
-} 
+}

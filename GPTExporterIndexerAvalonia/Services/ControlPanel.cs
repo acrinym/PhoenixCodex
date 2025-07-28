@@ -1,11 +1,16 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using MessageBox.Avalonia;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
 
@@ -279,12 +284,6 @@ namespace GPTExporterIndexerAvalonia.Services
                 resources["MutedBrush"] = CreateMutedBrush(_customForeground);
         }
 
-        private object CreateCustomTheme()
-        {
-            // TODO: Implement custom theme creation
-            // For now, return null as a placeholder
-            return null;
-        }
 
         private IBrush CreateSecondaryBrush(IBrush background)
         {
@@ -479,6 +478,45 @@ namespace GPTExporterIndexerAvalonia.Services
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private Window? GetMainWindow()
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                return desktop.MainWindow;
+            }
+            return null;
+        }
+
+        private async Task ShowMessageAsync(string title, string message)
+        {
+            var window = GetMainWindow();
+            if (window is null)
+                return;
+
+            var msgBox = MessageBoxManager.GetMessageBoxStandardWindow(title, message);
+            await msgBox.ShowDialog(window);
+        }
+
+        private async Task<string?> ShowOpenFileDialogAsync(string title, string filterName, string[] extensions)
+        {
+            var window = GetMainWindow();
+            if (window is null) return null;
+
+            var fileType = new FilePickerFileType(filterName)
+            {
+                Patterns = extensions.Select(ext => $"*.{ext}").ToList()
+            };
+
+            var result = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = title,
+                AllowMultiple = false,
+                FileTypeFilter = new[] { fileType }
+            });
+
+            return result.FirstOrDefault()?.Path.LocalPath;
+        }
+
         private void ResetToDefaults()
         {
             SelectedTheme = "Magic";
@@ -492,7 +530,7 @@ namespace GPTExporterIndexerAvalonia.Services
             UseGradients = false;
         }
 
-        private void ExportTheme()
+        private async void ExportTheme()
         {
             try
             {
@@ -514,50 +552,41 @@ namespace GPTExporterIndexerAvalonia.Services
                 var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
                 
                 File.WriteAllText(filePath, json);
-                
-                // TODO: Show success message
+
+                await ShowMessageAsync("Export Complete", $"Theme saved to {filePath}");
             }
             catch (Exception ex)
             {
-                // TODO: Show error message
+                await ShowMessageAsync("Export Error", ex.Message);
             }
         }
 
-        private void ImportTheme()
+        private async void ImportTheme()
         {
             try
             {
-                // TODO: Implement file picker dialog
-                // For now, just show a placeholder
-                // var dialog = new OpenFileDialog
-                // {
-                //     Title = "Import Theme",
-                //     Filters = new List<FileDialogFilter>
-                //     {
-                //         new FileDialogFilter { Name = "JSON Files", Extensions = new List<string> { "json" } }
-                //     }
-                // };
-                // 
-                // if (dialog.ShowAsync() == true)
-                // {
-                //     var json = File.ReadAllText(dialog.FileName);
-                //     var settings = JsonSerializer.Deserialize<ThemeSettings>(json);
-                //     
-                //     // Apply imported settings
-                //     SelectedTheme = settings.SelectedTheme ?? "Magic";
-                //     CustomBackground = ParseBrush(settings.CustomBackground) ?? Brushes.White;
-                //     CustomForeground = ParseBrush(settings.CustomForeground) ?? Brushes.Black;
-                //     CustomAccent = ParseBrush(settings.CustomAccent) ?? Brushes.Blue;
-                //     FontFamily = settings.FontFamily ?? "Segoe UI";
-                //     FontSize = settings.FontSize ?? 14;
-                //     EnableAnimations = settings.EnableAnimations ?? true;
-                //     CornerRadius = settings.CornerRadius ?? 8;
-                //     UseGradients = settings.UseGradients ?? false;
-                // }
+                var filePath = await ShowOpenFileDialogAsync("Import Theme", "JSON Files", new[] { "json" });
+                if (string.IsNullOrWhiteSpace(filePath))
+                    return;
+
+                var json = File.ReadAllText(filePath);
+                var settings = JsonSerializer.Deserialize<ThemeSettings>(json);
+
+                SelectedTheme = settings?.SelectedTheme ?? "Magic";
+                CustomBackground = ParseBrush(settings?.CustomBackground) ?? Brushes.White;
+                CustomForeground = ParseBrush(settings?.CustomForeground) ?? Brushes.Black;
+                CustomAccent = ParseBrush(settings?.CustomAccent) ?? Brushes.Blue;
+                FontFamily = settings?.FontFamily ?? "Segoe UI";
+                FontSize = settings?.FontSize ?? 14;
+                EnableAnimations = settings?.EnableAnimations ?? true;
+                CornerRadius = settings?.CornerRadius ?? 8;
+                UseGradients = settings?.UseGradients ?? false;
+
+                await ShowMessageAsync("Import Complete", $"Theme '{Path.GetFileName(filePath)}' loaded.");
             }
             catch (Exception ex)
             {
-                // TODO: Show error message
+                await ShowMessageAsync("Import Error", ex.Message);
             }
         }
 
