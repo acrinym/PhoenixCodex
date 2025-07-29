@@ -14,7 +14,7 @@ public partial class TimelineViewModel : ObservableObject, IRecipient<RitualsCha
     private readonly GrimoireManagerViewModel _grimoireManager;
 
     [ObservableProperty]
-    private DateTime _selectedDate = DateTime.Today;
+    private DateTime? _selectedDate = DateTime.Today;
 
     public ObservableCollection<Ritual> Upcoming { get; } = new();
 

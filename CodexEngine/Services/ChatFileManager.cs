@@ -339,7 +339,7 @@ namespace CodexEngine.Services
                 }
             }
 
-            return Task.FromResult((duplicatesFound, duplicatesRemoved, removedFiles));
+            return Task.FromResult((DuplicatesFound: duplicatesFound, DuplicatesRemoved: duplicatesRemoved, RemovedFiles: removedFiles));
         }
 
         /// <summary>
@@ -390,7 +390,7 @@ namespace CodexEngine.Services
                 }
             }
 
-            return Task.FromResult((filesRenamed, renamedFiles));
+            return Task.FromResult((FilesRenamed: filesRenamed, RenamedFiles: renamedFiles));
         }
     }
 } 
