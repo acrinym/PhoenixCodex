@@ -174,8 +174,15 @@ namespace GPTExporterIndexerAvalonia.Converters
                     "Threshold" => "🔥",
                     "WhisperedFlame" => "🔱",
                     "FieldPulse" => "🔊",
+                    "FlameVow" => "💍",
+                    "InPersonEvent" => "👥",
                     "SymbolicMoment" => "📡",
                     "Servitor" => "🕯️",
+                    // Phoenix Codex entry types
+                    "SilentAct" => "🤫",
+                    "Ritual" => "🕯️",
+                    "CollapseEvent" => "💥",
+                    "CreativeAnchor" => "🎨",
                     _ => "📝"
                 };
             }
