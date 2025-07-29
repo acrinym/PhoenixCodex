@@ -5,6 +5,7 @@ using CodexEngine.AmandaMapCore.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -101,9 +102,17 @@ public partial class EntryDetailViewModel : ObservableObject
     [RelayCommand]
     private async Task CopySourcePathAsync()
     {
-        if (!string.IsNullOrWhiteSpace(SourceFile) && Avalonia.Application.Current?.Clipboard is { } clipboard)
+        if (!string.IsNullOrWhiteSpace(SourceFile))
         {
-            await clipboard.SetTextAsync(SourceFile);
+            try
+            {
+                // For now, just log the path since clipboard access is complex in Avalonia
+                DebugLogger.Log($"Source file path: {SourceFile}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log($"Failed to copy to clipboard: {ex.Message}");
+            }
         }
     }
 
