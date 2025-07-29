@@ -109,66 +109,74 @@ public partial class App : Application
             DebugLogger.Log("7. IDialogService registered.");
             services.AddSingleton<ISettingsService, SettingsService>();
             DebugLogger.Log("8. ISettingsService registered.");
+            
+            // Register ProgressService with its required Action parameters
+            services.AddSingleton<Action<double, string, string>>(provider => (percentage, message, details) => { });
+            services.AddSingleton<Action<bool>>(provider => (isRunning) => { });
+            services.AddSingleton<Action<string>>(provider => (error) => { });
+            services.AddSingleton<IProgressService, ProgressService>();
+            DebugLogger.Log("9. IProgressService registered.");
+            
             // THIS IS THE REQUIRED LINE TO FIX THE CRASH
             services.AddSingleton<IEntryParserService, EntryParserService>();
-            DebugLogger.Log("9. IEntryParserService registered.");
+            DebugLogger.Log("10. IEntryParserService registered.");
 
-            DebugLogger.Log("10. Registering Renderers...");
+            DebugLogger.Log("11. Registering Renderers...");
             // Register Renderers
             services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-            DebugLogger.Log("11. IMarkdownRenderer registered.");
+            DebugLogger.Log("12. IMarkdownRenderer registered.");
 
-            DebugLogger.Log("12. Registering ViewModels...");
+            DebugLogger.Log("13. Registering ViewModels...");
             // Register ViewModels
             services.AddSingleton<GrimoireManagerViewModel>();
-            DebugLogger.Log("13. GrimoireManagerViewModel registered.");
+            DebugLogger.Log("14. GrimoireManagerViewModel registered.");
             services.AddTransient<TimelineViewModel>();
-            DebugLogger.Log("14. TimelineViewModel registered.");
+            DebugLogger.Log("15. TimelineViewModel registered.");
             services.AddTransient<AmandaMapViewModel>();
-            DebugLogger.Log("15. AmandaMapViewModel registered.");
+            DebugLogger.Log("16. AmandaMapViewModel registered.");
             services.AddTransient<AmandaMapTimelineViewModel>();
-            DebugLogger.Log("16. AmandaMapTimelineViewModel registered.");
+            DebugLogger.Log("17. AmandaMapTimelineViewModel registered.");
             services.AddTransient<ChatLogViewModel>();
-            DebugLogger.Log("17. ChatLogViewModel registered.");
+            DebugLogger.Log("18. ChatLogViewModel registered.");
             services.AddTransient<RitualBuilderViewModel>();
-            DebugLogger.Log("18. RitualBuilderViewModel registered.");
+            DebugLogger.Log("19. RitualBuilderViewModel registered.");
             services.AddTransient<TagMapViewModel>();
-            DebugLogger.Log("19. TagMapViewModel registered.");
+            DebugLogger.Log("20. TagMapViewModel registered.");
             services.AddTransient<YamlInterpreterViewModel>();
-            DebugLogger.Log("20. YamlInterpreterViewModel registered.");
+            DebugLogger.Log("21. YamlInterpreterViewModel registered.");
             services.AddTransient<SettingsViewModel>();
-            DebugLogger.Log("21. SettingsViewModel registered.");
+            DebugLogger.Log("22. SettingsViewModel registered.");
             services.AddTransient<MainWindowViewModel>();
-            DebugLogger.Log("22. MainWindowViewModel registered.");
+            DebugLogger.Log("23. MainWindowViewModel registered.");
 
-            DebugLogger.Log("23. Registering Views...");
+            DebugLogger.Log("24. Registering Views...");
             // Register Views (for the ViewLocator)
             services.AddTransient<MainWindow>();
-            DebugLogger.Log("24. MainWindow registered.");
+            DebugLogger.Log("25. MainWindow registered.");
             services.AddTransient<GrimoireManagerView>();
-            DebugLogger.Log("25. GrimoireManagerView registered.");
+            DebugLogger.Log("26. GrimoireManagerView registered.");
             services.AddTransient<TimelineView>();
-            DebugLogger.Log("26. TimelineView registered.");
+            DebugLogger.Log("27. TimelineView registered.");
             services.AddTransient<AmandaMapView>();
-            DebugLogger.Log("27. AmandaMapView registered.");
+            DebugLogger.Log("28. AmandaMapView registered.");
             services.AddTransient<AmandaMapTimelineView>();
-            DebugLogger.Log("28. AmandaMapTimelineView registered.");
+            DebugLogger.Log("29. AmandaMapTimelineView registered.");
             services.AddTransient<TagMapView>();
-            DebugLogger.Log("29. TagMapView registered.");
+            DebugLogger.Log("30. TagMapView registered.");
             services.AddTransient<YamlInterpreterView>();
-            DebugLogger.Log("30. YamlInterpreterView registered.");
+            DebugLogger.Log("31. YamlInterpreterView registered.");
             services.AddTransient<ChatLogView>();
-            DebugLogger.Log("31. ChatLogView registered.");
+            DebugLogger.Log("32. ChatLogView registered.");
             services.AddTransient<RitualBuilderView>();
-            DebugLogger.Log("32. RitualBuilderView registered.");
+            DebugLogger.Log("33. RitualBuilderView registered.");
             services.AddTransient<SettingsView>();
-            DebugLogger.Log("33. SettingsView registered.");
+            DebugLogger.Log("34. SettingsView registered.");
             services.AddTransient<ThemeSettingsView>();
-            DebugLogger.Log("34. ThemeSettingsView registered.");
+            DebugLogger.Log("35. ThemeSettingsView registered.");
 
-            DebugLogger.Log("35. Building service provider...");
+            DebugLogger.Log("36. Building service provider...");
             var serviceProvider = services.BuildServiceProvider();
-            DebugLogger.Log("36. Service provider built successfully.");
+            DebugLogger.Log("37. Service provider built successfully.");
             DebugLogger.Log("=== ConfigureServices END ===");
             return serviceProvider;
         }
