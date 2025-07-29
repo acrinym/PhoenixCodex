@@ -31,7 +31,7 @@ namespace GPTExporterIndexerAvalonia.Services
         private double _cornerRadius;
         private bool _useGradients;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public string SelectedTheme
         {
@@ -185,6 +185,17 @@ namespace GPTExporterIndexerAvalonia.Services
 
         private ControlPanel()
         {
+            // Initialize non-nullable fields with default values
+            _selectedTheme = "Magic";
+            _customBackground = new SolidColorBrush(Colors.Transparent);
+            _customForeground = new SolidColorBrush(Colors.Black);
+            _customAccent = new SolidColorBrush(Colors.Blue);
+            _fontFamily = "Segoe UI";
+            _fontSize = 12.0;
+            _enableAnimations = true;
+            _cornerRadius = 4.0;
+            _useGradients = false;
+            
             // Initialize commands
             SetThemeCommand = ReactiveCommand.Create<string>(theme => SelectedTheme = theme);
             SaveSettingsCommand = ReactiveCommand.Create(SaveSettings);
@@ -473,7 +484,7 @@ namespace GPTExporterIndexerAvalonia.Services
             }
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

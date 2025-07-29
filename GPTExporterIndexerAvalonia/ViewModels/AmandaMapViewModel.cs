@@ -133,7 +133,7 @@ public partial class AmandaMapViewModel : ObservableObject,
         GroupedEntries.Clear();
         // Apply content filtering based on settings
         var filteredEntries = ProcessedEntries.Where(entry => 
-            !_settingsService.ShouldHideContent(entry.EntryType, null));
+            !_settingsService.ShouldHideContent(entry.EntryType, Array.Empty<string>()));
         
         var groups = filteredEntries.GroupBy(e => e.EntryType);
         foreach (var group in groups)
@@ -149,7 +149,7 @@ public partial class AmandaMapViewModel : ObservableObject,
     {
         // Apply content filtering based on settings
         var filteredEntries = entries.Where(entry => 
-            !_settingsService.ShouldHideContent(entry.EntryType, null));
+            !_settingsService.ShouldHideContent(entry.EntryType, Array.Empty<string>()));
         
         var grouped = filteredEntries.GroupBy(e => e.EntryType)
                             .Select(g => new EntryTypeGroup(g.Key, g.OrderBy(e => e.Number)))

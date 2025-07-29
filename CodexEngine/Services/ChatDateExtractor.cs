@@ -22,28 +22,28 @@ namespace CodexEngine.Services
             public DateTime? FirstDate { get; set; }
             public DateTime? LastDate { get; set; }
             public bool IsMultiDay => FirstDate.HasValue && LastDate.HasValue && 
-                                    FirstDate.Value.Date != LastDate.Value.Date;
+                                    FirstDate!.Value.Date != LastDate!.Value.Date;
             public int DaySpan => IsMultiDay ? 
-                (LastDate.Value.Date - FirstDate.Value.Date).Days + 1 : 1;
+                (LastDate!.Value.Date - FirstDate!.Value.Date).Days + 1 : 1;
             public string DateRangeString => GetDateRangeString();
             public string SuggestedFileName => GetSuggestedFileName();
 
             private string GetDateRangeString()
             {
                 if (!FirstDate.HasValue) return "Unknown";
-                if (!LastDate.HasValue || FirstDate.Value.Date == LastDate.Value.Date)
-                    return FirstDate.Value.ToString("yyyy-MM-dd");
+                if (!LastDate.HasValue || FirstDate!.Value.Date == LastDate!.Value.Date)
+                    return FirstDate!.Value.ToString("yyyy-MM-dd");
                 
-                return $"{FirstDate.Value:yyyy-MM-dd} to {LastDate.Value:yyyy-MM-dd}";
+                return $"{FirstDate!.Value:yyyy-MM-dd} to {LastDate!.Value:yyyy-MM-dd}";
             }
 
             private string GetSuggestedFileName()
             {
                 if (!FirstDate.HasValue) return "unknown-date";
-                if (!LastDate.HasValue || FirstDate.Value.Date == LastDate.Value.Date)
-                    return FirstDate.Value.ToString("yyyy-MM-dd");
+                if (!LastDate.HasValue || FirstDate!.Value.Date == LastDate!.Value.Date)
+                    return FirstDate!.Value.ToString("yyyy-MM-dd");
                 
-                return $"{FirstDate.Value:yyyy-MM-dd}_to_{LastDate.Value:yyyy-MM-dd}";
+                return $"{FirstDate!.Value:yyyy-MM-dd}_to_{LastDate!.Value:yyyy-MM-dd}";
             }
         }
 

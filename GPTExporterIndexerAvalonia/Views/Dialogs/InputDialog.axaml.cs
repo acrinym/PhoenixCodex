@@ -14,8 +14,11 @@ public partial class InputDialog : Window
     public InputDialog(string title, string prompt, string defaultText = "") : this()
     {
         Title = title;
-        this.FindControl<TextBlock>("PromptBlock").Text = prompt;
-        this.FindControl<TextBox>("InputBox").Text = defaultText;
+        var promptBlock = this.FindControl<TextBlock>("PromptBlock");
+        var inputBox = this.FindControl<TextBox>("InputBox");
+        
+        if (promptBlock != null) promptBlock.Text = prompt;
+        if (inputBox != null) inputBox.Text = defaultText;
     }
 
     private void InitializeComponent()
@@ -25,7 +28,8 @@ public partial class InputDialog : Window
 
     private void OnOk(object? sender, RoutedEventArgs e)
     {
-        Close(this.FindControl<TextBox>("InputBox").Text);
+        var inputBox = this.FindControl<TextBox>("InputBox");
+        Close(inputBox?.Text);
     }
 
     private void OnCancel(object? sender, RoutedEventArgs e)
