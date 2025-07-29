@@ -59,6 +59,16 @@ namespace CodexEngine.AmandaMapCore.Models
         public FieldPulseEntry() { EntryType = "FieldPulse"; }
     }
 
+    public class FlameVowEntry : NumberedMapEntry
+    {
+        public FlameVowEntry() { EntryType = "FlameVow"; }
+    }
+
+    public class InPersonEventEntry : NumberedMapEntry
+    {
+        public InPersonEventEntry() { EntryType = "InPersonEvent"; }
+    }
+
     public class SymbolicMomentEntry : NumberedMapEntry
     {
         public SymbolicMomentEntry() { EntryType = "SymbolicMoment"; }

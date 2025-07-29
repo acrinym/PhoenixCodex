@@ -38,6 +38,8 @@
                         <TextBlock Text="TagMap Tools" Classes="Header" Margin="0,10,0,0"/>
                         <Button Content="Generate TagMap..." Command="{Binding GenerateTagMapCommand}" Classes="Primary"/>
                         <Button Content="Update TagMap..." Command="{Binding UpdateTagMapCommand}"/>
+                        <TextBlock Text="Chat File Management" Classes="Header" Margin="0,10,0,0"/>
+                        <Button Content="Manage Chat Files..." Command="{Binding ManageChatFilesCommand}" Classes="Primary"/>
                         
                         <!-- Progress Section -->
                         <Border Classes="Card" Margin="0,10,0,0" IsVisible="{Binding IsOperationInProgress}">

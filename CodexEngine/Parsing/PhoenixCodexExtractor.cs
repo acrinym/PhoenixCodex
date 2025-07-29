@@ -38,6 +38,182 @@ namespace CodexEngine.Parsing
             "wand cycles", "servitor logs", "ritual formats", "sacred writing", "tone protocols"
         };
 
+        // Real-world Phoenix Codex logging patterns
+        private static readonly Regex PhoenixCodexLoggingPattern = new(
+            @"(?:Anchoring this in|Recording|Logging as|Adding to)\s*Phoenix Codex\s*" +
+            @"(?:Threshold|SilentAct|Ritual Log|Collapse Event)\s*" +
+            @"(?:#?\d+)?\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex PhoenixCodexThresholdPattern = new(
+            @"(?:Phoenix Codex\s+)?Threshold\s*(?<number>\d+)?\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex PhoenixCodexSilentActPattern = new(
+            @"(?:Phoenix Codex\s+)?SilentAct\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex PhoenixCodexRitualPattern = new(
+            @"(?:Phoenix Codex\s+)?Ritual Log\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex PhoenixCodexCollapsePattern = new(
+            @"(?:Phoenix Codex\s+)?Collapse Event\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        // NLP Classification Patterns based on Phoenix Codex Manifesto
+        private static readonly string[] PositiveIndicators = new[]
+        {
+            // Personal growth language
+            "i learned", "i discovered", "i realized", "i understand", "i think", "i believe",
+            "personal growth", "self-improvement", "development", "growth", "learning",
+            
+            // Emotional processing
+            "feeling", "emotion", "healing", "emotional", "processing", "reflection",
+            "self-reflection", "introspection", "awareness", "consciousness",
+            
+            // Practical advice
+            "how to", "steps to", "tips for", "advice", "strategy", "approach",
+            "technique", "method", "process", "guidance", "support",
+            
+            // Relationship content
+            "communication", "understanding", "connection", "relationship", "interaction",
+            "dialogue", "conversation", "sharing", "listening", "empathy",
+            
+            // Life skills
+            "organization", "productivity", "time management", "planning", "skills",
+            "practical", "real-world", "application", "implementation"
+        };
+
+        private static readonly string[] NegativeIndicators = new[]
+        {
+            // Magical terms (OFF LIMITS)
+            "spell", "ritual", "magic", "witch", "witchcraft", "magical", "enchantment",
+            "incantation", "casting", "supernatural", "mystical", "esoteric", "occult",
+            "magic user", "practitioner", "wizard", "sorcerer", "mage", "shaman",
+            
+            // Magical practices
+            "casting spells", "performing rituals", "magical practice", "witchcraft practice",
+            "magical symbols", "magical tools", "magical ceremonies", "magical traditions",
+            
+            // Supernatural content
+            "supernatural", "paranormal", "mystical", "esoteric", "occult", "divine",
+            "spiritual practice", "energy work", "chakra", "aura", "vibration"
+        };
+
+        /// <summary>
+        /// Classifies content based on Phoenix Codex Manifesto guidelines
+        /// </summary>
+        public static ContentClassification ClassifyContent(string content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+                return new ContentClassification { IsPhoenixCodex = false, Confidence = 0, Reason = "Empty content" };
+
+            var lowerContent = content.ToLowerInvariant();
+            var positiveScore = 0;
+            var negativeScore = 0;
+
+            // Count positive indicators
+            foreach (var indicator in PositiveIndicators)
+            {
+                if (lowerContent.Contains(indicator))
+                {
+                    positiveScore++;
+                }
+            }
+
+            // Count negative indicators (magical content - OFF LIMITS)
+            foreach (var indicator in NegativeIndicators)
+            {
+                if (lowerContent.Contains(indicator))
+                {
+                    negativeScore++;
+                }
+            }
+
+            // Calculate confidence and decision
+            var totalIndicators = positiveScore + negativeScore;
+            var confidence = totalIndicators > 0 ? (double)positiveScore / totalIndicators : 0;
+
+            var classification = new ContentClassification
+            {
+                PositiveScore = positiveScore,
+                NegativeScore = negativeScore,
+                Confidence = confidence,
+                IsPhoenixCodex = positiveScore > 0 && negativeScore == 0, // Must have positive indicators and NO negative indicators
+                Reason = GenerateClassificationReason(positiveScore, negativeScore, confidence)
+            };
+
+            return classification;
+        }
+
+        private static string GenerateClassificationReason(int positiveScore, int negativeScore, double confidence)
+        {
+            if (negativeScore > 0)
+                return $"Contains {negativeScore} magical/supernatural terms (OFF LIMITS per manifesto)";
+            
+            if (positiveScore == 0)
+                return "No Phoenix Codex indicators found";
+            
+            if (confidence >= 0.8)
+                return $"Strong Phoenix Codex content ({positiveScore} positive indicators)";
+            
+            if (confidence >= 0.5)
+                return $"Moderate Phoenix Codex content ({positiveScore} positive indicators)";
+            
+            return $"Weak Phoenix Codex content ({positiveScore} positive indicators)";
+        }
+
+        /// <summary>
+        /// Determines the category of Phoenix Codex content based on keywords
+        /// </summary>
+        private static string DetermineCategory(string content)
+        {
+            var lowerContent = content.ToLowerInvariant();
+            
+            // Phoenix Codex specific categories (from your real-world usage)
+            if (lowerContent.Contains("threshold"))
+                return "Threshold";
+            if (lowerContent.Contains("silentact") || lowerContent.Contains("silent act"))
+                return "SilentAct";
+            if (lowerContent.Contains("ritual") || lowerContent.Contains("ritual log"))
+                return "Ritual";
+            if (lowerContent.Contains("collapse") || lowerContent.Contains("collapse event"))
+                return "CollapseEvent";
+            
+            // Personal Growth & Development
+            if (lowerContent.Contains("personal growth") || lowerContent.Contains("self-improvement") || 
+                lowerContent.Contains("development") || lowerContent.Contains("growth"))
+                return "Personal Growth";
+            
+            // Emotional Processing
+            if (lowerContent.Contains("feeling") || lowerContent.Contains("emotion") || 
+                lowerContent.Contains("healing") || lowerContent.Contains("emotional"))
+                return "Emotional Processing";
+            
+            // Relationship & Social Dynamics
+            if (lowerContent.Contains("communication") || lowerContent.Contains("relationship") || 
+                lowerContent.Contains("connection") || lowerContent.Contains("interaction"))
+                return "Relationships";
+            
+            // Practical Life Skills
+            if (lowerContent.Contains("organization") || lowerContent.Contains("productivity") || 
+                lowerContent.Contains("time management") || lowerContent.Contains("planning"))
+                return "Life Skills";
+            
+            // Creative Expression
+            if (lowerContent.Contains("creative") || lowerContent.Contains("artistic") || 
+                lowerContent.Contains("writing") || lowerContent.Contains("expression"))
+                return "Creative Expression";
+            
+            // Professional & Educational
+            if (lowerContent.Contains("career") || lowerContent.Contains("professional") || 
+                lowerContent.Contains("learning") || lowerContent.Contains("education"))
+                return "Professional Development";
+            
+            return "General";
+        }
+
         /// <summary>
         /// Determines if a chat message is Phoenix Codex-related based on keywords/phrases.
         /// </summary>
@@ -131,16 +307,34 @@ namespace CodexEngine.Parsing
                 if (int.TryParse(numberStr, out var number))
                 {
                     var rawContent = ExtractContentAfterMatch(content, match);
+                    
+                    // Apply NLP classification based on Phoenix Codex Manifesto
+                    var classification = ClassifyContent(rawContent);
+                    
                     var entry = new PhoenixCodexEntry
                     {
                         Title = title,
                         RawContent = rawContent,
                         Number = number,
                         Date = ExtractDateFromText(rawContent),
-                        SourceFile = sourceFile
+                        SourceFile = sourceFile,
+                        Classification = classification,
+                        RespectsBoundaries = classification.IsPhoenixCodex && classification.NegativeScore == 0,
+                        Category = DetermineCategory(rawContent)
                     };
+                    
                     entry.IsAmandaRelated = IsPhoenixCodexRelatedChat(entry.RawContent);
-                    entries.Add(entry);
+                    
+                    // Only add entries that respect Amanda's boundaries (no magical content)
+                    if (entry.RespectsBoundaries)
+                    {
+                        entries.Add(entry);
+                        DebugLogger.Log($"PhoenixCodex: Added entry #{number} - {title} (Confidence: {classification.Confidence:P0})");
+                    }
+                    else
+                    {
+                        DebugLogger.Log($"PhoenixCodex: REJECTED entry #{number} - {title} (Reason: {classification.Reason})");
+                    }
                 }
             }
 
@@ -238,6 +432,21 @@ namespace CodexEngine.Parsing
                             {
                                 entry.IsAmandaRelated = IsPhoenixCodexRelatedChat(entry.RawContent);
                                 entry.SourceFile = sourceFile;
+                                
+                                // Apply NLP classification for JSON entries
+                                if (entry is PhoenixCodexEntry phoenixEntry)
+                                {
+                                    var classification = ClassifyContent(entry.RawContent);
+                                    phoenixEntry.Classification = classification;
+                                    phoenixEntry.RespectsBoundaries = classification.IsPhoenixCodex && classification.NegativeScore == 0;
+                                    phoenixEntry.Category = DetermineCategory(entry.RawContent);
+                                    
+                                    if (!phoenixEntry.RespectsBoundaries)
+                                    {
+                                        DebugLogger.Log($"PhoenixCodex: REJECTED JSON entry #{entry.Number} (Reason: {classification.Reason})");
+                                        continue; // Skip this entry
+                                    }
+                                }
                             }
                             entries.AddRange(extractedEntries);
                         }
@@ -322,11 +531,49 @@ namespace CodexEngine.Parsing
     /// <summary>
     /// Represents a Phoenix Codex entry found in chat files.
     /// </summary>
+    /// <summary>
+    /// Represents the classification result for Phoenix Codex content
+    /// </summary>
+    public class ContentClassification
+    {
+        public bool IsPhoenixCodex { get; set; }
+        public double Confidence { get; set; }
+        public int PositiveScore { get; set; }
+        public int NegativeScore { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+    }
+
     public class PhoenixCodexEntry : NumberedMapEntry
     {
+        public ContentClassification Classification { get; set; } = new();
+        public string Category { get; set; } = string.Empty;
+        public bool RespectsBoundaries { get; set; } = true;
+
         public PhoenixCodexEntry()
         {
             EntryType = "PhoenixCodex";
         }
+    }
+
+    // Specific Phoenix Codex entry types
+    public class PhoenixCodexThresholdEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexThresholdEntry() { EntryType = "PhoenixCodexThreshold"; }
+    }
+
+    public class PhoenixCodexSilentActEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexSilentActEntry() { EntryType = "PhoenixCodexSilentAct"; }
+    }
+
+    public class PhoenixCodexRitualEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexRitualEntry() { EntryType = "PhoenixCodexRitual"; }
+    }
+
+    public class PhoenixCodexCollapseEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexCollapseEntry() { EntryType = "PhoenixCodexCollapse"; }
     }
 } 

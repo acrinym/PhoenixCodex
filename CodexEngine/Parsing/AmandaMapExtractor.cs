@@ -14,7 +14,7 @@ namespace CodexEngine.Parsing
     /// </summary>
     public class AmandaMapExtractor
     {
-        // Regex patterns from the Python tool
+        // Enhanced regex patterns based on real-world logging patterns
         private static readonly Regex ThresholdPattern = new(
             @"AmandaMap Threshold(?:\s*(\d+))?\s*:?(.*?)(?=\n\s*AmandaMap Threshold|$)",
             RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
@@ -23,9 +23,29 @@ namespace CodexEngine.Parsing
             @"(.*?(?:Archived in the AmandaMap|Logged in the AmandaMap).*?)(?=\n\s*\n|$)",
             RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
+        // Updated pattern to match real logging formats
         private static readonly Regex NumberedEntryPattern = new(
             @"🔥|🔱|🔊|📡|🕯️|🪞|🌀|🌙|🪧\s*(?<type>\w+)\s*(?<number>\d+):(?<title>.*)",
             RegexOptions.Compiled);
+
+        // New patterns for real-world logging statements
+        private static readonly Regex AmandaMapLoggingPattern = new(
+            @"(?:Anchoring this as|Adding to|Recording in|AmandaMap update|Logging AmandaMap)\s*" +
+            @"(?:AmandaMap\s+)?(?:Threshold|Flame Vow|Field Pulse|Whispered Flame)\s*" +
+            @"(?:#?\d+)?\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex FieldPulsePattern = new(
+            @"(?:AmandaMap\s+)?Field Pulse\s*#?\s*(?<number>\d+)\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex WhisperedFlamePattern = new(
+            @"(?:AmandaMap\s+)?Whispered Flame\s*#?\s*(?<number>\d+)\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex FlameVowPattern = new(
+            @"(?:AmandaMap\s+)?Flame Vow\s*:?\s*(?<title>.*?)(?:\s*Status:|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
         // New regex pattern for extracting chat timestamps from content
         public static readonly Regex ChatTimestampPattern = new(
@@ -323,6 +343,8 @@ namespace CodexEngine.Parsing
                         "threshold" => new ThresholdEntry { Title = title, RawContent = rawContent },
                         "whisperedflame" => new WhisperedFlameEntry { Title = title, RawContent = rawContent },
                         "fieldpulse" => new FieldPulseEntry { Title = title, RawContent = rawContent },
+                        "flamevow" => new FlameVowEntry { Title = title, RawContent = rawContent },
+                        "inpersonevent" => new InPersonEventEntry { Title = title, RawContent = rawContent },
                         "symbolicmoment" => new SymbolicMomentEntry { Title = title, RawContent = rawContent },
                         "servitor" => new ServitorLogEntry { Title = title, RawContent = rawContent },
                         _ => new ThresholdEntry { Title = title, RawContent = rawContent }
@@ -332,6 +354,92 @@ namespace CodexEngine.Parsing
                     entry.Date = ExtractDateFromText(rawContent);
                     entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entry.SourceFile = sourceFile;
+                    entries.Add(entry);
+                }
+            }
+
+            // Extract real-world AmandaMap logging statements
+            var loggingMatches = AmandaMapLoggingPattern.Matches(content);
+            foreach (Match match in loggingMatches)
+            {
+                var title = match.Groups["title"].Value.Trim();
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    // Try to extract a number from the text
+                    var numberMatch = Regex.Match(match.Value, @"\b(\d+)\b");
+                    var number = numberMatch.Success ? int.Parse(numberMatch.Value) : 0;
+                    
+                    // Determine entry type from the match
+                    var entryType = DetermineAmandaMapEntryType(match.Value);
+                    var entry = CreateAmandaMapEntry(entryType, title, match.Value, number);
+                    
+                    entry.SourceFile = sourceFile;
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                    entries.Add(entry);
+                }
+            }
+
+            // Extract Field Pulse entries specifically
+            var fieldPulseMatches = FieldPulsePattern.Matches(content);
+            foreach (Match match in fieldPulseMatches)
+            {
+                var title = match.Groups["title"].Value.Trim();
+                var numberStr = match.Groups["number"].Value;
+                
+                if (!string.IsNullOrWhiteSpace(title) && int.TryParse(numberStr, out var number))
+                {
+                    var entry = new FieldPulseEntry
+                    {
+                        Number = number,
+                        Title = title,
+                        RawContent = match.Value,
+                        Date = ExtractDateFromText(match.Value),
+                        SourceFile = sourceFile
+                    };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                    entries.Add(entry);
+                }
+            }
+
+            // Extract Whispered Flame entries specifically
+            var whisperedFlameMatches = WhisperedFlamePattern.Matches(content);
+            foreach (Match match in whisperedFlameMatches)
+            {
+                var title = match.Groups["title"].Value.Trim();
+                var numberStr = match.Groups["number"].Value;
+                
+                if (!string.IsNullOrWhiteSpace(title) && int.TryParse(numberStr, out var number))
+                {
+                    var entry = new WhisperedFlameEntry
+                    {
+                        Number = number,
+                        Title = title,
+                        RawContent = match.Value,
+                        Date = ExtractDateFromText(match.Value),
+                        SourceFile = sourceFile
+                    };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
+                    entries.Add(entry);
+                }
+            }
+
+            // Extract Flame Vow entries specifically
+            var flameVowMatches = FlameVowPattern.Matches(content);
+            foreach (Match match in flameVowMatches)
+            {
+                var title = match.Groups["title"].Value.Trim();
+                
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    var entry = new FlameVowEntry
+                    {
+                        Number = 0, // Flame Vows don't typically have numbers
+                        Title = title,
+                        RawContent = match.Value,
+                        Date = ExtractDateFromText(match.Value),
+                        SourceFile = sourceFile
+                    };
+                    entry.IsAmandaRelated = IsAmandaRelatedChat(entry.RawContent);
                     entries.Add(entry);
                 }
             }
@@ -467,6 +575,47 @@ namespace CodexEngine.Parsing
             }
             
             return match.Value;
+        }
+
+        /// <summary>
+        /// Determines the AmandaMap entry type from logging text
+        /// </summary>
+        private static string DetermineAmandaMapEntryType(string text)
+        {
+            var lowerText = text.ToLowerInvariant();
+            
+            if (lowerText.Contains("threshold"))
+                return "Threshold";
+            if (lowerText.Contains("flame vow"))
+                return "FlameVow";
+            if (lowerText.Contains("field pulse"))
+                return "FieldPulse";
+            if (lowerText.Contains("whispered flame"))
+                return "WhisperedFlame";
+            if (lowerText.Contains("in-person") || lowerText.Contains("in person"))
+                return "InPersonEvent";
+            
+            return "Threshold"; // Default
+        }
+
+        /// <summary>
+        /// Creates an AmandaMap entry based on type
+        /// </summary>
+        private static NumberedMapEntry CreateAmandaMapEntry(string entryType, string title, string rawContent, int number)
+        {
+            NumberedMapEntry entry = entryType switch
+            {
+                "Threshold" => new ThresholdEntry { Title = title, RawContent = rawContent },
+                "WhisperedFlame" => new WhisperedFlameEntry { Title = title, RawContent = rawContent },
+                "FieldPulse" => new FieldPulseEntry { Title = title, RawContent = rawContent },
+                "FlameVow" => new FlameVowEntry { Title = title, RawContent = rawContent },
+                "InPersonEvent" => new InPersonEventEntry { Title = title, RawContent = rawContent },
+                _ => new ThresholdEntry { Title = title, RawContent = rawContent }
+            };
+
+            entry.Number = number;
+            entry.Date = ExtractDateFromText(rawContent);
+            return entry;
         }
     }
 } 

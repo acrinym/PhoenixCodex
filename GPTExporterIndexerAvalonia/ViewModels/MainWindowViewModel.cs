@@ -35,6 +35,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IDialogService _dialogService;
     private readonly IEntryParserService _entryParserService;
     private readonly IProgressService _progressService;
+    private readonly CodexEngine.Services.ChatFileManager _chatFileManager;
 
     // Sub-ViewModels for tabs
     public GrimoireManagerViewModel GrimoireViewModel { get; }
@@ -85,6 +86,7 @@ public partial class MainWindowViewModel : ObservableObject
         IFileParsingService fileParsingService,
         IDialogService dialogService,
         IEntryParserService entryParserService,
+        IProgressService progressService,
         GrimoireManagerViewModel grimoireViewModel,
         TimelineViewModel timelineViewModel,
         AmandaMapViewModel amandaMapViewModel,
@@ -129,6 +131,9 @@ public partial class MainWindowViewModel : ObservableObject
                     Status = $"Error: {error}";
                 }
             );
+
+            DebugLogger.Log("3.5. Creating chat file manager...");
+            _chatFileManager = new CodexEngine.Services.ChatFileManager();
 
             DebugLogger.Log("4. Assigning ViewModels...");
             GrimoireViewModel = grimoireViewModel;
@@ -928,5 +933,94 @@ public partial class MainWindowViewModel : ObservableObject
             File.AppendAllLines(logPath, deletedFiles);
         }
         await _dialogService.ShowMessageAsync("Delete Complete", $"Deleted {deletedFiles.Count} files.");
+    }
+
+    [RelayCommand]
+    private async Task ManageChatFiles()
+    {
+        try
+        {
+            // Get the directory to manage
+            var directoryPath = await _dialogService.ShowOpenFolderDialogAsync("Select Chat Files Directory");
+            if (string.IsNullOrWhiteSpace(directoryPath))
+            {
+                return;
+            }
+
+            // Show options using simple dialogs
+            await _dialogService.ShowMessageAsync("Chat File Management", 
+                "This will manage chat files in the selected directory.\n\n" +
+                "Options:\n" +
+                "• Remove duplicate files\n" +
+                "• Rename files with correct dates\n" +
+                "• Preview mode (dry run)\n\n" +
+                "Click OK to proceed with all options enabled.");
+
+            // For now, use default options (all enabled, with dry run)
+            var removeDuplicates = true;
+            var renameFiles = true;
+            var dryRun = true;
+
+            // Update UI
+            IsOperationInProgress = true;
+            ProgressMessage = "Managing chat files...";
+            ProgressDetails = $"Processing directory: {directoryPath}";
+            ProgressPercentage = 0;
+
+            // Run the management operation
+            var result = await _chatFileManager.ManageChatFilesAsync(
+                directoryPath, 
+                removeDuplicates, 
+                renameFiles, 
+                dryRun);
+
+            // Update progress
+            ProgressPercentage = 100;
+            ProgressMessage = "Chat file management completed";
+            ProgressDetails = $"Total: {result.TotalFiles}, Duplicates: {result.DuplicatesFound}, " +
+                           $"Removed: {result.DuplicatesRemoved}, Renamed: {result.FilesRenamed}";
+
+            // Show results
+            var resultMessage = $"Chat File Management Results:\n\n" +
+                              $"Total Files: {result.TotalFiles}\n" +
+                              $"Duplicates Found: {result.DuplicatesFound}\n" +
+                              $"Duplicates Removed: {result.DuplicatesRemoved}\n" +
+                              $"Files Renamed: {result.FilesRenamed}\n" +
+                              $"Errors: {result.Errors}";
+
+            if (result.RenamedFiles.Count > 0)
+            {
+                resultMessage += "\n\nRenamed Files:\n" + string.Join("\n", result.RenamedFiles.Take(10));
+                if (result.RenamedFiles.Count > 10)
+                    resultMessage += $"\n... and {result.RenamedFiles.Count - 10} more";
+            }
+
+            if (result.RemovedFiles.Count > 0)
+            {
+                resultMessage += "\n\nRemoved Files:\n" + string.Join("\n", result.RemovedFiles.Take(10));
+                if (result.RemovedFiles.Count > 10)
+                    resultMessage += $"\n... and {result.RemovedFiles.Count - 10} more";
+            }
+
+            if (result.ErrorsList.Count > 0)
+            {
+                resultMessage += "\n\nErrors:\n" + string.Join("\n", result.ErrorsList.Take(5));
+                if (result.ErrorsList.Count > 5)
+                    resultMessage += $"\n... and {result.ErrorsList.Count - 5} more errors";
+            }
+
+            await _dialogService.ShowMessageAsync("Chat File Management Complete", resultMessage);
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowMessageAsync("Error", $"Failed to manage chat files: {ex.Message}");
+            DebugLogger.Log($"Error in ManageChatFiles: {ex}");
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            ProgressMessage = "Ready";
+            ProgressDetails = "";
+        }
     }
 }
