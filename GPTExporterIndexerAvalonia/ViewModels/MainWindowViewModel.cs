@@ -41,6 +41,7 @@ public partial class MainWindowViewModel : ObservableObject
     public GrimoireManagerViewModel GrimoireViewModel { get; }
     public TimelineViewModel TimelineViewModel { get; }
     public AmandaMapViewModel AmandaMapViewModel { get; }
+    public PhoenixCodexTimelineViewModel PhoenixCodexTimelineViewModel { get; }
     public TagMapViewModel TagMapViewModel { get; }
     public YamlInterpreterViewModel YamlInterpreterViewModel { get; }
     public ChatLogViewModel ChatLogViewModel { get; }
@@ -90,6 +91,7 @@ public partial class MainWindowViewModel : ObservableObject
         GrimoireManagerViewModel grimoireViewModel,
         TimelineViewModel timelineViewModel,
         AmandaMapViewModel amandaMapViewModel,
+        PhoenixCodexTimelineViewModel phoenixCodexTimelineViewModel,
         TagMapViewModel tagMapViewModel,
         YamlInterpreterViewModel yamlInterpreterViewModel,
         ChatLogViewModel chatLogViewModel,
@@ -139,6 +141,7 @@ public partial class MainWindowViewModel : ObservableObject
             GrimoireViewModel = grimoireViewModel;
             TimelineViewModel = timelineViewModel;
             AmandaMapViewModel = amandaMapViewModel;
+            PhoenixCodexTimelineViewModel = phoenixCodexTimelineViewModel;
             TagMapViewModel = tagMapViewModel;
             YamlInterpreterViewModel = yamlInterpreterViewModel;
             ChatLogViewModel = chatLogViewModel;

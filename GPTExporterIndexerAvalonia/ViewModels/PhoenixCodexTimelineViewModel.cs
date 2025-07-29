@@ -12,9 +12,9 @@ using System.Diagnostics;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<AddNewAmandaMapEntryMessage>
+public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipient<AddNewPhoenixCodexEntryMessage>
 {
-    private readonly AmandaMapViewModel _amandaMapViewModel;
+    private readonly PhoenixCodexViewModel _phoenixCodexViewModel;
 
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
@@ -25,41 +25,41 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     [ObservableProperty]
     private bool _showOnlyDatedEntries = false;
 
-    public ObservableCollection<NumberedMapEntry> TimelineEntries { get; } = new();
-    public ObservableCollection<NumberedMapEntry> SelectedDateEntries { get; } = new();
+    public ObservableCollection<PhoenixCodexEntry> TimelineEntries { get; } = new();
+    public ObservableCollection<PhoenixCodexEntry> SelectedDateEntries { get; } = new();
     public ObservableCollection<string> AvailableEntryTypes { get; } = new();
 
-    public AmandaMapTimelineViewModel(IMessenger messenger, AmandaMapViewModel amandaMapViewModel)
+    public PhoenixCodexTimelineViewModel(IMessenger messenger, PhoenixCodexViewModel phoenixCodexViewModel)
     {
-        _amandaMapViewModel = amandaMapViewModel;
+        _phoenixCodexViewModel = phoenixCodexViewModel;
         messenger.RegisterAll(this);
         
-        // Initialize entry types based on actual AmandaMap entry types
+        // Initialize entry types based on actual Phoenix Codex entry types
         AvailableEntryTypes.Add("All");
         AvailableEntryTypes.Add("Threshold");
-        AvailableEntryTypes.Add("WhisperedFlame");
-        AvailableEntryTypes.Add("FieldPulse");
-        AvailableEntryTypes.Add("FlameVow");
-        AvailableEntryTypes.Add("InPersonEvent");
+        AvailableEntryTypes.Add("SilentAct");
+        AvailableEntryTypes.Add("Ritual");
+        AvailableEntryTypes.Add("CollapseEvent");
+        AvailableEntryTypes.Add("CreativeAnchor");
         
         Refresh();
     }
 
-    // Receive the message that new AmandaMap entries have been added
-    public void Receive(AddNewAmandaMapEntryMessage message)
+    // Receive the message that new Phoenix Codex entries have been added
+    public void Receive(AddNewPhoenixCodexEntryMessage message)
     {
         Refresh();
     }
 
     /// <summary>
-    /// Refreshes the timeline with current AmandaMap entries
+    /// Refreshes the timeline with current Phoenix Codex entries
     /// </summary>
     public void Refresh()
     {
         TimelineEntries.Clear();
         SelectedDateEntries.Clear();
 
-        var entries = _amandaMapViewModel.ProcessedEntries;
+        var entries = _phoenixCodexViewModel.ProcessedEntries;
 
         // Filter by entry type if not "All"
         var filteredEntries = SelectedEntryType == "All" 
@@ -109,19 +109,18 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     private void UpdateSelectedDateEntries()
     {
         SelectedDateEntries.Clear();
-
-        var entriesForDate = TimelineEntries
-            .Where(e => e.Date.Date == SelectedDate.Date)
-            .OrderBy(e => e.Number);
-
-        foreach (var entry in entriesForDate)
+        
+        var entriesForDate = TimelineEntries.Where(e => 
+            e.Date.Date == SelectedDate.Date).ToList();
+        
+        foreach (var entry in entriesForDate.OrderBy(e => e.Date))
         {
             SelectedDateEntries.Add(entry);
         }
     }
 
     /// <summary>
-    /// Gets entries for a specific date (for calendar highlighting)
+    /// Checks if there are entries for a specific date
     /// </summary>
     public bool HasEntriesForDate(DateTime date)
     {
@@ -137,114 +136,115 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     }
 
     /// <summary>
-    /// Gets a summary of entries for a specific date
+    /// Gets a summary string for a specific date
     /// </summary>
     public string GetDateSummary(DateTime date)
     {
-        var entries = TimelineEntries.Where(e => e.Date.Date == date.Date).ToList();
-        if (!entries.Any()) return string.Empty;
-
-        var types = entries.GroupBy(e => e.EntryType)
-                          .Select(g => $"{g.Key}: {g.Count()}")
-                          .ToList();
-
-        return string.Join(", ", types);
+        var count = GetEntryCountForDate(date);
+        if (count == 0)
+            return "No entries";
+        else if (count == 1)
+            return "1 entry";
+        else
+            return $"{count} entries";
     }
 
-    /// <summary>
-    /// Navigate to a specific date
-    /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToDate(DateTime date)
     {
         SelectedDate = date;
+        UpdateSelectedDateEntries();
     }
 
-    /// <summary>
-    /// Navigate to today
-    /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToToday()
     {
         SelectedDate = DateTime.Today;
+        UpdateSelectedDateEntries();
     }
 
-    /// <summary>
-    /// Navigate to the next date with entries
-    /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToNextEntry()
     {
         var nextEntry = TimelineEntries
-            .Where(e => e.Date.Date > SelectedDate.Date)
+            .Where(e => e.Date > SelectedDate)
             .OrderBy(e => e.Date)
             .FirstOrDefault();
 
         if (nextEntry != null)
         {
-            SelectedDate = nextEntry.Date.Date;
+            SelectedDate = nextEntry.Date;
+            UpdateSelectedDateEntries();
         }
     }
 
-    /// <summary>
-    /// Navigate to the previous date with entries
-    /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToPreviousEntry()
     {
         var previousEntry = TimelineEntries
-            .Where(e => e.Date.Date < SelectedDate.Date)
+            .Where(e => e.Date < SelectedDate)
             .OrderByDescending(e => e.Date)
             .FirstOrDefault();
 
         if (previousEntry != null)
         {
-            SelectedDate = previousEntry.Date.Date;
+            SelectedDate = previousEntry.Date;
+            UpdateSelectedDateEntries();
         }
     }
 
-    /// <summary>
-    /// View entry details
-    /// </summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task ViewEntryDetailsAsync(NumberedMapEntry entry)
+    private async Task ViewEntryDetailsAsync(PhoenixCodexEntry entry)
     {
-        if (entry is null) return;
-        var vm = new EntryDetailViewModel();
-        vm.Load(entry);
-        var window = new Views.Dialogs.EntryDetailWindow { DataContext = vm, Title = $"Entry #{entry.Number}" };
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
-        {
-            await window.ShowDialog(desktop.MainWindow);
-        }
-    }
-
-    /// <summary>
-    /// Edit entry
-    /// </summary>
-    [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task EditEntryAsync(NumberedMapEntry entry)
-    {
-        if (entry is null) return;
-        await ViewEntryDetailsAsync(entry);
-        Refresh();
-    }
-
-    /// <summary>
-    /// Open the source file for an entry using the OS default application.
-    /// </summary>
-    [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private void OpenSourceFile(NumberedMapEntry entry)
-    {
-        if (entry?.SourceFile is null || !System.IO.File.Exists(entry.SourceFile))
-            return;
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(entry.SourceFile) { UseShellExecute = true });
+            var details = $"Title: {entry.Title}\n" +
+                         $"Type: {entry.EntryType}\n" +
+                         $"Number: {entry.Number}\n" +
+                         $"Date: {entry.Date:yyyy-MM-dd}\n" +
+                         $"Source: {Path.GetFileName(entry.SourceFile)}\n\n" +
+                         $"Content:\n{entry.RawContent}";
+
+            // For now, just log the details. In a real app, you'd show a dialog
+            DebugLogger.Log($"Phoenix Codex Entry Details: {details}");
         }
         catch (Exception ex)
         {
-            DebugLogger.Log($"Failed to open source file: {ex.Message}");
+            DebugLogger.Log($"Error viewing entry details: {ex.Message}");
         }
     }
-}
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private async Task EditEntryAsync(PhoenixCodexEntry entry)
+    {
+        try
+        {
+            // For now, just log the edit action. In a real app, you'd open an editor
+            DebugLogger.Log($"Edit Phoenix Codex Entry: {entry.Title}");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Error editing entry: {ex.Message}");
+        }
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void OpenSourceFile(PhoenixCodexEntry entry)
+    {
+        try
+        {
+            if (File.Exists(entry.SourceFile))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = entry.SourceFile,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Error opening source file: {ex.Message}");
+        }
+    }
+} 

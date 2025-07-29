@@ -49,6 +49,12 @@
                     </controls:ErrorBoundary>
                 </TabItem>
 
+                <TabItem Header="🪶 Phoenix Codex Timeline">
+                    <controls:ErrorBoundary>
+                        <views:PhoenixCodexTimelineView/>
+                    </controls:ErrorBoundary>
+                </TabItem>
+
                 <TabItem Header="TagMap">
                     <controls:ErrorBoundary>
                         <views:TagMapView/>

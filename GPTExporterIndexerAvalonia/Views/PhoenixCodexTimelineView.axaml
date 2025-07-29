@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
-             x:Class="GPTExporterIndexerAvalonia.Views.AmandaMapTimelineView"
-             DataContext="{Binding AmandaMapTimelineViewModel}">
+             x:Class="GPTExporterIndexerAvalonia.Views.PhoenixCodexTimelineView"
+             DataContext="{Binding PhoenixCodexTimelineViewModel}">
     
     <Design.DataContext>
-        <vm:AmandaMapTimelineViewModel />
+        <vm:PhoenixCodexTimelineViewModel />
     </Design.DataContext>
     
     <Grid ColumnDefinitions="400,*" Margin="20">
@@ -19,7 +19,7 @@
             <StackPanel Margin="16">
                 
                 <!-- Header -->
-                <TextBlock Text="📅 Timeline Navigation" 
+                <TextBlock Text="🪶 Phoenix Codex Timeline" 
                            FontSize="18" 
                            FontWeight="Bold" 
                            Margin="0,0,0,16"/>
@@ -93,7 +93,7 @@
                 
                 <!-- Header -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                    <TextBlock Text="📋 Timeline Entries" 
+                    <TextBlock Text="🪶 Phoenix Codex Entries" 
                                FontSize="18" 
                                FontWeight="Bold" 
                                Margin="0,0,0,8"/>
@@ -118,7 +118,7 @@
                                         <StackPanel Grid.Row="0" Grid.Column="0" 
                                                     Margin="0,0,12,0"
                                                     HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding EntryType, Converter={StaticResource EntryTypeToIconConverter}}"
+                                            <TextBlock Text="🪶"
                                                        FontSize="24"
                                                        HorizontalAlignment="Center"/>
                                             <TextBlock Text="{Binding EntryType}"
@@ -163,7 +163,8 @@
                                             <Button Content="✏️ Edit"
                                                     Classes="Secondary"
                                                     Command="{Binding $parent[UserControl].DataContext.EditEntryCommand}"
-                                                    CommandParameter="{Binding}"/>
+                                                    CommandParameter="{Binding}"
+                                                    Margin="0,0,8,0"/>
                                             <Button Content="📂 Open File"
                                                     Classes="Secondary"
                                                     Command="{Binding $parent[UserControl].DataContext.OpenSourceFileCommand}"

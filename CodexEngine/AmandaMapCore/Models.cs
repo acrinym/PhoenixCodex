@@ -79,6 +79,53 @@ namespace CodexEngine.AmandaMapCore.Models
         public ServitorLogEntry() { EntryType = "Servitor"; }
     }
 
+    // Phoenix Codex Entry Types
+    public class PhoenixCodexEntry : NumberedMapEntry
+    {
+        public PhoenixCodexEntry() { EntryType = "PhoenixCodex"; }
+        
+        // Phoenix Codex specific properties
+        public bool RespectsBoundaries { get; set; } = true;
+        public string Category { get; set; } = string.Empty;
+        public ContentClassification? Classification { get; set; }
+    }
+
+    public class PhoenixCodexThresholdEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexThresholdEntry() { EntryType = "Threshold"; }
+    }
+
+    public class PhoenixCodexSilentActEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexSilentActEntry() { EntryType = "SilentAct"; }
+    }
+
+    public class PhoenixCodexRitualEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexRitualEntry() { EntryType = "Ritual"; }
+    }
+
+    public class PhoenixCodexCollapseEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexCollapseEntry() { EntryType = "CollapseEvent"; }
+    }
+
+    public class PhoenixCodexCreativeAnchorEntry : PhoenixCodexEntry
+    {
+        public PhoenixCodexCreativeAnchorEntry() { EntryType = "CreativeAnchor"; }
+    }
+
+    // Content classification for Phoenix Codex entries
+    public class ContentClassification
+    {
+        public bool IsPhoenixCodex { get; set; }
+        public double Confidence { get; set; }
+        public int PositiveScore { get; set; }
+        public int NegativeScore { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+    }
+
     // The original, simpler models can remain for now if they are used elsewhere,
     // but the new workflow will use the NumberedMapEntry classes above.
     public class AmandaMapEntry
