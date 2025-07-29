@@ -132,7 +132,11 @@ public partial class App : Application
             DebugLogger.Log("14. GrimoireManagerViewModel registered.");
             services.AddTransient<TimelineViewModel>();
             DebugLogger.Log("15. TimelineViewModel registered.");
-            services.AddTransient<AmandaMapViewModel>();
+            services.AddTransient<AmandaMapViewModel>(provider => 
+                new AmandaMapViewModel(
+                    provider.GetRequiredService<IMessenger>(),
+                    provider.GetRequiredService<IDialogService>(),
+                    provider.GetRequiredService<ISettingsService>()));
             DebugLogger.Log("16. AmandaMapViewModel registered.");
             services.AddTransient<PhoenixCodexViewModel>(provider => 
                 new PhoenixCodexViewModel(
