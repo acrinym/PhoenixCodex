@@ -31,9 +31,11 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
 
     public AmandaMapTimelineViewModel(IMessenger messenger, AmandaMapViewModel amandaMapViewModel)
     {
+        DebugLogger.Log("📅 AmandaMapTimelineViewModel: Constructor called");
         _amandaMapViewModel = amandaMapViewModel;
         messenger.RegisterAll(this);
         
+        DebugLogger.Log("📅 AmandaMapTimelineViewModel: Initializing AvailableEntryTypes");
         // Initialize entry types based on actual AmandaMap entry types
         AvailableEntryTypes.Add("All");
         AvailableEntryTypes.Add("Threshold");
@@ -42,7 +44,11 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
         AvailableEntryTypes.Add("FlameVow");
         AvailableEntryTypes.Add("InPersonEvent");
         
+        DebugLogger.Log($"📅 AmandaMapTimelineViewModel: AvailableEntryTypes count: {AvailableEntryTypes.Count}");
+        DebugLogger.Log($"📅 AmandaMapTimelineViewModel: SelectedDate initial value: {_selectedDate}");
+        
         Refresh();
+        DebugLogger.Log("📅 AmandaMapTimelineViewModel: Constructor completed");
     }
 
     // Receive the message that new AmandaMap entries have been added

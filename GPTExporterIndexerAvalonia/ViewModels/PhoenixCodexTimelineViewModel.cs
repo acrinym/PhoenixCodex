@@ -31,9 +31,11 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
 
     public PhoenixCodexTimelineViewModel(IMessenger messenger, PhoenixCodexViewModel phoenixCodexViewModel)
     {
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: Constructor called");
         _phoenixCodexViewModel = phoenixCodexViewModel;
         messenger.RegisterAll(this);
         
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: Initializing AvailableEntryTypes");
         // Initialize entry types based on actual Phoenix Codex entry types
         AvailableEntryTypes.Add("All");
         AvailableEntryTypes.Add("Threshold");
@@ -42,12 +44,17 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
         AvailableEntryTypes.Add("CollapseEvent");
         AvailableEntryTypes.Add("CreativeAnchor");
         
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: AvailableEntryTypes count: {AvailableEntryTypes.Count}");
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: SelectedDate initial value: {_selectedDate}");
+        
         Refresh();
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: Constructor completed");
     }
 
     // Receive the message that new Phoenix Codex entries have been added
     public void Receive(AddNewPhoenixCodexEntryMessage message)
     {
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: Received AddNewPhoenixCodexEntryMessage");
         Refresh();
     }
 
@@ -56,20 +63,25 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     /// </summary>
     public void Refresh()
     {
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: Refresh() called");
         TimelineEntries.Clear();
         SelectedDateEntries.Clear();
 
         var entries = _phoenixCodexViewModel.ProcessedEntries;
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Found {entries.Count} entries from PhoenixCodexViewModel");
 
         // Filter by entry type if not "All"
         var filteredEntries = SelectedEntryType == "All" 
             ? entries 
             : entries.Where(e => e.EntryType == SelectedEntryType);
 
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: After filtering by '{SelectedEntryType}': {filteredEntries.Count()} entries");
+
         // Filter by date if requested
         if (ShowOnlyDatedEntries)
         {
             filteredEntries = filteredEntries.Where(e => e.Date != DateTime.MinValue);
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: After date filtering: {filteredEntries.Count()} entries");
         }
 
         // Add all entries to timeline
@@ -77,6 +89,8 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
         {
             TimelineEntries.Add(entry);
         }
+
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Added {TimelineEntries.Count} entries to TimelineEntries");
 
         // Update selected date entries
         UpdateSelectedDateEntries();
@@ -87,6 +101,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     /// </summary>
     partial void OnSelectedDateChanged(DateTime? value)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OnSelectedDateChanged called with value: {value}");
         UpdateSelectedDateEntries();
     }
 
@@ -95,6 +110,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     /// </summary>
     partial void OnSelectedEntryTypeChanged(string value)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OnSelectedEntryTypeChanged called with value: {value}");
         Refresh();
     }
 
@@ -103,23 +119,30 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     /// </summary>
     partial void OnShowOnlyDatedEntriesChanged(bool value)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OnShowOnlyDatedEntriesChanged called with value: {value}");
         Refresh();
     }
 
     private void UpdateSelectedDateEntries()
     {
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: UpdateSelectedDateEntries() called");
         SelectedDateEntries.Clear();
-        
         if (SelectedDate.HasValue)
         {
-            var entriesForDate = TimelineEntries.Where(e => 
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: SelectedDate has value: {SelectedDate.Value}");
+            var entriesForDate = TimelineEntries.Where(e =>
                 e.Date.Date == SelectedDate.Value.Date).ToList();
-            
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Found {entriesForDate.Count} entries for selected date");
             foreach (var entry in entriesForDate.OrderBy(e => e.Date))
             {
                 SelectedDateEntries.Add(entry);
             }
         }
+        else
+        {
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: SelectedDate is null");
+        }
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: SelectedDateEntries count: {SelectedDateEntries.Count}");
     }
 
     /// <summary>
@@ -155,6 +178,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToDate(DateTime date)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: NavigateToDate called with date: {date}");
         SelectedDate = date;
         UpdateSelectedDateEntries();
     }
@@ -162,6 +186,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToToday()
     {
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: NavigateToToday called");
         SelectedDate = DateTime.Today;
         UpdateSelectedDateEntries();
     }
@@ -169,8 +194,12 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToNextEntry()
     {
-        if (!SelectedDate.HasValue) return;
-        
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: NavigateToNextEntry called");
+        if (!SelectedDate.HasValue)
+        {
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: SelectedDate is null, cannot navigate");
+            return;
+        }
         var nextEntry = TimelineEntries
             .Where(e => e.Date > SelectedDate.Value)
             .OrderBy(e => e.Date)
@@ -178,16 +207,25 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
 
         if (nextEntry != null)
         {
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Navigating to next entry date: {nextEntry.Date}");
             SelectedDate = nextEntry.Date;
             UpdateSelectedDateEntries();
+        }
+        else
+        {
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: No next entry found");
         }
     }
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToPreviousEntry()
     {
-        if (!SelectedDate.HasValue) return;
-        
+        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: NavigateToPreviousEntry called");
+        if (!SelectedDate.HasValue)
+        {
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: SelectedDate is null, cannot navigate");
+            return;
+        }
         var previousEntry = TimelineEntries
             .Where(e => e.Date < SelectedDate.Value)
             .OrderByDescending(e => e.Date)
@@ -195,8 +233,13 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
 
         if (previousEntry != null)
         {
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Navigating to previous entry date: {previousEntry.Date}");
             SelectedDate = previousEntry.Date;
             UpdateSelectedDateEntries();
+        }
+        else
+        {
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: No previous entry found");
         }
     }
 
@@ -205,6 +248,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     {
         try
         {
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ViewEntryDetailsAsync called for entry: {entry.Title}");
             var details = $"Title: {entry.Title}\n" +
                          $"Type: {entry.EntryType}\n" +
                          $"Number: {entry.Number}\n" +
@@ -226,6 +270,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     {
         try
         {
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: EditEntryAsync called for entry: {entry.Title}");
             // For now, just log the edit action. In a real app, you'd open an editor
             DebugLogger.Log($"Edit Phoenix Codex Entry: {entry.Title}");
         }
@@ -240,6 +285,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     {
         try
         {
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OpenSourceFile called for entry: {entry.Title}");
             if (File.Exists(entry.SourceFile))
             {
                 Process.Start(new ProcessStartInfo
