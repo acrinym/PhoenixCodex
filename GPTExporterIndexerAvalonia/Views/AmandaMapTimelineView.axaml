@@ -40,7 +40,8 @@
                                Margin="0,0,0,8"/>
                     <ComboBox ItemsSource="{Binding AvailableEntryTypes}"
                               SelectedItem="{Binding SelectedEntryType}"
-                              FontSize="14"/>
+                              FontSize="14"
+                              PlaceholderText="Select entry type..."/>
                 </StackPanel>
                 
                 <!-- Navigation Controls -->

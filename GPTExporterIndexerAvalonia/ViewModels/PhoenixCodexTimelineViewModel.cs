@@ -84,13 +84,13 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
             DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: After date filtering: {filteredEntries.Count()} entries");
         }
 
-        // Add all entries to timeline
+        // Add entries to timeline
         foreach (var entry in filteredEntries.OrderBy(e => e.Date))
         {
             TimelineEntries.Add(entry);
         }
 
-        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Added {TimelineEntries.Count} entries to TimelineEntries");
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Added {TimelineEntries.Count} entries to timeline");
 
         // Update selected date entries
         UpdateSelectedDateEntries();
@@ -101,7 +101,6 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     /// </summary>
     partial void OnSelectedDateChanged(DateTime? value)
     {
-        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OnSelectedDateChanged called with value: {value}");
         UpdateSelectedDateEntries();
     }
 
@@ -125,24 +124,19 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
 
     private void UpdateSelectedDateEntries()
     {
-        DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: UpdateSelectedDateEntries() called");
         SelectedDateEntries.Clear();
+
         if (SelectedDate.HasValue)
         {
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: SelectedDate has value: {SelectedDate.Value}");
-            var entriesForDate = TimelineEntries.Where(e =>
-                e.Date.Date == SelectedDate.Value.Date).ToList();
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Found {entriesForDate.Count} entries for selected date");
-            foreach (var entry in entriesForDate.OrderBy(e => e.Date))
+            var entriesForDate = TimelineEntries
+                .Where(e => e.Date.Date == SelectedDate.Value.Date)
+                .OrderBy(e => e.Number);
+
+            foreach (var entry in entriesForDate)
             {
                 SelectedDateEntries.Add(entry);
             }
         }
-        else
-        {
-            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: SelectedDate is null");
-        }
-        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: SelectedDateEntries count: {SelectedDateEntries.Count}");
     }
 
     /// <summary>
@@ -195,19 +189,22 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     private void NavigateToNextEntry()
     {
         DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: NavigateToNextEntry called");
-        if (!SelectedDate.HasValue)
+        
+        if (!TimelineEntries.Any())
         {
-            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: SelectedDate is null, cannot navigate");
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: No entries to navigate");
             return;
         }
+
+        var currentDate = SelectedDate ?? DateTime.Today;
         var nextEntry = TimelineEntries
-            .Where(e => e.Date > SelectedDate.Value)
+            .Where(e => e.Date > currentDate)
             .OrderBy(e => e.Date)
             .FirstOrDefault();
 
         if (nextEntry != null)
         {
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Navigating to next entry date: {nextEntry.Date}");
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Navigating to next entry on {nextEntry.Date}");
             SelectedDate = nextEntry.Date;
             UpdateSelectedDateEntries();
         }
@@ -221,19 +218,22 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     private void NavigateToPreviousEntry()
     {
         DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: NavigateToPreviousEntry called");
-        if (!SelectedDate.HasValue)
+        
+        if (!TimelineEntries.Any())
         {
-            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: SelectedDate is null, cannot navigate");
+            DebugLogger.Log("🪶 PhoenixCodexTimelineViewModel: No entries to navigate");
             return;
         }
+
+        var currentDate = SelectedDate ?? DateTime.Today;
         var previousEntry = TimelineEntries
-            .Where(e => e.Date < SelectedDate.Value)
+            .Where(e => e.Date < currentDate)
             .OrderByDescending(e => e.Date)
             .FirstOrDefault();
 
         if (previousEntry != null)
         {
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Navigating to previous entry date: {previousEntry.Date}");
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Navigating to previous entry on {previousEntry.Date}");
             SelectedDate = previousEntry.Date;
             UpdateSelectedDateEntries();
         }
@@ -246,58 +246,67 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private async Task ViewEntryDetailsAsync(PhoenixCodexEntry entry)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ViewEntryDetailsAsync called for entry: {entry.Title}");
+        
         try
         {
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ViewEntryDetailsAsync called for entry: {entry.Title}");
-            var details = $"Title: {entry.Title}\n" +
-                         $"Type: {entry.EntryType}\n" +
-                         $"Number: {entry.Number}\n" +
-                         $"Date: {entry.Date:yyyy-MM-dd}\n" +
-                         $"Source: {Path.GetFileName(entry.SourceFile)}\n\n" +
-                         $"Content:\n{entry.RawContent}";
-
-            // For now, just log the details. In a real app, you'd show a dialog
-            DebugLogger.Log($"Phoenix Codex Entry Details: {details}");
+            // Create a detail view model and show the entry details
+            var detailViewModel = new EntryDetailViewModel();
+            detailViewModel.Load(entry);
+            
+            // TODO: Show entry details dialog
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Would show details for entry: {entry.Title}");
         }
         catch (Exception ex)
         {
-            DebugLogger.Log($"Error viewing entry details: {ex.Message}");
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ERROR in ViewEntryDetailsAsync: {ex.Message}");
         }
     }
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private async Task EditEntryAsync(PhoenixCodexEntry entry)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: EditEntryAsync called for entry: {entry.Title}");
+        
         try
         {
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: EditEntryAsync called for entry: {entry.Title}");
-            // For now, just log the edit action. In a real app, you'd open an editor
-            DebugLogger.Log($"Edit Phoenix Codex Entry: {entry.Title}");
+            // Create a detail view model and show the entry editor
+            var detailViewModel = new EntryDetailViewModel();
+            detailViewModel.Load(entry);
+            
+            // TODO: Show entry editor dialog
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Would edit entry: {entry.Title}");
         }
         catch (Exception ex)
         {
-            DebugLogger.Log($"Error editing entry: {ex.Message}");
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ERROR in EditEntryAsync: {ex.Message}");
         }
     }
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void OpenSourceFile(PhoenixCodexEntry entry)
     {
+        DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OpenSourceFile called for entry: {entry.Title}");
+        
         try
         {
-            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: OpenSourceFile called for entry: {entry.Title}");
-            if (File.Exists(entry.SourceFile))
+            if (string.IsNullOrWhiteSpace(entry.SourceFile) || !File.Exists(entry.SourceFile))
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = entry.SourceFile,
-                    UseShellExecute = true
-                });
+                DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Source file not found: {entry.SourceFile}");
+                return;
             }
+
+            var processStartInfo = new ProcessStartInfo(entry.SourceFile)
+            {
+                UseShellExecute = true
+            };
+            Process.Start(processStartInfo);
+            
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: Opened source file: {entry.SourceFile}");
         }
         catch (Exception ex)
         {
-            DebugLogger.Log($"Error opening source file: {ex.Message}");
+            DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ERROR in OpenSourceFile: {ex.Message}");
         }
     }
 } 

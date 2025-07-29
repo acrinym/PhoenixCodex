@@ -328,7 +328,7 @@ namespace CodexEngine.Parsing
                     // Only add entries that respect Amanda's boundaries (no magical content)
                     if (entry.RespectsBoundaries)
                     {
-                        entries.Add(entry);
+                    entries.Add(entry);
                         DebugLogger.Log($"PhoenixCodex: Added entry #{number} - {title} (Confidence: {classification.Confidence:P0})");
                     }
                     else
