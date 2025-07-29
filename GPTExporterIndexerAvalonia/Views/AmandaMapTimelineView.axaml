@@ -48,23 +48,26 @@
                     <TextBlock Text="Navigation:" 
                                FontWeight="SemiBold" 
                                Margin="0,0,0,8"/>
-                    <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <Button Content="⬅️ Previous" 
                                 Command="{Binding NavigateToPreviousEntryCommand}"
                                 Classes="Secondary"
                                 Margin="0,0,8,0"
-                                Padding="8,4"/>
+                                Padding="8,4"
+                                HorizontalAlignment="Left"/>
                         <Button Content="📅 Today" 
                                 Command="{Binding NavigateToTodayCommand}"
                                 Classes="Secondary"
                                 Margin="4,0"
-                                Padding="8,4"/>
+                                Padding="8,4"
+                                HorizontalAlignment="Center"/>
                         <Button Content="Next ➡️" 
                                 Command="{Binding NavigateToNextEntryCommand}"
                                 Classes="Secondary"
                                 Margin="8,0,0,0"
-                                Padding="8,4"/>
-                    </Grid>
+                                Padding="8,4"
+                                HorizontalAlignment="Right"/>
+                    </StackPanel>
                 </StackPanel>
                 
                 <!-- Statistics -->
