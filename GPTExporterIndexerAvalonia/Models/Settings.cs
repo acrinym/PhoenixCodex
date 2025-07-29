@@ -45,9 +45,11 @@ public class AppSettings
     
     // Advanced Settings
     public bool EnableDebugLogging { get; set; } = false;
-    public bool EnablePerformanceMonitoring { get; set; } = false;
+    public bool EnablePerformanceMonitoring { get; set; } = true;
     public int MaxSearchResults { get; set; } = 1000;
     public bool EnableRealTimeSearch { get; set; } = true;
+    public int SearchTimeoutMs { get; set; } = 5000;
+    public bool EnableSearchCaching { get; set; } = true;
     
     // Custom Magic Terms (for privacy mode)
     public Dictionary<string, string> MagicTermReplacements { get; set; } = new()

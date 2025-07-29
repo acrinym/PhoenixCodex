@@ -274,21 +274,32 @@ public static class AdvancedIndexer
 
         if (!File.Exists(indexPath) || string.IsNullOrWhiteSpace(phrase))
             yield break;
+            
         var index = JsonSerializer.Deserialize<Index>(File.ReadAllText(indexPath));
         if (index == null)
             yield break;
+            
         var tokens = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (tokens.Length == 0)
+            yield break;
+            
         HashSet<string>? result = null;
+        
+        // Pre-compute token keys for fuzzy search to avoid repeated enumeration
+        var tokenKeys = options.UseFuzzy ? index.Tokens.Keys.ToList() : null;
+        
         foreach (var token in tokens)
         {
             var term = options.CaseSensitive ? token : token.ToLowerInvariant();
             var current = new HashSet<string>();
+            
             if (index.Tokens.TryGetValue(term, out var set))
                 current.UnionWith(set);
 
-            if (options.UseFuzzy)
+            if (options.UseFuzzy && tokenKeys != null)
             {
-                foreach (var key in index.Tokens.Keys)
+                // Use cached keys for better performance
+                foreach (var key in tokenKeys)
                 {
                     var cmp = options.CaseSensitive ? key : key.ToLowerInvariant();
                     if (cmp == term) continue;
@@ -300,8 +311,13 @@ public static class AdvancedIndexer
             result = result == null ? new HashSet<string>(current) :
                 (options.UseAnd ? new HashSet<string>(result.Intersect(current)) : new HashSet<string>(result.Union(current)));
         }
-        if (result == null)
+        
+        if (result == null || result.Count == 0)
             yield break;
+            
+        // Pre-compute directory path to avoid repeated calls
+        var baseDirectory = Path.GetDirectoryName(indexPath)!;
+        
         foreach (var rel in result)
         {
             if (!string.IsNullOrWhiteSpace(options.ExtensionFilter))
@@ -310,9 +326,11 @@ public static class AdvancedIndexer
                 if (!ext.Equals(options.ExtensionFilter, StringComparison.OrdinalIgnoreCase))
                     continue;
             }
-            var fullPath = Path.Combine(Path.GetDirectoryName(indexPath)!, rel);
+            
+            var fullPath = Path.Combine(baseDirectory, rel);
             var snippets = ExtractSnippets(fullPath, phrase, options.ContextLines);
             index.Files.TryGetValue(rel, out var detail);
+            
             yield return new SearchResult
             {
                 File = rel,
@@ -336,14 +354,34 @@ public static class AdvancedIndexer
             DebugLogger.Log(ex.Message);
             return snippets;
         }
+        
+        if (lines.Length == 0)
+            return snippets;
+            
         var lowerPhrase = phrase.ToLowerInvariant();
+        var phraseTokens = lowerPhrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        
         for (int i = 0; i < lines.Length; i++)
         {
-            if (lines[i].ToLowerInvariant().Contains(lowerPhrase))
+            var lowerLine = lines[i].ToLowerInvariant();
+            
+            // Check if any phrase token is contained in the line
+            bool containsPhrase = phraseTokens.Any(token => lowerLine.Contains(token));
+            
+            if (containsPhrase)
             {
                 var start = Math.Max(0, i - context);
                 var end = Math.Min(lines.Length, i + context + 1);
-                snippets.Add(string.Join("\n", lines[start..end]));
+                
+                // Use StringBuilder for better performance with large snippets
+                var snippet = new System.Text.StringBuilder();
+                for (int j = start; j < end; j++)
+                {
+                    if (j > start) snippet.Append('\n');
+                    snippet.Append(lines[j]);
+                }
+                
+                snippets.Add(snippet.ToString());
             }
         }
         return snippets;

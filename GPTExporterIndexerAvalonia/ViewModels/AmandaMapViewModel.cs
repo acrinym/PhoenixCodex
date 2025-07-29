@@ -86,19 +86,12 @@ public partial class AmandaMapViewModel : ObservableObject,
             return;
         }
 
-        ProcessedEntries.Add(newEntry);
+        // Insert at the correct position to maintain sorted order
+        var insertIndex = ProcessedEntries.TakeWhile(e => e.Number < newEntry.Number).Count();
+        ProcessedEntries.Insert(insertIndex, newEntry);
 
-        // --- SORTING ---
-        // Re-sort the entire collection by number to maintain order.
-        var sortedEntries = new ObservableCollection<NumberedMapEntry>(ProcessedEntries.OrderBy(e => e.Number));
-        ProcessedEntries.Clear();
-        foreach (var entry in sortedEntries)
-        {
-            ProcessedEntries.Add(entry);
-        }
-
+        // Update grouped entries efficiently
         UpdateGroupedEntries();
-        LoadEntries(ProcessedEntries);
     }
     
     // This message is from a legacy workflow and is no longer the primary way data is populated.
@@ -131,14 +124,19 @@ public partial class AmandaMapViewModel : ObservableObject,
     private void UpdateGroupedEntries()
     {
         GroupedEntries.Clear();
-        // Apply content filtering based on settings
-        var filteredEntries = ProcessedEntries.Where(entry => 
-            !_settingsService.ShouldHideContent(entry.EntryType, Array.Empty<string>()));
         
-        var groups = filteredEntries.GroupBy(e => e.EntryType);
+        // Cache the filtered entries to avoid multiple enumerations
+        var filteredEntries = ProcessedEntries.Where(entry => 
+            !_settingsService.ShouldHideContent(entry.EntryType, Array.Empty<string>())).ToList();
+        
+        // Group and sort in a single operation
+        var groups = filteredEntries.GroupBy(e => e.EntryType)
+                                  .Select(g => new EntryTypeGroup(g.Key, g.OrderBy(e => e.Number)))
+                                  .OrderBy(g => g.EntryType);
+        
         foreach (var group in groups)
         {
-            GroupedEntries.Add(new EntryTypeGroup(group.Key, group.OrderBy(e => e.Number)));
+            GroupedEntries.Add(group);
         }
     }
 

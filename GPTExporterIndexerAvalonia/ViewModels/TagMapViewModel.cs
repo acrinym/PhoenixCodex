@@ -224,22 +224,39 @@ public partial class TagMapViewModel : ObservableObject
     private void FilterDocuments()
     {
         FilteredDocuments.Clear();
+        
+        // Pre-compute filters to avoid repeated string operations
+        var hasDocumentFilter = !string.IsNullOrWhiteSpace(DocumentFilter);
+        var hasCategoryFilter = !string.IsNullOrWhiteSpace(CategoryFilter);
+        
         foreach (var doc in Documents)
         {
-            if (!string.IsNullOrWhiteSpace(DocumentFilter) &&
-                !doc.Name.Contains(DocumentFilter, StringComparison.OrdinalIgnoreCase))
+            // Check document filter first
+            if (hasDocumentFilter && !doc.Name.Contains(DocumentFilter!, StringComparison.OrdinalIgnoreCase))
                 continue;
+                
             doc.FilteredEntries.Clear();
-            var filtered = doc.Entries.Where(entry =>
-                string.IsNullOrWhiteSpace(CategoryFilter) ||
-                entry.Category.Contains(CategoryFilter, StringComparison.OrdinalIgnoreCase)
-            );
-            foreach(var entry in filtered)
+            
+            // Apply category filter efficiently
+            if (hasCategoryFilter)
             {
-                doc.FilteredEntries.Add(entry);
+                var filtered = doc.Entries.Where(entry => 
+                    entry.Category.Contains(CategoryFilter!, StringComparison.OrdinalIgnoreCase));
+                foreach(var entry in filtered)
+                {
+                    doc.FilteredEntries.Add(entry);
+                }
+            }
+            else
+            {
+                // No category filter, add all entries
+                foreach(var entry in doc.Entries)
+                {
+                    doc.FilteredEntries.Add(entry);
+                }
             }
             
-            if(doc.FilteredEntries.Any())
+            if(doc.FilteredEntries.Count > 0)
             {
                  FilteredDocuments.Add(doc);
             }
