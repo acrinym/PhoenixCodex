@@ -18,7 +18,7 @@ namespace GPTExporterIndexerAvalonia.Services
 {
     public class ControlPanel : INotifyPropertyChanged
     {
-        private static ControlPanel _instance;
+        private static ControlPanel? _instance;
         public static ControlPanel Instance => _instance ??= new ControlPanel();
 
         private string _selectedTheme;
@@ -400,15 +400,18 @@ namespace GPTExporterIndexerAvalonia.Services
                     var json = File.ReadAllText(settingsPath);
                     var settings = JsonSerializer.Deserialize<ThemeSettings>(json);
                     
-                    _selectedTheme = settings.SelectedTheme ?? "Magic";
-                    _customBackground = ParseBrush(settings.CustomBackground) ?? Brushes.White;
-                    _customForeground = ParseBrush(settings.CustomForeground) ?? Brushes.Black;
-                    _customAccent = ParseBrush(settings.CustomAccent) ?? Brushes.Blue;
-                    _fontFamily = settings.FontFamily ?? "Segoe UI";
-                    _fontSize = settings.FontSize ?? 14;
-                    _enableAnimations = settings.EnableAnimations ?? true;
-                    _cornerRadius = settings.CornerRadius ?? 8;
-                    _useGradients = settings.UseGradients ?? false;
+                    if (settings != null)
+                    {
+                                                _selectedTheme = settings.SelectedTheme ?? "Magic";
+                        _customBackground = ParseBrush(settings.CustomBackground ?? "") ?? Brushes.White;
+                        _customForeground = ParseBrush(settings.CustomForeground ?? "") ?? Brushes.Black;
+                        _customAccent = ParseBrush(settings.CustomAccent ?? "") ?? Brushes.Blue;
+                        _fontFamily = settings.FontFamily ?? "Segoe UI";
+                        _fontSize = settings.FontSize ?? 14;
+                        _enableAnimations = settings.EnableAnimations ?? true;
+                        _cornerRadius = settings.CornerRadius ?? 8;
+                        _useGradients = settings.UseGradients ?? false;
+                    }
                 }
                 else
                 {
@@ -424,7 +427,7 @@ namespace GPTExporterIndexerAvalonia.Services
                     _useGradients = false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Fallback to defaults
                 _selectedTheme = "Magic";
@@ -463,13 +466,13 @@ namespace GPTExporterIndexerAvalonia.Services
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(settingsPath, json);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Silently fail - settings are not critical
             }
         }
 
-        private IBrush ParseBrush(string brushString)
+        private IBrush? ParseBrush(string? brushString)
         {
             if (string.IsNullOrEmpty(brushString))
                 return null;
@@ -603,11 +606,11 @@ namespace GPTExporterIndexerAvalonia.Services
 
         private class ThemeSettings
         {
-            public string SelectedTheme { get; set; }
-            public string CustomBackground { get; set; }
-            public string CustomForeground { get; set; }
-            public string CustomAccent { get; set; }
-            public string FontFamily { get; set; }
+            public string? SelectedTheme { get; set; }
+            public string? CustomBackground { get; set; }
+            public string? CustomForeground { get; set; }
+            public string? CustomAccent { get; set; }
+            public string? FontFamily { get; set; }
             public double? FontSize { get; set; }
             public bool? EnableAnimations { get; set; }
             public double? CornerRadius { get; set; }

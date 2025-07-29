@@ -100,7 +100,7 @@ public partial class EntryDetailViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CopySourcePathAsync()
+    private void CopySourcePath()
     {
         if (!string.IsNullOrWhiteSpace(SourceFile))
         {

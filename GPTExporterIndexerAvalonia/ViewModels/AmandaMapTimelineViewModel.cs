@@ -213,7 +213,7 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
         var vm = new EntryDetailViewModel();
         vm.Load(entry);
         var window = new Views.Dialogs.EntryDetailWindow { DataContext = vm, Title = $"Entry #{entry.Number}" };
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
         {
             await window.ShowDialog(desktop.MainWindow);
         }
