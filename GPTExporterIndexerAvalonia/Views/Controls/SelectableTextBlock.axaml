@@ -5,33 +5,22 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="GPTExporterIndexerAvalonia.Views.Controls.SelectableTextBlock">
     <Grid>
-        <ScrollViewer Name="ScrollViewer"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+            <Button Content="Copy All" Name="CopyAllButton" Margin="0,0,5,0"/>
+            <Button Content="Copy Selection" Name="CopySelectionButton" Margin="0,0,5,0"/>
+        </StackPanel>
+        
+        <ScrollViewer Grid.Row="1" Name="ScrollViewer"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto">
-            <TextBox Name="TextBlock"
-                     Text="{Binding Text, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                     IsReadOnly="True"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True"
-                     Background="Transparent"
-                     BorderThickness="0"
-                     SelectionBrush="LightBlue"
-                     SelectionForegroundBrush="Black"
-                     CaretBrush="White"
-                     IsUndoEnabled="False"
-                     Focusable="True">
-                <TextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Select All" Name="SelectAllMenuItem"/>
-                        <MenuItem Header="Copy" Name="CopyMenuItem"/>
-                        <MenuItem Header="Copy Selection" Name="CopySelectionMenuItem"/>
-                        <Separator/>
-                        <MenuItem Header="Increase Font Size" Name="IncreaseFontSizeMenuItem"/>
-                        <MenuItem Header="Decrease Font Size" Name="DecreaseFontSizeMenuItem"/>
-                        <MenuItem Header="Reset Font Size" Name="ResetFontSizeMenuItem"/>
-                    </ContextMenu>
-                </TextBox.ContextMenu>
-            </TextBox>
+            <TextBlock Name="TextBlock"
+                       Text="{Binding Text, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       TextWrapping="Wrap"/>
         </ScrollViewer>
     </Grid>
 </UserControl> 

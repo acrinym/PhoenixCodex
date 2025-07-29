@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
+using System.Diagnostics;
 
 namespace GPTExporterIndexerAvalonia.Views.Controls
 {
@@ -16,123 +16,69 @@ namespace GPTExporterIndexerAvalonia.Views.Controls
                 (o, v) => o.Text = v);
 
         private string _text = string.Empty;
+        private const int MaxDisplayLength = 50000; // Limit display to 50KB to prevent UI freezing
 
         public string Text
         {
             get => _text;
-            set => SetAndRaise(TextProperty, ref _text, value);
+            set 
+            {
+                // Truncate very large text to prevent UI freezing
+                var displayText = value?.Length > MaxDisplayLength 
+                    ? value.Substring(0, MaxDisplayLength) + "\n\n[Content truncated for performance - use search to find specific content]"
+                    : value ?? string.Empty;
+                    
+                SetAndRaise(TextProperty, ref _text, displayText);
+            }
         }
 
         public SelectableTextBlock()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
             
-            // Set up context menu handlers
-            if (this.FindControl<TextBox>("TextBlock") is TextBox textBox)
+            // Set up button event handlers
+            if (this.FindControl<Button>("CopyAllButton") is Button copyAllButton)
             {
-                textBox.Focus();
-                
-                // Set up context menu handlers
-                if (textBox.ContextMenu is ContextMenu contextMenu)
-                {
-                    if (contextMenu.FindControl<MenuItem>("SelectAllMenuItem") is MenuItem selectAllItem)
-                    {
-                        selectAllItem.Click += (s, e) => textBox.SelectAll();
-                    }
-                    
-                    if (contextMenu.FindControl<MenuItem>("CopyMenuItem") is MenuItem copyItem)
-                    {
-                        copyItem.Click += async (s, e) => 
-                        {
-                            if (!string.IsNullOrEmpty(textBox.Text))
-                            {
-                                try
-                                {
-                                    var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-                                    if (clipboard != null)
-                                    {
-                                        await clipboard.SetTextAsync(textBox.Text);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Log or handle clipboard error
-                                    System.Diagnostics.Debug.WriteLine($"Clipboard error: {ex.Message}");
-                                }
-                            }
-                        };
-                    }
-                    
-                    if (contextMenu.FindControl<MenuItem>("CopySelectionMenuItem") is MenuItem copySelectionItem)
-                    {
-                        copySelectionItem.Click += async (s, e) => 
-                        {
-                            if (!string.IsNullOrEmpty(textBox.SelectedText))
-                            {
-                                try
-                                {
-                                    var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-                                    if (clipboard != null)
-                                    {
-                                        await clipboard.SetTextAsync(textBox.SelectedText);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Log or handle clipboard error
-                                    System.Diagnostics.Debug.WriteLine($"Clipboard error: {ex.Message}");
-                                }
-                            }
-                        };
-                    }
-                    
-                    if (contextMenu.FindControl<MenuItem>("IncreaseFontSizeMenuItem") is MenuItem increaseFontItem)
-                    {
-                        increaseFontItem.Click += (s, e) => 
-                        {
-                            var currentSize = FontSize;
-                            FontSize = Math.Min(currentSize + 1, 24);
-                        };
-                    }
-                    
-                    if (contextMenu.FindControl<MenuItem>("DecreaseFontSizeMenuItem") is MenuItem decreaseFontItem)
-                    {
-                        decreaseFontItem.Click += (s, e) => 
-                        {
-                            var currentSize = FontSize;
-                            FontSize = Math.Max(currentSize - 1, 8);
-                        };
-                    }
-                    
-                    if (contextMenu.FindControl<MenuItem>("ResetFontSizeMenuItem") is MenuItem resetFontItem)
-                    {
-                        resetFontItem.Click += (s, e) => 
-                        {
-                            FontSize = 11;
-                        };
-                    }
-                }
+                copyAllButton.Click += CopyAllButton_Click;
+            }
+            
+            if (this.FindControl<Button>("CopySelectionButton") is Button copySelectionButton)
+            {
+                copySelectionButton.Click += CopySelectionButton_Click;
             }
         }
 
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        private async void CopyAllButton_Click(object? sender, RoutedEventArgs e)
         {
-            base.OnPointerPressed(e);
-            
-            // Ensure the TextBox gets focus when clicked
-            if (this.FindControl<TextBox>("TextBlock") is TextBox textBox)
+            try
             {
-                textBox.Focus();
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard != null && !string.IsNullOrEmpty(_text))
+                {
+                    await clipboard.SetTextAsync(_text);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Copy all error: {ex.Message}");
+            }
+        }
+
+        private async void CopySelectionButton_Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // For now, just copy all since TextBlock doesn't support selection
+                // In the future, we could implement a more sophisticated selection system
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard != null && !string.IsNullOrEmpty(_text))
+                {
+                    await clipboard.SetTextAsync(_text);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Copy selection error: {ex.Message}");
             }
         }
     }

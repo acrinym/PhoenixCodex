@@ -94,38 +94,65 @@ public partial class MainWindowViewModel : ObservableObject
         RitualBuilderViewModel ritualBuilderViewModel,
         SettingsViewModel settingsViewModel)
     {
-        _messenger = messenger; // <-- ASSIGN THE MESSENGER
-        _indexingService = indexingService;
-        _searchService = searchService;
-        _fileParsingService = fileParsingService;
-        _dialogService = dialogService;
-        _entryParserService = entryParserService;
+        DebugLogger.Log("=== MainWindowViewModel constructor START ===");
         
-        // Initialize progress service
-        _progressService = new ProgressService(
-            (percentage, message, details) => 
-            {
-                ProgressPercentage = percentage;
-                ProgressMessage = message;
-                ProgressDetails = details;
-            },
-            (isInProgress) => IsOperationInProgress = isInProgress,
-            (error) => Status = $"Error: {error}"
-        );
+        try
+        {
+            DebugLogger.Log("1. Assigning messenger...");
+            _messenger = messenger; // <-- ASSIGN THE MESSENGER
+            
+            DebugLogger.Log("2. Assigning services...");
+            _indexingService = indexingService;
+            _searchService = searchService;
+            _fileParsingService = fileParsingService;
+            _dialogService = dialogService;
+            _entryParserService = entryParserService;
+            
+            DebugLogger.Log("3. Creating progress service...");
+            // Initialize progress service (simplified)
+            _progressService = new ProgressService(
+                (percentage, message, details) => 
+                {
+                    DebugLogger.Log($"Progress: {percentage}% - {message} - {details}");
+                    ProgressPercentage = percentage;
+                    ProgressMessage = message;
+                    ProgressDetails = details;
+                },
+                (isInProgress) => 
+                {
+                    DebugLogger.Log($"Operation state changed: {isInProgress}");
+                    IsOperationInProgress = isInProgress;
+                },
+                (error) => 
+                {
+                    DebugLogger.Log($"Error reported: {error}");
+                    Status = $"Error: {error}";
+                }
+            );
 
-        GrimoireViewModel = grimoireViewModel;
-        TimelineViewModel = timelineViewModel;
-        AmandaMapViewModel = amandaMapViewModel;
-        TagMapViewModel = tagMapViewModel;
-        YamlInterpreterViewModel = yamlInterpreterViewModel;
-        ChatLogViewModel = chatLogViewModel;
-        RitualBuilderViewModel = ritualBuilderViewModel;
-        SettingsViewModel = settingsViewModel;
-        
-        DebugLogger.Log("MainWindowViewModel created and all services/sub-ViewModels injected.");
-        
-        // Check for existing large index on startup
-        _ = Task.Run(async () => await CheckForExistingIndexAsync());
+            DebugLogger.Log("4. Assigning ViewModels...");
+            GrimoireViewModel = grimoireViewModel;
+            TimelineViewModel = timelineViewModel;
+            AmandaMapViewModel = amandaMapViewModel;
+            TagMapViewModel = tagMapViewModel;
+            YamlInterpreterViewModel = yamlInterpreterViewModel;
+            ChatLogViewModel = chatLogViewModel;
+            RitualBuilderViewModel = ritualBuilderViewModel;
+            SettingsViewModel = settingsViewModel;
+            
+            DebugLogger.Log("5. Constructor completed successfully");
+            DebugLogger.Log("=== MainWindowViewModel constructor END ===");
+            
+            // DISABLED: Startup index check to prevent hanging
+            // TODO: Re-enable with proper async loading when issue is resolved
+            // _ = Task.Run(async () => await CheckForExistingIndexAsync());
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"ERROR in MainWindowViewModel constructor: {ex.Message}");
+            DebugLogger.Log($"Stack trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     /// <summary>
@@ -188,7 +215,9 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var indexPath = Path.Combine(folderPath, "index.json");
             
-            // Load index in background
+            // Load index in background with timeout
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)); // 30 second timeout for loading
+            
             await Task.Run(() =>
             {
                 try
@@ -223,6 +252,17 @@ public partial class MainWindowViewModel : ObservableObject
                         ProgressDetails = ex.Message;
                     });
                 }
+            }, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            DebugLogger.Log("Index loading timed out");
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Status = "Index loading timed out - you can load it manually";
+                IsOperationInProgress = false;
+                ProgressMessage = "Ready";
+                ProgressDetails = "Index loading timed out";
             });
         }
         catch (Exception ex)
@@ -362,6 +402,59 @@ public partial class MainWindowViewModel : ObservableObject
             IsOperationInProgress = false;
             ProgressMessage = "Ready";
             ProgressDetails = "";
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadExistingIndex()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Load Existing Index' command initiated.");
+        
+        // Look for common index locations
+        var commonPaths = new[]
+        {
+            @"D:\Chatgpt\ExportedChats\exported\Amanda-specific",
+            @"D:\Chatgpt\ExportedChats\exported",
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ChatGPT Exports")
+        };
+
+        var foundIndex = false;
+        foreach (var path in commonPaths)
+        {
+            if (Directory.Exists(path))
+            {
+                var indexPath = Path.Combine(path, "index.json");
+                if (File.Exists(indexPath))
+                {
+                    var fileInfo = new FileInfo(indexPath);
+                    DebugLogger.Log($"Found index at {indexPath} ({fileInfo.Length / (1024 * 1024)}MB)");
+                    
+                    IndexFolder = path;
+                    Status = $"Loading index ({fileInfo.Length / (1024 * 1024)}MB)...";
+                    IsOperationInProgress = true;
+                    ProgressMessage = "Loading existing index...";
+                    ProgressDetails = $"Found index at: {path}";
+                    
+                    try
+                    {
+                        await LoadExistingIndexAsync(path);
+                        foundIndex = true;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Status = $"Error loading index: {ex.Message}";
+                        DebugLogger.Log($"Error loading index: {ex.Message}");
+                        IsOperationInProgress = false;
+                    }
+                }
+            }
+        }
+
+        if (!foundIndex)
+        {
+            Status = "No existing index found. Use 'Build Index' to create one.";
+            DebugLogger.Log("MainWindowViewModel: No existing index found");
         }
     }
 
@@ -530,11 +623,17 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         Status = $"Extracting AmandaMap entries from '{Path.GetFileName(folderPath)}'...";
+        IsOperationInProgress = true;
+        ProgressMessage = "Scanning files for AmandaMap entries...";
+        ProgressDetails = "Looking for threshold entries, emoji markers, and AmandaMap references...";
         DebugLogger.Log($"MainWindowViewModel: Starting AmandaMap extraction from folder: {folderPath}");
         
         try
         {
             var entries = await Task.Run(() => CodexEngine.Parsing.AmandaMapExtractor.ExtractFromFolder(folderPath));
+            
+            ProgressMessage = "Processing extracted entries...";
+            ProgressDetails = $"Found {entries.Count} entries, adding to AmandaMap view...";
             
             // Send all extracted entries to the AmandaMap view model
             foreach (var entry in entries)
@@ -542,13 +641,78 @@ public partial class MainWindowViewModel : ObservableObject
                 _messenger.Send(new AddNewAmandaMapEntryMessage(entry));
             }
             
-            Status = $"Extracted {entries.Count} AmandaMap entries from {Path.GetFileName(folderPath)}.";
+            Status = $"Extracted {entries.Count} AmandaMap entries from {Path.GetFileName(folderPath)}. Check the 'AmandaMap' tab to view them.";
             DebugLogger.Log($"MainWindowViewModel: AmandaMap extraction complete. Found {entries.Count} entries.");
+            
+            // Show a more helpful message if no entries were found
+            if (entries.Count == 0)
+            {
+                Status = $"No AmandaMap entries found in {Path.GetFileName(folderPath)}. Make sure your files contain entries with patterns like 'AmandaMap Threshold', '🔥 Threshold', or 'Archived in the AmandaMap'.";
+            }
         }
         catch (Exception ex)
         {
             Status = $"Error extracting AmandaMap entries: {ex.Message}";
             DebugLogger.Log($"MainWindowViewModel: Error during AmandaMap extraction: {ex.Message}");
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            ProgressMessage = "Ready";
+            ProgressDetails = "";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExtractPhoenixCodexEntries()
+    {
+        DebugLogger.Log("MainWindowViewModel: 'Extract Phoenix Codex Entries' command initiated.");
+        var folderPath = await _dialogService.ShowOpenFolderDialogAsync("Select Folder to Extract Phoenix Codex Entries");
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            Status = "Phoenix Codex extraction cancelled.";
+            DebugLogger.Log("MainWindowViewModel: Folder selection for Phoenix Codex extraction was cancelled.");
+            return;
+        }
+
+        Status = $"Extracting Phoenix Codex entries from '{Path.GetFileName(folderPath)}'...";
+        IsOperationInProgress = true;
+        ProgressMessage = "Scanning files for Phoenix Codex entries...";
+        ProgressDetails = "Looking for 🪶 entries, Phoenix Codex sections, and related content...";
+        DebugLogger.Log($"MainWindowViewModel: Starting Phoenix Codex extraction from folder: {folderPath}");
+        
+        try
+        {
+            var entries = await Task.Run(() => CodexEngine.Parsing.PhoenixCodexExtractor.ExtractFromFolder(folderPath));
+            
+            ProgressMessage = "Processing extracted entries...";
+            ProgressDetails = $"Found {entries.Count} entries, adding to AmandaMap view...";
+            
+            // Send all extracted entries to the AmandaMap view model
+            foreach (var entry in entries)
+            {
+                _messenger.Send(new AddNewAmandaMapEntryMessage(entry));
+            }
+            
+            Status = $"Extracted {entries.Count} Phoenix Codex entries from {Path.GetFileName(folderPath)}. Check the 'AmandaMap' tab to view them.";
+            DebugLogger.Log($"MainWindowViewModel: Phoenix Codex extraction complete. Found {entries.Count} entries.");
+            
+            // Show a more helpful message if no entries were found
+            if (entries.Count == 0)
+            {
+                Status = $"No Phoenix Codex entries found in {Path.GetFileName(folderPath)}. Make sure your files contain entries with patterns like '🪶 Phoenix Codex', 'Phoenix Codex & Tools', or 'Phoenix Codex' sections.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = $"Error extracting Phoenix Codex entries: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Error during Phoenix Codex extraction: {ex.Message}");
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            ProgressMessage = "Ready";
+            ProgressDetails = "";
         }
     }
 
