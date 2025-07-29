@@ -17,7 +17,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     private readonly PhoenixCodexViewModel _phoenixCodexViewModel;
 
     [ObservableProperty]
-    private DateTime _selectedDate = DateTime.Today;
+    private DateTime? _selectedDate = DateTime.Today;
 
     [ObservableProperty]
     private string _selectedEntryType = "All";
@@ -85,7 +85,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     /// <summary>
     /// Updates the entries shown for the selected date
     /// </summary>
-    partial void OnSelectedDateChanged(DateTime value)
+    partial void OnSelectedDateChanged(DateTime? value)
     {
         UpdateSelectedDateEntries();
     }
@@ -110,12 +110,15 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     {
         SelectedDateEntries.Clear();
         
-        var entriesForDate = TimelineEntries.Where(e => 
-            e.Date.Date == SelectedDate.Date).ToList();
-        
-        foreach (var entry in entriesForDate.OrderBy(e => e.Date))
+        if (SelectedDate.HasValue)
         {
-            SelectedDateEntries.Add(entry);
+            var entriesForDate = TimelineEntries.Where(e => 
+                e.Date.Date == SelectedDate.Value.Date).ToList();
+            
+            foreach (var entry in entriesForDate.OrderBy(e => e.Date))
+            {
+                SelectedDateEntries.Add(entry);
+            }
         }
     }
 
@@ -166,8 +169,10 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToNextEntry()
     {
+        if (!SelectedDate.HasValue) return;
+        
         var nextEntry = TimelineEntries
-            .Where(e => e.Date > SelectedDate)
+            .Where(e => e.Date > SelectedDate.Value)
             .OrderBy(e => e.Date)
             .FirstOrDefault();
 
@@ -181,8 +186,10 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToPreviousEntry()
     {
+        if (!SelectedDate.HasValue) return;
+        
         var previousEntry = TimelineEntries
-            .Where(e => e.Date < SelectedDate)
+            .Where(e => e.Date < SelectedDate.Value)
             .OrderByDescending(e => e.Date)
             .FirstOrDefault();
 

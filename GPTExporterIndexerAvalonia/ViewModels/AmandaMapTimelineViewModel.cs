@@ -17,7 +17,7 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     private readonly AmandaMapViewModel _amandaMapViewModel;
 
     [ObservableProperty]
-    private DateTime _selectedDate = DateTime.Today;
+    private DateTime? _selectedDate = DateTime.Today;
 
     [ObservableProperty]
     private string _selectedEntryType = "All";
@@ -85,7 +85,7 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     /// <summary>
     /// Updates the entries shown for the selected date
     /// </summary>
-    partial void OnSelectedDateChanged(DateTime value)
+    partial void OnSelectedDateChanged(DateTime? value)
     {
         UpdateSelectedDateEntries();
     }
@@ -110,13 +110,16 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     {
         SelectedDateEntries.Clear();
 
-        var entriesForDate = TimelineEntries
-            .Where(e => e.Date.Date == SelectedDate.Date)
-            .OrderBy(e => e.Number);
-
-        foreach (var entry in entriesForDate)
+        if (SelectedDate.HasValue)
         {
-            SelectedDateEntries.Add(entry);
+            var entriesForDate = TimelineEntries
+                .Where(e => e.Date.Date == SelectedDate.Value.Date)
+                .OrderBy(e => e.Number);
+
+            foreach (var entry in entriesForDate)
+            {
+                SelectedDateEntries.Add(entry);
+            }
         }
     }
 
@@ -175,8 +178,10 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToNextEntry()
     {
+        if (!SelectedDate.HasValue) return;
+        
         var nextEntry = TimelineEntries
-            .Where(e => e.Date.Date > SelectedDate.Date)
+            .Where(e => e.Date.Date > SelectedDate.Value.Date)
             .OrderBy(e => e.Date)
             .FirstOrDefault();
 
@@ -192,8 +197,10 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void NavigateToPreviousEntry()
     {
+        if (!SelectedDate.HasValue) return;
+        
         var previousEntry = TimelineEntries
-            .Where(e => e.Date.Date < SelectedDate.Date)
+            .Where(e => e.Date.Date < SelectedDate.Value.Date)
             .OrderByDescending(e => e.Date)
             .FirstOrDefault();
 
