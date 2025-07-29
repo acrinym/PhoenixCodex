@@ -136,9 +136,15 @@ public partial class App : Application
             DebugLogger.Log("16. AmandaMapViewModel registered.");
             services.AddTransient<PhoenixCodexViewModel>();
             DebugLogger.Log("17. PhoenixCodexViewModel registered.");
-            services.AddTransient<AmandaMapTimelineViewModel>();
+            services.AddTransient<AmandaMapTimelineViewModel>(provider => 
+                new AmandaMapTimelineViewModel(
+                    provider.GetRequiredService<IMessenger>(),
+                    provider.GetRequiredService<AmandaMapViewModel>()));
             DebugLogger.Log("18. AmandaMapTimelineViewModel registered.");
-            services.AddTransient<PhoenixCodexTimelineViewModel>();
+            services.AddTransient<PhoenixCodexTimelineViewModel>(provider => 
+                new PhoenixCodexTimelineViewModel(
+                    provider.GetRequiredService<IMessenger>(),
+                    provider.GetRequiredService<PhoenixCodexViewModel>()));
             DebugLogger.Log("19. PhoenixCodexTimelineViewModel registered.");
             services.AddTransient<ChatLogViewModel>();
             DebugLogger.Log("20. ChatLogViewModel registered.");
