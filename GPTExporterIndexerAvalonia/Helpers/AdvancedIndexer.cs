@@ -29,6 +29,19 @@ public class SearchOptions
     public string? ExtensionFilter { get; set; }
 }
 
+/// <summary>
+/// Advanced indexing and search functionality for text-based files.
+/// Provides efficient token-based indexing with support for fuzzy matching,
+/// context extraction, and multi-format file processing.
+/// </summary>
+/// <remarks>
+/// This class implements a sophisticated indexing system that:
+/// - Creates token-based indexes for fast text searching
+/// - Supports fuzzy matching with Levenshtein distance
+/// - Extracts context snippets around search matches
+/// - Handles multiple file formats (txt, json, md)
+/// - Provides progress reporting for long operations
+/// </remarks>
 public static class AdvancedIndexer
 {
     private static readonly Regex TokenPattern = new("[A-Za-z0-9]+", RegexOptions.Compiled);
@@ -268,6 +281,20 @@ public static class AdvancedIndexer
         }
     }
 
+    /// <summary>
+    /// Performs a search operation on the specified index file using the given search phrase.
+    /// </summary>
+    /// <param name="indexPath">Path to the index file to search</param>
+    /// <param name="phrase">The search phrase to look for</param>
+    /// <param name="options">Search options including case sensitivity, fuzzy matching, and context lines</param>
+    /// <returns>An enumerable collection of search results with file paths and context snippets</returns>
+    /// <remarks>
+    /// This method implements an optimized search algorithm that:
+    /// - Pre-computes token keys for fuzzy search to avoid repeated enumeration
+    /// - Uses efficient string operations and caching
+    /// - Supports multiple search modes (exact, fuzzy, case-sensitive)
+    /// - Extracts context snippets around matches for better result presentation
+    /// </remarks>
     public static IEnumerable<SearchResult> Search(string indexPath, string phrase, SearchOptions? options = null)
     {
         options ??= new SearchOptions();

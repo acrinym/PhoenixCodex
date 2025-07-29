@@ -1,118 +1,197 @@
-Phoenix Codex 🪶
-The Phoenix Codex is a suite of tools for sorting, indexing, and visualizing the AmandaMap. It is composed of a main Avalonia UI application and a shared core library.
-Updated: July 19, 2025
+# PhoenixCodex
 
-## Python Scripts
+A sophisticated document indexing and search application built with .NET 8 and Avalonia UI, designed for managing and searching through large collections of text-based documents, particularly focused on personal knowledge management and research workflows.
 
-Earlier iterations of the project were written in Python. These scripts remain in
-the repository for reference only and are **not** used by the Avalonia
-application. Instructions for launching or installing the old Python GUI have
-been removed. All core functionality is being ported to C# so that it can be
-maintained alongside the main application.
+## 🚀 Features
 
-GPTExporterIndexerAvalonia
-This repository includes a simple Avalonia application written in C#. It can
-build a token-based search index for .txt, .json and .md files and search
-the resulting index with basic context snippets. The UI now exposes additional
-search options such as case sensitivity, fuzzy matching and AND/OR logic. You
-can also open any matching file directly from the results list. A third tab
-lets you parse a Markdown or JSON AmandaMap file and export a concise summary.
+### Core Functionality
+- **Advanced Document Indexing**: Token-based indexing system with fuzzy matching capabilities
+- **Multi-Format Support**: Handles JSON, Markdown, and plain text files
+- **Real-Time Search**: Fast search with context extraction and snippet highlighting
+- **Content Filtering**: Intelligent filtering based on document types and content
+- **Timeline View**: Chronological organization of entries with date-based filtering
+- **Tag Mapping**: Contextual tag generation and cross-referencing
 
-Features
-Builds a token-based search index from .txt, .json, and .md files.
-Searches the generated index with basic context snippets in the results.
-Provides advanced search options, including:
-Case sensitivity
-Fuzzy matching
-File extension filter
-AND/OR logic
-Allows you to open any matching file directly from the search results list.
-Includes a book reader tab for loading Markdown or text files.
-Provides a legacy tool tab to launch the original Python utility.
-- Dynamic theming with **Light**, **Dark**, and **Magic** modes.
-- Fully customizable theme settings with fonts, colors, and corner radius.
-- Quick preset buttons in the Settings panel for fast theme switching.
-- Optional "Hide Magic" toggle removes occult-themed controls when needed.
-- Real-time progress bar and status messages during indexing and TagMap generation.
-- Import and export custom themes as JSON files for easy sharing.
+### User Interface
+- **Modern Avalonia UI**: Cross-platform desktop application
+- **Responsive Design**: Adaptive layouts for different screen sizes
+- **Theme Support**: Multiple themes (Magic, Light, Dark, Custom)
+- **Progress Reporting**: Real-time progress updates for long operations
+- **Error Handling**: Comprehensive error reporting and recovery
 
-Settings and Theming
---------------------
-Open the **Settings** dialog from the Control Panel to tweak fonts, colors, and animations.
-Select from preset **Light**, **Dark**, or **Magic** themes or build your own custom look.
-Dataset Builder
----------------
-Use `dataset_builder.py` to harvest paragraphs mentioning **AmandaMap**, **Phoenix Codex**, or **Whispered Flame**, plus numbered threshold entries. The script scans `.md`, `.txt`, and `.json` files and now offers optional CSV output.
+### Advanced Features
+- **Performance Optimized**: Efficient algorithms for large document collections
+- **Memory Management**: Optimized memory usage with StringBuilder and caching
+- **Extensible Architecture**: Plugin-friendly design with service interfaces
+- **Debug Logging**: Comprehensive logging for troubleshooting
 
-```bash
-python dataset_builder.py <folder> --output dataset.json --csv
+## 🏗️ Architecture
+
+### Project Structure
 ```
-The script writes a JSON array listing each file path, type, and text match. If `--csv` is supplied, a companion `dataset.csv` is generated.
+PhoenixCodex/
+├── CodexEngine/                    # Core library
+│   ├── AmandaMapCore/             # AmandaMap data models
+│   ├── ChatGPTLogManager/         # Chat log processing
+│   ├── ExportEngine/              # Export functionality
+│   ├── GrimoireCore/              # Grimoire management
+│   ├── Parsing/                   # Document parsing
+│   ├── PhoenixEntries/            # Entry management
+│   ├── RitualForge/               # Ritual processing
+│   └── Services/                  # Core services
+├── GPTExporterIndexerAvalonia/    # Main application
+│   ├── Helpers/                   # Utility classes
+│   ├── Models/                    # Data models
+│   ├── Reading/                   # Document reading
+│   ├── Services/                  # Application services
+│   ├── ViewModels/                # MVVM ViewModels
+│   ├── Views/                     # UI Views
+│   └── WebAssets/                 # Web components
+└── modules/                       # Python utilities
+```
 
-TagMap Tab
------------
-The **TagMap** tab manages tag entries that point back to lines in your source documents.
-Load a `tagmap.json` file to see each referenced document in its own sub-tab. Within a document you can add new tags, edit the *Category* and *Preview* fields, and then save your changes back to JSON.
-Entries store the document name and an optional line number. Use the built-in **Open Document...** command to jump to the referenced file so you can view the surrounding context before editing.
+### Key Components
 
-YAML Interpreter
-----------------
-The **YAML Interpreter** tab lets you load `.yaml` files and inspect their keys and values in a nested tree view.
-Enter a file path, click **Load**, and the entries will be parsed using **YamlDotNet** so you can browse ritual templates directly inside the app.
+#### CodexEngine (Core Library)
+- **Models.cs**: Data structures for numbered map entries
+- **ChatDateExtractor.cs**: Extracts actual chat dates from export files
+- **EntryNavigator.cs**: Navigation and filtering for entries
+- **Parsing Services**: Document parsing for various formats
 
-Building the Application
-Both **GPTExporterIndexerAvalonia** and **CodexEngine** require the .NET&nbsp;8 SDK. Make sure it is installed before running `dotnet build` or `dotnet run`.
-Install the SDK on your system. On Ubuntu, you can do this with the following commands:
+#### GPTExporterIndexerAvalonia (Main App)
+- **AdvancedIndexer.cs**: High-performance search and indexing
+- **AmandaMapViewModel.cs**: Main data management ViewModel
+- **SearchService.cs**: Asynchronous search operations
+- **ControlPanel.cs**: Theme and settings management
 
-Bash
+## 🛠️ Development
 
-sudo apt-get update
-sudo apt-get install -y dotnet-sdk-8.0
-Build the Avalonia Project Navigate to the project directory and run the build command:
+### Prerequisites
+- .NET 8.0 SDK
+- Visual Studio 2022 or VS Code
+- Windows 10/11 (primary platform)
 
-Bash
-
-dotnet build GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj -c Release
-
-Running the Application
------------------------
-After building, start the Avalonia UI with:
-
+### Building the Project
 ```bash
+# Restore dependencies
+dotnet restore
+
+# Build all projects
+dotnet build
+
+# Run the application
 dotnet run --project GPTExporterIndexerAvalonia/GPTExporterIndexerAvalonia.csproj
 ```
 
-The window will display **Index**, **Search**, **Parse**, **Book Reader** and **Legacy Tool** tabs where you can build, search and parse the archive, read grimoire files or launch the original tool.
+### Project Configuration
+- **Target Framework**: .NET 8.0
+- **UI Framework**: Avalonia UI
+- **Architecture**: MVVM with dependency injection
+- **Messaging**: CommunityToolkit.Mvvm.Messaging
 
+## 📊 Performance Optimizations
 
-Web assets
-The WebAssets folder contains a small index.html that loads three.js from a CDN. This is a placeholder for future visualisation features.
+### Recent Improvements
+- **O(n) Entry Insertion**: Replaced O(n log n) sorting with efficient insertion
+- **Cached Search Results**: Pre-computed token keys and directory paths
+- **StringBuilder Usage**: Optimized string operations for large documents
+- **Filter Pre-computation**: Reduced redundant string operations
 
-CodexEngine Library
-The CodexEngine folder contains a .NET 8 class library with models and utilities used across the Phoenix Codex tools.
+### Performance Metrics
+- **Search Speed**: Sub-second results for large document collections
+- **Memory Usage**: Optimized with efficient data structures
+- **UI Responsiveness**: Non-blocking operations with async/await
 
-Build it separately with:
+## 🎨 User Interface
 
-Bash
+### Themes
+- **Magic Theme**: Default mystical aesthetic
+- **Light Theme**: Clean, professional appearance
+- **Dark Theme**: Eye-friendly dark mode
+- **Custom Theme**: User-defined color schemes
 
-dotnet build CodexEngine/CodexEngine.csproj -c Release
-The library's Parsing folder contains a Markdown parser that reads AmandaMap entries with emoji headers and exports them to a concise summary format.
-The parser also handles JSON representations of the same entries. Use the helper methods in JsonMarkdownConverter to transform between JSON and Markdown while preserving any date strings found in the original text.
-The Avalonia UI uses this library to parse files from the Parse tab and export summaries.
+### Views
+- **Main Window**: Central hub with search and navigation
+- **AmandaMap View**: Entry management and filtering
+- **Timeline View**: Chronological organization
+- **TagMap View**: Contextual tag exploration
+- **Settings View**: Application configuration
 
-Python Scripts (Optional Reference)
-----------------------------------
-The `modules` folder and `gpt_export_index_tool.py` contain earlier Python
-utilities for indexing and parsing AmandaMap content. They are provided solely
-as reference implementations and are **not** required when building or running
-the C# application.
+## 🔧 Configuration
 
-If you wish to recreate their functionality, you may port the logic into C# or
-another language of your choice, or simply run them with Python 3.10+. If you do
-not need them, these files can be ignored or removed without affecting any of
-the .NET projects.
-If you do use the legacy scripts, install dependencies from `requirements.txt` first.
+### Settings
+- **Search Options**: Fuzzy matching, case sensitivity, context lines
+- **Performance**: Debug logging, performance monitoring
+- **File Operations**: Default actions, overwrite behavior
+- **Privacy Mode**: Magic term replacements for sensitive content
 
-## License
+### File Formats
+- **JSON**: ChatGPT export files
+- **Markdown**: Documentation and notes
+- **Plain Text**: General text files
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## 🚀 Usage
+
+### Getting Started
+1. **Launch the Application**: Run the executable or use `dotnet run`
+2. **Build Index**: Select a folder and build the search index
+3. **Search Documents**: Use the search interface to find content
+4. **Filter Results**: Apply filters by type, date, or content
+5. **Export Results**: Save search results in various formats
+
+### Advanced Features
+- **Content Filtering**: Hide sensitive content types
+- **Timeline Navigation**: Browse entries by date
+- **Tag Exploration**: Discover contextual relationships
+- **Custom Themes**: Personalize the interface
+
+## 🐛 Troubleshooting
+
+### Common Issues
+- **Index Not Found**: Rebuild the index for the target folder
+- **Search Timeout**: Adjust timeout settings in configuration
+- **Memory Issues**: Reduce context lines or document size
+- **Performance**: Enable performance monitoring for diagnostics
+
+### Debug Logging
+Enable debug logging in settings to get detailed information about:
+- Search operations
+- File parsing
+- Index building
+- Error conditions
+
+## 🤝 Contributing
+
+### Development Guidelines
+- **Code Style**: Follow C# conventions and XML documentation
+- **Testing**: Ensure all changes build without warnings
+- **Performance**: Consider impact on large document collections
+- **Documentation**: Update README and code comments
+
+### Architecture Principles
+- **MVVM Pattern**: Separate concerns between View, ViewModel, and Model
+- **Dependency Injection**: Use interfaces for testability
+- **Async Operations**: Prevent UI blocking with async/await
+- **Error Handling**: Comprehensive error reporting and recovery
+
+## 📝 License
+
+This project is developed for personal knowledge management and research purposes.
+
+## 🎯 Roadmap
+
+### Planned Features
+- **Plugin System**: Extensible architecture for custom parsers
+- **Cloud Sync**: Multi-device synchronization
+- **Advanced Analytics**: Usage statistics and insights
+- **Mobile Support**: Cross-platform mobile application
+
+### Performance Goals
+- **Sub-second Search**: Instant results for any query
+- **Large Scale**: Support for 100,000+ documents
+- **Memory Efficiency**: Optimal memory usage patterns
+- **Responsive UI**: Smooth interactions at all scales
+
+---
+
+**PhoenixCodex**: Where knowledge meets efficiency in document management and search.

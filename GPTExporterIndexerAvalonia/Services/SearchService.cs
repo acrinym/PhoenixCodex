@@ -6,8 +6,15 @@ using System.Threading.Tasks;
 
 namespace GPTExporterIndexerAvalonia.Services;
 /// <summary>
-/// Implementation of <see cref="ISearchService"/> that uses the AdvancedIndexer.
+/// Implementation of <see cref="ISearchService"/> that uses the AdvancedIndexer for file searching.
+/// Provides asynchronous search capabilities with support for fuzzy matching, case sensitivity,
+/// and context-aware result extraction.
 /// </summary>
+/// <remarks>
+/// This service wraps the synchronous AdvancedIndexer.Search method in an asynchronous interface
+/// to prevent UI blocking during search operations. It also provides error handling and logging
+/// for search operations.
+/// </remarks>
 public class SearchService : ISearchService
 {
     public Task<IEnumerable<SearchResult>> SearchAsync(string indexPath, string query, SearchOptions options)

@@ -17,7 +17,19 @@ using CodexEngine.Parsing.Models;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
-// Implement the new IRecipient interface for adding entries
+/// <summary>
+/// ViewModel for managing AmandaMap entries with advanced filtering and grouping capabilities.
+/// Handles the display and organization of numbered map entries with support for content filtering,
+/// grouping by entry type, and hierarchical display structures.
+/// </summary>
+/// <remarks>
+/// This ViewModel implements the MVVM pattern and uses the Messenger pattern for communication
+/// with other ViewModels. It maintains multiple collections for different display purposes:
+/// - ProcessedEntries: Raw numbered entries
+/// - GroupedEntries: Entries grouped by type for the main view
+/// - EntryGroups: Internal management groups
+/// - DisplayItems: Flattened items for ListView display
+/// </remarks>
 public partial class AmandaMapViewModel : ObservableObject, 
     IRecipient<SelectedMapEntryChangedMessage>, 
     IRecipient<AddNewAmandaMapEntryMessage>
@@ -29,10 +41,16 @@ public partial class AmandaMapViewModel : ObservableObject,
     [ObservableProperty]
     private string _filePath = string.Empty;
 
-    // This new collection will hold our structured, numbered entries.
+    /// <summary>
+    /// Collection of structured, numbered entries that have been processed and validated.
+    /// This is the primary data source for the AmandaMap functionality.
+    /// </summary>
     public ObservableCollection<NumberedMapEntry> ProcessedEntries { get; } = new();
 
-    // The old collection is no longer used by the new workflow but is kept for now.
+    /// <summary>
+    /// Legacy collection of base map entries. Kept for backward compatibility
+    /// but no longer used in the new workflow.
+    /// </summary>
     public ObservableCollection<BaseMapEntry> Entries { get; } = new();
 
     /// <summary>
@@ -72,7 +90,16 @@ public partial class AmandaMapViewModel : ObservableObject,
         UpdateGroupedEntries();
     }
     
-    // This is the new method that handles receiving a parsed entry from the MainWindowViewModel
+    /// <summary>
+    /// Handles receiving a new AmandaMap entry from the MainWindowViewModel.
+    /// Performs conflict resolution, maintains sorted order, and updates the UI.
+    /// </summary>
+    /// <param name="message">The message containing the new entry to add</param>
+    /// <remarks>
+    /// This method implements the IRecipient pattern for loose coupling between ViewModels.
+    /// It ensures entries are added in the correct sorted position and updates all
+    /// related collections to maintain UI consistency.
+    /// </remarks>
     public void Receive(AddNewAmandaMapEntryMessage message)
     {
         var newEntry = message.Value;
@@ -120,7 +147,13 @@ public partial class AmandaMapViewModel : ObservableObject,
 
     /// <summary>
     /// Regenerates the <see cref="GroupedEntries"/> collection from <see cref="ProcessedEntries"/>.
+    /// Applies content filtering and creates optimized grouped collections for UI display.
     /// </summary>
+    /// <remarks>
+    /// This method is called whenever the ProcessedEntries collection changes.
+    /// It caches filtered results to avoid multiple enumerations and ensures
+    /// optimal performance for large datasets.
+    /// </remarks>
     private void UpdateGroupedEntries()
     {
         GroupedEntries.Clear();
