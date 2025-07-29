@@ -46,13 +46,13 @@ public static class AdvancedIndexer
 {
     private static readonly Regex TokenPattern = new("[A-Za-z0-9]+", RegexOptions.Compiled);
 
-    private class Index
+    public class Index
     {
         public Dictionary<string, HashSet<string>> Tokens { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, FileDetail> Files { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
-    private class FileDetail
+    public class FileDetail
     {
         public string Filename { get; set; } = string.Empty;
         public long Modified { get; set; }

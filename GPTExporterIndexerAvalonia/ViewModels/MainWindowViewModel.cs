@@ -21,6 +21,7 @@ using CodexEngine.GrimoireCore.Models;
 using CodexEngine.Parsing;
 using CommunityToolkit.Mvvm.Messaging; // <-- NEW USING
 using GPTExporterIndexerAvalonia.ViewModels.Messages; // <-- NEW USING
+using System.Text.Json;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -122,6 +123,112 @@ public partial class MainWindowViewModel : ObservableObject
         SettingsViewModel = settingsViewModel;
         
         DebugLogger.Log("MainWindowViewModel created and all services/sub-ViewModels injected.");
+        
+        // Check for existing large index on startup
+        _ = Task.Run(async () => await CheckForExistingIndexAsync());
+    }
+
+    /// <summary>
+    /// Checks for existing large index files and loads them asynchronously if found
+    /// </summary>
+    private async Task CheckForExistingIndexAsync()
+    {
+        try
+        {
+            // Look for common index locations
+            var commonPaths = new[]
+            {
+                @"D:\Chatgpt\ExportedChats\exported\Amanda-specific",
+                @"D:\Chatgpt\ExportedChats\exported",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ChatGPT Exports")
+            };
+
+            foreach (var path in commonPaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    var indexPath = Path.Combine(path, "index.json");
+                    if (File.Exists(indexPath))
+                    {
+                        var fileInfo = new FileInfo(indexPath);
+                        if (fileInfo.Length > 10 * 1024 * 1024) // 10MB threshold
+                        {
+                            DebugLogger.Log($"Found large index at {indexPath} ({fileInfo.Length / (1024 * 1024)}MB)");
+                            
+                            // Update UI on main thread
+                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                IndexFolder = path;
+                                Status = $"Loading large index ({fileInfo.Length / (1024 * 1024)}MB)...";
+                                IsOperationInProgress = true;
+                                ProgressMessage = "Loading existing index...";
+                                ProgressDetails = $"Found index at: {path}";
+                            });
+
+                            // Load the index asynchronously
+                            await LoadExistingIndexAsync(path);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Error checking for existing index: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Loads an existing index asynchronously with progress reporting
+    /// </summary>
+    private async Task LoadExistingIndexAsync(string folderPath)
+    {
+        try
+        {
+            var indexPath = Path.Combine(folderPath, "index.json");
+            
+            // Load index in background
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var json = File.ReadAllText(indexPath);
+                    var index = JsonSerializer.Deserialize<AdvancedIndexer.Index>(json);
+                    
+                    if (index != null)
+                    {
+                        DebugLogger.Log($"Successfully loaded index with {index.Files.Count} files and {index.Tokens.Count} tokens");
+                        
+                        // Update UI on main thread
+                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            Status = $"Index loaded: {index.Files.Count} files, {index.Tokens.Count} tokens";
+                            IsOperationInProgress = false;
+                            ProgressMessage = "Ready";
+                            ProgressDetails = "";
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.Log($"Error loading index: {ex.Message}");
+                    
+                    // Update UI on main thread
+                    Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        Status = "Error loading index";
+                        IsOperationInProgress = false;
+                        ProgressMessage = "Error";
+                        ProgressDetails = ex.Message;
+                    });
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"Error in LoadExistingIndexAsync: {ex.Message}");
+        }
     }
 
     partial void OnSelectedResultChanged(SearchResult? value)
@@ -198,9 +305,27 @@ public partial class MainWindowViewModel : ObservableObject
 
         IndexFolder = folderPath;
         Status = $"Building index incrementally for '{Path.GetFileName(IndexFolder)}'...";
-        await _indexingService.BuildIndexAsync(IndexFolder, true, _progressService);
-        Status = "Index build complete.";
-        DebugLogger.Log($"MainWindowViewModel: Index build process completed for folder: {IndexFolder}");
+        IsOperationInProgress = true;
+        ProgressMessage = "Building index...";
+        ProgressDetails = "Scanning files and building token index...";
+        
+        try
+        {
+            await _indexingService.BuildIndexAsync(IndexFolder, true, _progressService);
+            Status = "Index build complete.";
+            DebugLogger.Log($"MainWindowViewModel: Index build process completed for folder: {IndexFolder}");
+        }
+        catch (Exception ex)
+        {
+            Status = $"Index build failed: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Index build failed: {ex.Message}");
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            ProgressMessage = "Ready";
+            ProgressDetails = "";
+        }
     }
 
     [RelayCommand]
@@ -217,9 +342,27 @@ public partial class MainWindowViewModel : ObservableObject
 
         IndexFolder = folderPath;
         Status = $"Building full index for '{Path.GetFileName(IndexFolder)}'...";
-        await _indexingService.BuildIndexFullAsync(IndexFolder, true, _progressService);
-        Status = "Full index build complete.";
-        DebugLogger.Log($"MainWindowViewModel: Full index build process completed for folder: {IndexFolder}");
+        IsOperationInProgress = true;
+        ProgressMessage = "Building full index...";
+        ProgressDetails = "Rebuilding complete index from scratch...";
+        
+        try
+        {
+            await _indexingService.BuildIndexFullAsync(IndexFolder, true, _progressService);
+            Status = "Full index build complete.";
+            DebugLogger.Log($"MainWindowViewModel: Full index build process completed for folder: {IndexFolder}");
+        }
+        catch (Exception ex)
+        {
+            Status = $"Full index build failed: {ex.Message}";
+            DebugLogger.Log($"MainWindowViewModel: Full index build failed: {ex.Message}");
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            ProgressMessage = "Ready";
+            ProgressDetails = "";
+        }
     }
 
     [RelayCommand]

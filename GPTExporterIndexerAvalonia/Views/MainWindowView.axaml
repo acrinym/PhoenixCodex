@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:GPTExporterIndexerAvalonia.ViewModels"
+             xmlns:controls="clr-namespace:GPTExporterIndexerAvalonia.Views.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="GPTExporterIndexerAvalonia.Views.MainWindowView">
     
@@ -97,16 +98,9 @@
             </StackPanel>
             
             <Border BorderBrush="LightGray" BorderThickness="1" Padding="5">
-                <TextBox Text="{Binding SelectedFileContent}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         IsReadOnly="True"
-                         FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
-                         FontSize="11"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         SelectionBrush="LightBlue"
-                         SelectionForegroundBrush="Black"/>
+                <controls:SelectableTextBlock Text="{Binding SelectedFileContent}"
+                                             FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
+                                             FontSize="11"/>
             </Border>
         </DockPanel>
 

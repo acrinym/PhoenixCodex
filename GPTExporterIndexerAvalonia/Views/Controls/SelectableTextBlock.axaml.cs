@@ -1,69 +1,139 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using System;
 
-namespace GPTExporterIndexerAvalonia.Views.Controls;
-
-public partial class SelectableTextBlock : UserControl
+namespace GPTExporterIndexerAvalonia.Views.Controls
 {
-    public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<SelectableTextBlock, string?>(nameof(Text));
-
-    private TextBox? _textBox;
-
-    public string? Text
+    public partial class SelectableTextBlock : UserControl
     {
-        get => GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
-    }
+        public static readonly DirectProperty<SelectableTextBlock, string> TextProperty =
+            AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
+                nameof(Text),
+                o => o.Text,
+                (o, v) => o.Text = v);
 
-    public SelectableTextBlock()
-    {
-        InitializeComponent();
-        _textBox = this.FindControl<TextBox>("PART_TextBox");
-        
-        // Subscribe to property changes
-        this.GetObservable(TextProperty).Subscribe(OnTextChanged);
-    }
+        private string _text = string.Empty;
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
-    private void OnTextChanged(string? text)
-    {
-        if (_textBox != null)
+        public string Text
         {
-            _textBox.Text = text ?? string.Empty;
+            get => _text;
+            set => SetAndRaise(TextProperty, ref _text, value);
         }
-    }
 
-    /// <summary>
-    /// Gets the selected text from the control
-    /// </summary>
-    public string? GetSelectedText()
-    {
-        return _textBox?.SelectedText;
-    }
-
-    /// <summary>
-    /// Selects all text in the control
-    /// </summary>
-    public void SelectAll()
-    {
-        _textBox?.SelectAll();
-    }
-
-    /// <summary>
-    /// Clears the text selection
-    /// </summary>
-    public void ClearSelection()
-    {
-        if (_textBox != null)
+        public SelectableTextBlock()
         {
-            _textBox.SelectionStart = 0;
-            _textBox.SelectionEnd = 0;
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override void OnLoaded(RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+            
+            // Set up context menu handlers
+            if (this.FindControl<TextBox>("TextBlock") is TextBox textBox)
+            {
+                textBox.Focus();
+                
+                // Set up context menu handlers
+                if (textBox.ContextMenu is ContextMenu contextMenu)
+                {
+                    if (contextMenu.FindControl<MenuItem>("SelectAllMenuItem") is MenuItem selectAllItem)
+                    {
+                        selectAllItem.Click += (s, e) => textBox.SelectAll();
+                    }
+                    
+                    if (contextMenu.FindControl<MenuItem>("CopyMenuItem") is MenuItem copyItem)
+                    {
+                        copyItem.Click += async (s, e) => 
+                        {
+                            if (!string.IsNullOrEmpty(textBox.Text))
+                            {
+                                try
+                                {
+                                    var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                                    if (clipboard != null)
+                                    {
+                                        await clipboard.SetTextAsync(textBox.Text);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Log or handle clipboard error
+                                    System.Diagnostics.Debug.WriteLine($"Clipboard error: {ex.Message}");
+                                }
+                            }
+                        };
+                    }
+                    
+                    if (contextMenu.FindControl<MenuItem>("CopySelectionMenuItem") is MenuItem copySelectionItem)
+                    {
+                        copySelectionItem.Click += async (s, e) => 
+                        {
+                            if (!string.IsNullOrEmpty(textBox.SelectedText))
+                            {
+                                try
+                                {
+                                    var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                                    if (clipboard != null)
+                                    {
+                                        await clipboard.SetTextAsync(textBox.SelectedText);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Log or handle clipboard error
+                                    System.Diagnostics.Debug.WriteLine($"Clipboard error: {ex.Message}");
+                                }
+                            }
+                        };
+                    }
+                    
+                    if (contextMenu.FindControl<MenuItem>("IncreaseFontSizeMenuItem") is MenuItem increaseFontItem)
+                    {
+                        increaseFontItem.Click += (s, e) => 
+                        {
+                            var currentSize = FontSize;
+                            FontSize = Math.Min(currentSize + 1, 24);
+                        };
+                    }
+                    
+                    if (contextMenu.FindControl<MenuItem>("DecreaseFontSizeMenuItem") is MenuItem decreaseFontItem)
+                    {
+                        decreaseFontItem.Click += (s, e) => 
+                        {
+                            var currentSize = FontSize;
+                            FontSize = Math.Max(currentSize - 1, 8);
+                        };
+                    }
+                    
+                    if (contextMenu.FindControl<MenuItem>("ResetFontSizeMenuItem") is MenuItem resetFontItem)
+                    {
+                        resetFontItem.Click += (s, e) => 
+                        {
+                            FontSize = 11;
+                        };
+                    }
+                }
+            }
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            
+            // Ensure the TextBox gets focus when clicked
+            if (this.FindControl<TextBox>("TextBlock") is TextBox textBox)
+            {
+                textBox.Focus();
+            }
         }
     }
 } 
