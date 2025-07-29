@@ -536,11 +536,24 @@ public partial class MainWindowViewModel : ObservableObject
         ParseFilePath = filePath;
         ParseStatus = $"Parsing '{Path.GetFileName(ParseFilePath)}'...";
         DebugLogger.Log($"MainWindowViewModel: Parsing file: {ParseFilePath}");
+        
+        // Set up progress tracking
+        IsOperationInProgress = true;
+        ProgressPercentage = 0;
+        ProgressMessage = "Starting file parsing...";
+        ProgressDetails = "";
+        
         ParsedEntries.Clear();
         var entries = await _fileParsingService.ParseFileAsync(ParseFilePath);
         foreach (var e in entries) ParsedEntries.Add(e);
+        
         ParseStatus = $"Parsed {ParsedEntries.Count} entries.";
         DebugLogger.Log($"MainWindowViewModel: Parsing complete. Found {ParsedEntries.Count} entries.");
+        
+        // Clear progress
+        IsOperationInProgress = false;
+        ProgressMessage = "Ready";
+        ProgressDetails = "";
     }
 
     [RelayCommand]
@@ -551,6 +564,13 @@ public partial class MainWindowViewModel : ObservableObject
             ParseStatus = "Nothing to export.";
             return;
         }
+        
+        // Set up progress tracking
+        IsOperationInProgress = true;
+        ProgressPercentage = 0;
+        ProgressMessage = "Starting summary export...";
+        ProgressDetails = "";
+        
         ParseStatus = "Exporting summary...";
         DebugLogger.Log("MainWindowViewModel: Kicking off summary export.");
         var outputFilePath = await _fileParsingService.ExportSummaryAsync(ParsedEntries, ParseFilePath);
@@ -565,6 +585,11 @@ public partial class MainWindowViewModel : ObservableObject
             ParseStatus = "Failed to export summary.";
             DebugLogger.Log("MainWindowViewModel: Summary export failed.");
         }
+        
+        // Clear progress
+        IsOperationInProgress = false;
+        ProgressMessage = "Ready";
+        ProgressDetails = "";
     }
     
     [RelayCommand]
