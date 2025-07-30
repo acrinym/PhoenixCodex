@@ -1,0 +1,349 @@
+/* Phoenix Codex - Main Styles */
+:root {
+    /* Phoenix Fire Theme Colors */
+    --phoenix-primary: #ff6b35;
+    --phoenix-secondary: #f7931e;
+    --phoenix-accent: #ffd23f;
+    --phoenix-dark: #2c1810;
+    --phoenix-darker: #1a0f08;
+    --phoenix-light: #fff5f0;
+    --phoenix-lighter: #fffaf5;
+    
+    /* Ocean Blue Theme */
+    --ocean-primary: #0066cc;
+    --ocean-secondary: #0099ff;
+    --ocean-accent: #00ccff;
+    --ocean-dark: #003366;
+    --ocean-light: #f0f8ff;
+    
+    /* Forest Green Theme */
+    --forest-primary: #2d5a27;
+    --forest-secondary: #4a7c59;
+    --forest-accent: #6b8e23;
+    --forest-dark: #1a3d1a;
+    --forest-light: #f0f8f0;
+    
+    /* Sunset Orange Theme */
+    --sunset-primary: #ff8c42;
+    --sunset-secondary: #ff6b6b;
+    --sunset-accent: #ffd93d;
+    --sunset-dark: #8b4513;
+    --sunset-light: #fff8f0;
+    
+    /* Default to Phoenix Theme */
+    --primary: var(--phoenix-primary);
+    --secondary: var(--phoenix-secondary);
+    --accent: var(--phoenix-accent);
+    --dark: var(--phoenix-dark);
+    --darker: var(--phoenix-darker);
+    --light: var(--phoenix-light);
+    --lighter: var(--phoenix-lighter);
+    
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-normal: 0.3s ease-in-out;
+    --transition-slow: 0.5s ease-in-out;
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--dark);
+    background: linear-gradient(135deg, var(--lighter) 0%, var(--light) 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* App Container */
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: var(--spacing-md) 0;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+}
+
+.logo i {
+    font-size: var(--font-size-3xl);
+    color: var(--accent);
+    animation: phoenix-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes phoenix-glow {
+    0% { text-shadow: 0 0 5px var(--accent); }
+    100% { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
+}
+
+.nav {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.nav-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(255, 210, 63, 0.3);
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    width: 100%;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.loading-spinner i {
+    font-size: 3rem;
+    color: var(--accent);
+    margin-bottom: var(--spacing-md);
+}
+
+.loading-spinner p {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+}
+
+/* Notification System */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.notification {
+    background: white;
+    border-left: 4px solid var(--primary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    min-width: 300px;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification.success {
+    border-left-color: #10b981;
+}
+
+.notification.error {
+    border-left-color: #ef4444;
+}
+
+.notification.warning {
+    border-left-color: #f59e0b;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .nav {
+        justify-content: center;
+    }
+    
+    .nav-btn {
+        font-size: var(--font-size-xs);
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+    
+    .main-content {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .logo h1 {
+        font-size: var(--font-size-xl);
+    }
+    
+    .nav {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .nav-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Theme Classes */
+.theme-phoenix {
+    --primary: var(--phoenix-primary);
+    --secondary: var(--phoenix-secondary);
+    --accent: var(--phoenix-accent);
+    --dark: var(--phoenix-dark);
+    --light: var(--phoenix-light);
+    --lighter: var(--phoenix-lighter);
+}
+
+.theme-ocean {
+    --primary: var(--ocean-primary);
+    --secondary: var(--ocean-secondary);
+    --accent: var(--ocean-accent);
+    --dark: var(--ocean-dark);
+    --light: var(--ocean-light);
+    --lighter: var(--ocean-light);
+}
+
+.theme-forest {
+    --primary: var(--forest-primary);
+    --secondary: var(--forest-secondary);
+    --accent: var(--forest-accent);
+    --dark: var(--forest-dark);
+    --light: var(--forest-light);
+    --lighter: var(--forest-light);
+}
+
+.theme-sunset {
+    --primary: var(--sunset-primary);
+    --secondary: var(--sunset-secondary);
+    --accent: var(--sunset-accent);
+    --dark: var(--sunset-dark);
+    --light: var(--sunset-light);
+    --lighter: var(--sunset-light);
+} 

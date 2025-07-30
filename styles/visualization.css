@@ -1,0 +1,389 @@
+/* Phoenix Codex - Visualization Styles */
+
+/* 3D Visualization Container */
+.visualization-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+    min-height: 600px;
+    gap: var(--spacing-lg);
+}
+
+#three-container {
+    flex: 1;
+    background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+    border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#three-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Controls Panel */
+.controls-panel {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    min-width: 200px;
+}
+
+.control-group label {
+    font-weight: 500;
+    color: var(--dark);
+    font-size: var(--font-size-sm);
+}
+
+.control-group select,
+.control-group input[type="range"] {
+    width: 100%;
+}
+
+/* Timeline Visualization */
+.timeline-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.timeline-controls {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.date-range-picker {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.date-range-picker input[type="date"] {
+    padding: var(--spacing-sm);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+}
+
+.date-range-picker span {
+    color: var(--dark);
+    font-weight: 500;
+}
+
+.timeline-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.timeline-filters label {
+    font-weight: 500;
+    color: var(--dark);
+    font-size: var(--font-size-sm);
+}
+
+#timeline-visualization {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    min-height: 400px;
+    position: relative;
+}
+
+/* Timeline Chart Styles */
+.timeline-chart {
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+}
+
+.timeline-event {
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.timeline-event:hover {
+    opacity: 0.8;
+}
+
+.timeline-event.selected {
+    stroke-width: 3;
+    stroke: var(--accent);
+}
+
+/* Search Panel */
+.search-panel {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.search-input-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.search-input-group input {
+    flex: 1;
+    padding: var(--spacing-md);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+}
+
+.search-input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.search-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.search-options label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+/* 3D Visualization Overlays */
+.visualization-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.visualization-stats {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+/* Loading States */
+.visualization-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 200;
+}
+
+.visualization-loading i {
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: var(--spacing-sm);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+}
+
+.chart-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--dark);
+}
+
+.chart-loading i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: var(--spacing-sm);
+    animation: spin 1s linear infinite;
+}
+
+/* Network Graph Styles */
+.network-node {
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.network-node:hover {
+    stroke-width: 3;
+    stroke: var(--accent);
+}
+
+.network-link {
+    stroke: rgba(0, 0, 0, 0.2);
+    stroke-width: 1;
+    transition: var(--transition-fast);
+}
+
+.network-link:hover {
+    stroke: var(--primary);
+    stroke-width: 2;
+}
+
+/* Content Clusters */
+.cluster-node {
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.cluster-node:hover {
+    stroke-width: 3;
+    stroke: var(--accent);
+}
+
+.cluster-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+/* Relationship Map */
+.relationship-node {
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.relationship-node:hover {
+    stroke-width: 3;
+    stroke: var(--accent);
+}
+
+.relationship-link {
+    stroke: rgba(0, 0, 0, 0.3);
+    stroke-width: 1;
+    transition: var(--transition-fast);
+}
+
+.relationship-link:hover {
+    stroke: var(--primary);
+    stroke-width: 2;
+}
+
+/* Performance Indicators */
+.performance-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.fps-counter {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+/* Responsive Design for Visualization */
+@media (max-width: 768px) {
+    .visualization-container {
+        height: calc(100vh - 300px);
+    }
+    
+    .controls-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .control-group {
+        min-width: auto;
+    }
+    
+    .timeline-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .date-range-picker {
+        justify-content: center;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+    }
+    
+    .search-options {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .visualization-container {
+        height: calc(100vh - 400px);
+    }
+    
+    .controls-panel,
+    .timeline-controls,
+    .search-panel {
+        padding: var(--spacing-md);
+    }
+    
+    .visualization-overlay,
+    .visualization-stats {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        margin-bottom: var(--spacing-sm);
+    }
+} 

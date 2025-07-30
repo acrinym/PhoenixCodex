@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Codex - Interactive Visualization</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/visualization.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire"></i>
+                    <h1>Phoenix Codex</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn active" data-tab="dashboard">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </button>
+                    <button class="nav-btn" data-tab="visualization">
+                        <i class="fas fa-cube"></i>
+                        3D View
+                    </button>
+                    <button class="nav-btn" data-tab="timeline">
+                        <i class="fas fa-clock"></i>
+                        Timeline
+                    </button>
+                    <button class="nav-btn" data-tab="search">
+                        <i class="fas fa-search"></i>
+                        Search
+                    </button>
+                    <button class="nav-btn" data-tab="settings">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card stats-card">
+                        <h3>Data Overview</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="total-entries">0</div>
+                                <div class="stat-label">Total Entries</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="unique-sources">0</div>
+                                <div class="stat-label">Unique Sources</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="date-range">-</div>
+                                <div class="stat-label">Date Range</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="avg-content-length">0</div>
+                                <div class="stat-label">Avg Content Length</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <h3>Content Types Distribution</h3>
+                        <canvas id="content-types-chart"></canvas>
+                    </div>
+
+                    <div class="card chart-card">
+                        <h3>Timeline Activity</h3>
+                        <canvas id="timeline-chart"></canvas>
+                    </div>
+
+                    <div class="card chart-card">
+                        <h3>Top Tags</h3>
+                        <div id="tags-cloud"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D Visualization Tab -->
+            <div id="visualization" class="tab-content">
+                <div class="visualization-container">
+                    <div class="controls-panel">
+                        <div class="control-group">
+                            <label>Visualization Type:</label>
+                            <select id="viz-type">
+                                <option value="network">Network Graph</option>
+                                <option value="timeline-3d">3D Timeline</option>
+                                <option value="content-clusters">Content Clusters</option>
+                                <option value="relationship-map">Relationship Map</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Color Scheme:</label>
+                            <select id="color-scheme">
+                                <option value="phoenix">Phoenix Fire</option>
+                                <option value="ocean">Ocean Blue</option>
+                                <option value="forest">Forest Green</option>
+                                <option value="sunset">Sunset Orange</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Animation Speed:</label>
+                            <input type="range" id="animation-speed" min="0.1" max="2.0" step="0.1" value="1.0">
+                        </div>
+                        <button id="reset-camera" class="btn btn-secondary">
+                            <i class="fas fa-camera"></i>
+                            Reset Camera
+                        </button>
+                    </div>
+                    <div id="three-container"></div>
+                </div>
+            </div>
+
+            <!-- Timeline Tab -->
+            <div id="timeline" class="tab-content">
+                <div class="timeline-container">
+                    <div class="timeline-controls">
+                        <div class="date-range-picker">
+                            <input type="date" id="start-date">
+                            <span>to</span>
+                            <input type="date" id="end-date">
+                            <button id="apply-date-range" class="btn btn-primary">Apply</button>
+                        </div>
+                        <div class="timeline-filters">
+                            <label>Filter by Type:</label>
+                            <select id="timeline-type-filter">
+                                <option value="all">All Types</option>
+                                <option value="conversation">Conversations</option>
+                                <option value="thought">Thoughts</option>
+                                <option value="memory">Memories</option>
+                                <option value="event">Events</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="timeline-visualization"></div>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="search" class="tab-content">
+                <div class="search-container">
+                    <div class="search-panel">
+                        <div class="search-input-group">
+                            <input type="text" id="search-query" placeholder="Enter your search query...">
+                            <button id="search-btn" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                Search
+                            </button>
+                        </div>
+                        <div class="search-options">
+                            <label>
+                                <input type="checkbox" id="semantic-search"> Semantic Search
+                            </label>
+                            <label>
+                                <input type="checkbox" id="case-sensitive"> Case Sensitive
+                            </label>
+                            <label>
+                                <input type="checkbox" id="include-tags"> Include Tags
+                            </label>
+                        </div>
+                    </div>
+                    <div class="search-results">
+                        <div id="results-container"></div>
+                        <div id="results-pagination"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h3>Data Management</h3>
+                        <div class="setting-group">
+                            <label>Load Data File:</label>
+                            <input type="file" id="data-file-input" accept=".json,.csv">
+                            <button id="load-sample-data" class="btn btn-secondary">Load Sample Data</button>
+                        </div>
+                        <div class="setting-group">
+                            <label>Export Data:</label>
+                            <button id="export-json" class="btn btn-secondary">Export as JSON</button>
+                            <button id="export-csv" class="btn btn-secondary">Export as CSV</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Visualization Settings</h3>
+                        <div class="setting-group">
+                            <label>Theme:</label>
+                            <select id="theme-selector">
+                                <option value="phoenix">Phoenix Fire</option>
+                                <option value="ocean">Ocean Blue</option>
+                                <option value="forest">Forest Green</option>
+                                <option value="sunset">Sunset Orange</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Animation:</label>
+                            <input type="checkbox" id="enable-animations" checked>
+                            <span>Enable Animations</span>
+                        </div>
+                        <div class="setting-group">
+                            <label>Performance:</label>
+                            <select id="performance-mode">
+                                <option value="balanced">Balanced</option>
+                                <option value="quality">High Quality</option>
+                                <option value="performance">High Performance</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Application Info</h3>
+                        <div class="info-group">
+                            <div class="info-item">
+                                <span class="info-label">Version:</span>
+                                <span class="info-value">1.0.0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Data Entries:</span>
+                                <span class="info-value" id="settings-data-count">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Updated:</span>
+                                <span class="info-value" id="last-updated">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-spinner">
+                <i class="fas fa-fire fa-spin"></i>
+                <p>Loading Phoenix Codex...</p>
+            </div>
+        </div>
+
+        <!-- Notification System -->
+        <div id="notification-container" class="notification-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/visualization.js"></script>
+    <script type="module" src="js/timeline.js"></script>
+    <script type="module" src="js/search.js"></script>
+    <script type="module" src="js/settings.js"></script>
+    <script type="module" src="js/utils.js"></script>
+</body>
+</html> 
