@@ -105,65 +105,60 @@ class EnhancedApp(App):
         ttk.Entry(index_file_frame, textvariable=self.index_file_var, width=40).pack(side=tk.LEFT, padx=5)
         ttk.Button(index_file_frame, text="Browse", command=self.browse_index_file).pack(side=tk.LEFT, padx=5)
         
-        # Show last used path info
+        # Display last used path info
         if last_index_path:
             info_frame = ttk.Frame(options_frame)
             info_frame.pack(fill=tk.X, pady=2)
             ttk.Label(info_frame, text=f"Last used: {last_index_path}", 
                      font=("TkDefaultFont", 8), foreground="gray").pack(side=tk.LEFT)
         
-        # Action Buttons
-        button_frame = ttk.Frame(parent_tab)
-        button_frame.pack(fill=tk.X, pady=10)
+        # Transfer from regular indexer button
+        transfer_frame = ttk.Frame(options_frame)
+        transfer_frame.pack(fill=tk.X, pady=5)
+        ttk.Button(transfer_frame, text="Transfer from Regular Indexer", 
+                  command=self.transfer_from_regular_indexer).pack(side=tk.LEFT, padx=5)
         
-        ttk.Button(button_frame, text="Build Advanced Index", 
-                  command=self.build_advanced_index).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="Load Index", 
-                  command=self.load_advanced_index).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="Show Index Stats", 
-                  command=self.show_index_stats).pack(side=tk.LEFT, padx=5)
+        # Actions
+        actions_frame = ttk.LabelFrame(parent_tab, text="Actions", padding="10")
+        actions_frame.pack(fill=tk.X, pady=5)
         
-        # Search Section
+        actions_buttons_frame = ttk.Frame(actions_frame)
+        actions_buttons_frame.pack(fill=tk.X)
+        
+        ttk.Button(actions_buttons_frame, text="Build Index", command=self.build_advanced_index).pack(side=tk.LEFT, padx=5)
+        ttk.Button(actions_buttons_frame, text="Load Index", command=self.load_advanced_index).pack(side=tk.LEFT, padx=5)
+        ttk.Button(actions_buttons_frame, text="Show Stats", command=self.show_index_stats).pack(side=tk.LEFT, padx=5)
+        
+        # Search functionality
         search_frame = ttk.LabelFrame(parent_tab, text="Advanced Search", padding="10")
-        search_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        search_frame.pack(fill=tk.X, pady=5)
         
-        # Search query
-        query_frame = ttk.Frame(search_frame)
-        query_frame.pack(fill=tk.X, pady=5)
-        ttk.Label(query_frame, text="Search Query:").pack(side=tk.LEFT)
+        search_input_frame = ttk.Frame(search_frame)
+        search_input_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(search_input_frame, text="Search:").pack(side=tk.LEFT)
         self.advanced_search_var = tk.StringVar()
-        ttk.Entry(query_frame, textvariable=self.advanced_search_var, width=50).pack(side=tk.LEFT, padx=5)
-        ttk.Button(query_frame, text="Search", command=self.advanced_search).pack(side=tk.LEFT, padx=5)
-        
-        # Search options
-        search_options_frame = ttk.Frame(search_frame)
-        search_options_frame.pack(fill=tk.X, pady=5)
-        
-        self.case_sensitive_advanced_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(search_options_frame, text="Case Sensitive", 
-                       variable=self.case_sensitive_advanced_var).pack(side=tk.LEFT, padx=5)
-        
-        self.fuzzy_search_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(search_options_frame, text="Fuzzy Search", 
-                       variable=self.fuzzy_search_var).pack(side=tk.LEFT, padx=5)
+        ttk.Entry(search_input_frame, textvariable=self.advanced_search_var, width=40).pack(side=tk.LEFT, padx=5)
+        ttk.Button(search_input_frame, text="Search", command=self.advanced_search).pack(side=tk.LEFT, padx=5)
         
         # Search results
-        results_frame = ttk.Frame(search_frame)
+        results_frame = ttk.LabelFrame(parent_tab, text="Search Results", padding="10")
         results_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
         # Create treeview for results
-        columns = ('File', 'Score', 'Category', 'Preview')
-        self.search_tree = ttk.Treeview(results_frame, columns=columns, show='headings')
+        columns = ("File", "Category", "Relevance", "Preview")
+        self.advanced_results_tree = ttk.Treeview(results_frame, columns=columns, show="headings", height=10)
         
         for col in columns:
-            self.search_tree.heading(col, text=col)
-            self.search_tree.column(col, width=150)
+            self.advanced_results_tree.heading(col, text=col)
+            self.advanced_results_tree.column(col, width=150)
         
-        scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.search_tree.yview)
-        self.search_tree.configure(yscrollcommand=scrollbar.set)
+        # Scrollbar for results
+        results_scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.advanced_results_tree.yview)
+        self.advanced_results_tree.configure(yscrollcommand=results_scrollbar.set)
         
-        self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.advanced_results_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        results_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     
     def create_tagmap_tab_content(self, parent_tab):
         """Create content for Tagmap Management tab."""
@@ -487,13 +482,13 @@ Index Size: {stats.get('index_size', 0):.2f} KB
             return
         
         # Clear previous results
-        for item in self.search_tree.get_children():
-            self.search_tree.delete(item)
+        for item in self.advanced_results_tree.get_children():
+            self.advanced_results_tree.delete(item)
         
         try:
             search_options = SearchOptions(
-                case_sensitive=self.case_sensitive_advanced_var.get(),
-                use_fuzzy=self.fuzzy_search_var.get(),
+                case_sensitive=False, # Default to case-insensitive for advanced search
+                use_fuzzy=False, # Default to exact match for advanced search
                 max_results=50
             )
             
@@ -505,10 +500,10 @@ Index Size: {stats.get('index_size', 0):.2f} KB
             
             # Populate results
             for result in results:
-                self.search_tree.insert('', 'end', values=(
+                self.advanced_results_tree.insert('', 'end', values=(
                     result.file_path,
-                    f"{result.relevance_score:.3f}",
                     result.category,
+                    f"{result.relevance_score:.3f}",
                     result.preview[:50] + "..." if len(result.preview) > 50 else result.preview
                 ))
             
@@ -1086,6 +1081,24 @@ Conversation Types:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to visualize SMS conversations: {e}")
+
+    def transfer_from_regular_indexer(self):
+        """Transfer the regular index from the legacy tool to the advanced indexer."""
+        # Import the global variable from the legacy tool
+        from .legacy_tool_v6_3 import loaded_search_index
+        
+        if not loaded_search_index:
+            messagebox.showerror("Error", "No regular index loaded. Please build or load a regular index first.")
+            return
+        
+        try:
+            # Convert the regular index data to advanced index format
+            self.advanced_index_data = self.advanced_indexer.transfer_from_regular_data(loaded_search_index)
+            self.settings_service.set_last_advanced_index_path("transferred_from_regular_indexer")
+            self.update_status_bar(f"Transferred {len(self.advanced_index_data.files)} files from regular index.")
+            messagebox.showinfo("Success", f"Regular index transferred to advanced indexer. Total files: {len(self.advanced_index_data.files)}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to transfer index: {e}")
 
 # Export the enhanced app
 __all__ = ["EnhancedApp", "App", "apply_styles"]

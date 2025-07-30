@@ -457,14 +457,107 @@ class AdvancedIndexer:
     
     def load_index(self, index_path: Path) -> Index:
         """Load an index from a file."""
+        logger.info(f"Loading index from: {index_path}")
+        
         try:
             with open(index_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            index = self._deserialize_index(data)
-            logger.info(f"Loaded index from {index_path}: {len(index.files)} files, {len(index.tokens)} tokens")
-            return index
+            self.index = self._deserialize_index(data)
+            logger.info(f"Successfully loaded index with {len(self.index.files)} files")
+            return self.index
             
         except Exception as e:
-            logger.error(f"Error loading index from {index_path}: {e}")
-            raise ValueError(f"Failed to load index: {e}") 
+            logger.error(f"Failed to load index: {e}")
+            raise
+    
+    def transfer_index(self, regular_index_path: Path) -> Index:
+        """
+        Transfer a regular index to the advanced index format.
+        
+        Args:
+            regular_index_path: Path to the regular index file
+            
+        Returns:
+            The converted advanced index
+        """
+        logger.info(f"Transferring regular index from: {regular_index_path}")
+        
+        try:
+            with open(regular_index_path, 'r', encoding='utf-8') as f:
+                regular_data = json.load(f)
+            
+            return self.transfer_from_regular_data(regular_data)
+            
+        except Exception as e:
+            logger.error(f"Failed to transfer index: {e}")
+            raise
+    
+    def transfer_from_regular_data(self, regular_data: Dict[str, Any]) -> Index:
+        """
+        Transfer regular index data to the advanced index format.
+        
+        Args:
+            regular_data: The regular index data structure
+            
+        Returns:
+            The converted advanced index
+        """
+        logger.info("Transferring regular index data to advanced format")
+        
+        try:
+            # Extract the index data from the regular format
+            if 'index' in regular_data:
+                regular_index = regular_data['index']
+            else:
+                regular_index = regular_data
+            
+            # Convert regular index format to advanced index format
+            tokens = {}
+            files = {}
+            
+            # Process tokens
+            if 'tokens' in regular_index:
+                for token, file_ids in regular_index['tokens'].items():
+                    if isinstance(file_ids, list):
+                        # Convert file IDs to file paths
+                        file_paths = set()
+                        for file_id in file_ids:
+                            if file_id in regular_index.get('files', {}):
+                                file_path = regular_index['files'][file_id]
+                                file_paths.add(file_path)
+                        if file_paths:
+                            tokens[token] = file_paths
+            
+            # Process files
+            if 'file_details' in regular_index:
+                for file_id, details in regular_index['file_details'].items():
+                    if file_id in regular_index.get('files', {}):
+                        file_path = regular_index['files'][file_id]
+                        
+                        # Convert file details to FileDetail format
+                        file_detail = FileDetail(
+                            filename=details.get('filename', ''),
+                            modified=details.get('file_mod_time', 0),
+                            category=details.get('category'),
+                            preview=details.get('preview'),
+                            size=details.get('size', 0),
+                            line_count=details.get('line_count', 0)
+                        )
+                        files[file_path] = file_detail
+            
+            # Create the advanced index
+            advanced_index = Index(
+                tokens=tokens,
+                files=files,
+                created=datetime.now().isoformat(),
+                version="1.0"
+            )
+            
+            self.index = advanced_index
+            logger.info(f"Successfully transferred index with {len(files)} files and {len(tokens)} tokens")
+            return advanced_index
+            
+        except Exception as e:
+            logger.error(f"Failed to transfer index data: {e}")
+            raise 
