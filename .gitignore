@@ -42,6 +42,7 @@ yarn-error.log*
 !vite.config.js
 !package.json
 !package-lock.json
+!scripts/bundle-mhtml.js
 
 allfiles.txt
 debuglog.txt
