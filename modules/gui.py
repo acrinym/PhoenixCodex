@@ -663,8 +663,24 @@ Cross-references: {stats.get('cross_references', 0)}
     # Progress Methods
     def update_progress(self, message: str):
         """Update progress display."""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"GUI update_progress called: {message}")
+        
+        # Update progress text area
         self.master.after(0, lambda: self.progress_text.insert(tk.END, f"{message}\n"))
         self.master.after(0, lambda: self.progress_text.see(tk.END))
+        
+        # Also update status bar for visibility
+        self.master.after(0, lambda: self.update_status_bar(f"Progress: {message}"))
+    
+    def update_status_bar(self, message: str):
+        """Update the status bar with a message."""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Status bar update: {message}")
+        # For now, just log the message since we don't have a status bar widget
+        # In the future, this could update an actual status bar widget
     
     def clear_progress(self):
         """Clear progress display."""
