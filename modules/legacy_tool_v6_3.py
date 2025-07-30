@@ -334,6 +334,14 @@ def parse_chatgpt_json_to_structured_content(file_path, cfg): # Your original
                     elif part_content.get("text","").strip():
                          text_parts_for_current_message_block.append(part_content.get("text"))
                          log_debug(f"        Appended text from dict part: '{part_content.get('text')[:60]}'")
+        elif not data_uri_found_in_message and isinstance(content_data, str):
+            # Handle simple string content
+            log_debug(f"    Content is simple string: '{content_data[:60]}...'")
+            if content_data.strip():
+                text_parts_for_current_message_block.append(content_data)
+                log_debug(f"    Appended text from simple string content")
+        elif not data_uri_found_in_message and isinstance(content_data, dict) and not content_data.get("parts") and content_data.get("text","").strip():
+             message_parts_collector.append(content_data.get("text")); log_debug(f"    Appended text from top-level content (no parts): {content_data.get('text')[:60]}")
         if text_parts_for_current_message_block: message_parts_collector.append(" ".join(text_parts_for_current_message_block).strip())
         if data_uri_found_in_message:
             log_debug(f"    Processing found data URI (first 60 chars): {data_uri_found_in_message[:60]}...")
@@ -397,8 +405,6 @@ def parse_chatgpt_json_to_structured_content(file_path, cfg): # Your original
                 placeholder = f"[UnrecognizedDataURIFormat: {data_uri_found_in_message[:60]}...]"
                 if "sediment://" in data_uri_found_in_message: placeholder = f"[ImageRef_Sediment: {Path(data_uri_found_in_message).name}]"
                 message_parts_collector.append(placeholder); log_debug(f"    Data URI found but general regex did not match. Appended placeholder: {placeholder}")
-        elif not data_uri_found_in_message and isinstance(content_data, dict) and not content_data.get("parts") and content_data.get("text","").strip():
-             message_parts_collector.append(content_data.get("text")); log_debug(f"    Appended text from top-level content (no parts): {content_data.get('text')[:60]}")
         final_text_for_message = " ".join(message_parts_collector).strip()
         if final_text_for_message:
             structured_content_list.append({"type": "text", "content": final_text_for_message, "role": role, "timestamp": msg_data.get("create_time")})
@@ -592,7 +598,7 @@ def render_to_rtf(structured_content, cfg): # Your original
 
 # Overwrite with tag-definition aware version
 def render_to_amandamap_md(structured_content, cfg):
-    """Convert structured chat content to AmandaMap flavored Markdown.
+    """Convert structured chat content to proper AmandaMap format with emoji markers.
 
     Parameters
     ----------
@@ -606,101 +612,178 @@ def render_to_amandamap_md(structured_content, cfg):
     dict or None
         ``None`` if the content should be skipped due to mirror entity
         classification. Otherwise a dictionary with ``content`` and
-        ``full_body`` keys containing the rendered Markdown and raw body.
+        ``full_body`` keys containing the rendered AmandaMap format.
     """
 
     from datetime import datetime
     import re
 
-    entry_type = "unsorted"
-    tags = set()
-    chakra = set()
-    linked_rituals = set()
-    spirits = set()
-    core_declaration = ""
-    field_notes = ""
-    meta_time = ""
-    meta_state = ""
-    meta_trans_mode = ""
-    date_str = ""
+    # Extract all text content
     body_lines = []
     title = "Untitled"
-    tag_defs = {}
-    tag_file = cfg.get("tag_definition_file")
-    if tag_file:
-        tag_defs = load_tag_definitions(tag_file)
+    
     for item in structured_content:
         if item["type"] == "text":
             body_lines.append(item["content"])
-            content = item["content"].lower()
-            if "threshold" in content:
-                entry_type = "threshold"
-            if "ritual" in content:
-                entry_type = "ritual"
-            if "vow" in content:
-                entry_type = "vow"
-            if "phoenix" in content:
-                tags.add("phoenix")
-            if "chakra" in content:
-                matches = re.findall(r"(root|sacral|solar|heart|throat|third eye|crown)", content)
-                chakra.update(matches)
-            if "spirit" in content or "seere" in content or "balam" in content:
-                spirits.add("seere")
-                spirits.add("balam")
-            for cat, words in tag_defs.items():
-                if any(word in content for word in words):
-                    tags.add(cat)
         elif item["type"] == "header":
             title = item["content"].replace("*** FILE:", "").replace("***", "").strip()
         elif item["type"] == "image":
             body_lines.append(f"![{item['data'].filename_stem}]({item['data'].full_filename})")
+    
     full_body = "\n\n".join(body_lines).strip()
+    
+    # Check for mirror entity contamination
     classification = classify_mirror_entity_content(full_body)
     if cfg.get("mirror_entity_redaction_enabled", True) and classification == "skip":
         return None
-    if not title:
-        m = re.search(r"AmandaMap Threshold\s*(\d+)", full_body, re.IGNORECASE)
-        if m:
-            title = f"AmandaMap Threshold {m.group(1)}"
-    if "core declaration:" in full_body.lower() and "field notes:" in full_body.lower():
-        entry_type = "threshold"
-        cd_match = re.search(r"Core Declaration:\s*(.+)", full_body, re.IGNORECASE)
-        if cd_match:
-            core_declaration = cd_match.group(1).strip()
-        fn_match = re.search(r"Field Notes:\s*(.+)", full_body, re.IGNORECASE)
-        if fn_match:
-            field_notes = fn_match.group(1).strip()
-        time_match = re.search(r"Time:\s*(.+)", full_body, re.IGNORECASE)
-        if time_match:
-            meta_time = time_match.group(1).strip()
-        state_match = re.search(r"State:\s*(.+)", full_body, re.IGNORECASE)
-        if state_match:
-            meta_state = state_match.group(1).strip()
-        tm_match = re.search(r"Transmission Mode:\s*(.+)", full_body, re.IGNORECASE)
-        if tm_match:
-            meta_trans_mode = tm_match.group(1).strip()
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    yaml_lines = [
-        "---",
-        f"title: \"{title}\"",
-        f"type: \"{entry_type}\"",
-        f"date: {date_str}",
-        f"tags: [{', '.join(sorted(tags))}]",
-        f"chakra: [{', '.join(sorted(chakra))}]",
-        f"spirits: [{', '.join(sorted(spirits))}]",
-        f"linked_rituals: [{', '.join(sorted(linked_rituals))}]",
-        (f"core_declaration: \"{core_declaration}\"" if core_declaration else None),
-        (f"field_notes: \"{field_notes}\"" if field_notes else None),
-        (f"time: \"{meta_time}\"" if meta_time else None),
-        (f"state: \"{meta_state}\"" if meta_state else None),
-        (f"transmission_mode: \"{meta_trans_mode}\"" if meta_trans_mode else None),
-        "status: \"generated\"",
-        "---",
-        "",
-        full_body
-    ]
-    yaml_lines = [line for line in yaml_lines if line is not None]
-    return {"content": "\n".join(yaml_lines), "full_body": full_body}
+    
+    # Determine entry type and convert to proper AmandaMap format
+    content_lower = full_body.lower()
+    
+    # Check for different AmandaMap entry types
+    if "threshold" in content_lower or "core declaration" in content_lower:
+        return _convert_to_threshold_format(full_body, title)
+    elif "whispered flame" in content_lower or "whisper" in content_lower:
+        return _convert_to_whispered_flame_format(full_body, title)
+    elif "flame vow" in content_lower or "vow" in content_lower:
+        return _convert_to_flame_vow_format(full_body, title)
+    elif "phoenix codex" in content_lower or "phoenix" in content_lower:
+        return _convert_to_phoenix_codex_format(full_body, title)
+    else:
+        return _convert_to_amandamap_entry_format(full_body, title)
+
+
+def _convert_to_threshold_format(content, title):
+    """Convert content to AmandaMap Threshold format with 🔥 marker."""
+    
+    # Extract threshold-specific metadata
+    core_declaration = ""
+    field_notes = ""
+    time_info = ""
+    state_info = ""
+    transmission_mode = ""
+    
+    # Look for Core Declaration
+    cd_match = re.search(r"Core Declaration:\s*(.+)", content, re.IGNORECASE | re.DOTALL)
+    if cd_match:
+        core_declaration = cd_match.group(1).strip()
+    
+    # Look for Field Notes
+    fn_match = re.search(r"Field Notes:\s*(.+)", content, re.IGNORECASE | re.DOTALL)
+    if fn_match:
+        field_notes = fn_match.group(1).strip()
+    
+    # Look for Time
+    time_match = re.search(r"Time:\s*(.+)", content, re.IGNORECASE)
+    if time_match:
+        time_info = time_match.group(1).strip()
+    
+    # Look for State
+    state_match = re.search(r"State:\s*(.+)", content, re.IGNORECASE)
+    if state_match:
+        state_info = state_match.group(1).strip()
+    
+    # Look for Transmission Mode
+    tm_match = re.search(r"Transmission Mode:\s*(.+)", content, re.IGNORECASE)
+    if tm_match:
+        transmission_mode = tm_match.group(1).strip()
+    
+    # Generate proper AmandaMap Threshold format
+    threshold_content = f"""🔥 **{title}**
+
+**Core Declaration:**
+{core_declaration if core_declaration else "Not specified"}
+
+**Field Notes:**
+{field_notes if field_notes else "Not specified"}
+
+**Metadata:**
+- **Time:** {time_info if time_info else "Not specified"}
+- **State:** {state_info if state_info else "Not specified"}
+- **Transmission Mode:** {transmission_mode if transmission_mode else "Not specified"}
+
+**Content:**
+{content}
+
+---
+*Generated from chat export*"""
+    
+    return {
+        "content": threshold_content,
+        "full_body": content
+    }
+
+
+def _convert_to_whispered_flame_format(content, title):
+    """Convert content to AmandaMap Whispered Flame format with 🕯️ marker."""
+    
+    whispered_flame_content = f"""🕯️ **{title}**
+
+**Whispered Flame Entry:**
+
+{content}
+
+---
+*Generated from chat export*"""
+    
+    return {
+        "content": whispered_flame_content,
+        "full_body": content
+    }
+
+
+def _convert_to_flame_vow_format(content, title):
+    """Convert content to AmandaMap Flame Vow format with 📜 marker."""
+    
+    flame_vow_content = f"""📜 **{title}**
+
+**Flame Vow Entry:**
+
+{content}
+
+---
+*Generated from chat export*"""
+    
+    return {
+        "content": flame_vow_content,
+        "full_body": content
+    }
+
+
+def _convert_to_phoenix_codex_format(content, title):
+    """Convert content to AmandaMap Phoenix Codex format with 🪶 marker."""
+    
+    phoenix_codex_content = f"""🪶 **{title}**
+
+**Phoenix Codex Entry:**
+
+{content}
+
+---
+*Generated from chat export*"""
+    
+    return {
+        "content": phoenix_codex_content,
+        "full_body": content
+    }
+
+
+def _convert_to_amandamap_entry_format(content, title):
+    """Convert content to general AmandaMap entry format with 🔱 marker."""
+    
+    amandamap_entry_content = f"""🔱 **{title}**
+
+**AmandaMap Entry:**
+
+{content}
+
+---
+*Generated from chat export*"""
+    
+    return {
+        "content": amandamap_entry_content,
+        "full_body": content
+    }
 
 # --- save_multiple_files (from your V6.2(timestamp Edition).py) ---
 
