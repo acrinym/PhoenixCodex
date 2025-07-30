@@ -328,6 +328,28 @@ python gpt_export_index_tool.py visualize --data data.json --type content_analys
 python gpt_export_index_tool.py visualize --data data.json --type dashboard --output dashboard.png
 ```
 
+### 🆕 GUI Visualization Tab
+Access visualization tools directly from the main application GUI:
+
+1. **Launch the GUI**: `python gpt_export_index_tool.py gui`
+2. **Navigate to the "📊 Visualization" tab**
+3. **Select your data file** (JSON format)
+4. **Choose visualization type**:
+   - Interactive Dashboard
+   - Timeline
+   - Network Graph
+   - Content Analysis
+   - Comprehensive Dashboard
+5. **Configure output options** (optional)
+6. **Click "🎨 Launch Visualization"**
+
+**Features:**
+- **Data Refresh**: Automatically convert index data to visualization format
+- **Quick Preview**: Get data summary before visualization
+- **File Browsing**: Easy file selection dialogs
+- **Progress Tracking**: Real-time progress updates
+- **Error Handling**: Comprehensive error messages and dependency checks
+
 #### 🆕 Visualization Commands
 ```bash
 # Interactive visualization app
@@ -543,6 +565,7 @@ The tool automatically classifies content into:
 - **Network Graph Visualization**: Relationship mapping between people and entities
 - **Content Analysis Dashboard**: Word frequency, topic distribution, and statistics
 - **Interactive Visualization App**: Full-featured GUI for data exploration
+- **GUI Integration**: Direct access through the main application's "📊 Visualization" tab
 - **Multiple Export Formats**: PNG, PDF, and other image formats
 - **Real-time Updates**: Dynamic visualization updates
 - **Customizable Themes**: Light/dark themes and color palettes

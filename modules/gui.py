@@ -61,6 +61,11 @@ class EnhancedApp(App):
         self.progress_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
         self.notebook.add(self.progress_tab, text='Progress Monitor')
         self.create_progress_tab_content(self.progress_tab)
+        
+        # Visualization Tab
+        self.visualization_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
+        self.notebook.add(self.visualization_tab, text='📊 Visualization')
+        self.create_visualization_tab_content(self.visualization_tab)
     
     def create_advanced_index_tab_content(self, parent_tab):
         """Create content for Advanced Indexing tab."""
@@ -239,6 +244,66 @@ class EnhancedApp(App):
                   command=self.clear_progress).pack(side=tk.LEFT, padx=5)
         ttk.Button(actions_frame, text="Save Progress Log", 
                   command=self.save_progress_log).pack(side=tk.LEFT, padx=5)
+    
+    def create_visualization_tab_content(self, parent_tab):
+        """Create content for Visualization tab."""
+        
+        # Data Selection Frame
+        data_frame = ttk.LabelFrame(parent_tab, text="Data Selection", padding="10")
+        data_frame.pack(fill=tk.X, pady=5)
+        
+        # Data file selection
+        data_file_frame = ttk.Frame(data_frame)
+        data_file_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(data_file_frame, text="Data File:").pack(side=tk.LEFT)
+        self.visualization_data_var = tk.StringVar()
+        ttk.Entry(data_file_frame, textvariable=self.visualization_data_var, width=50).pack(side=tk.LEFT, padx=5)
+        ttk.Button(data_file_frame, text="Browse", command=self.browse_visualization_data).pack(side=tk.LEFT, padx=5)
+        
+        # Visualization Type Frame
+        viz_type_frame = ttk.LabelFrame(parent_tab, text="Visualization Type", padding="10")
+        viz_type_frame.pack(fill=tk.X, pady=5)
+        
+        # Visualization type selection
+        self.viz_type_var = tk.StringVar(value="interactive")
+        viz_types = [
+            ("Interactive Dashboard", "interactive"),
+            ("Timeline", "timeline"),
+            ("Network Graph", "network"),
+            ("Content Analysis", "content_analysis"),
+            ("Comprehensive Dashboard", "dashboard")
+        ]
+        
+        for text, value in viz_types:
+            ttk.Radiobutton(viz_type_frame, text=text, variable=self.viz_type_var, 
+                           value=value).pack(anchor=tk.W, pady=2)
+        
+        # Output Options Frame
+        output_frame = ttk.LabelFrame(parent_tab, text="Output Options", padding="10")
+        output_frame.pack(fill=tk.X, pady=5)
+        
+        # Save to file option
+        self.save_viz_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(output_frame, text="Save to File", variable=self.save_viz_var, 
+                       command=self.toggle_output_file).pack(anchor=tk.W)
+        
+        # Output file selection (initially disabled)
+        self.output_file_frame = ttk.Frame(output_frame)
+        self.output_file_var = tk.StringVar()
+        ttk.Label(self.output_file_frame, text="Output File:").pack(side=tk.LEFT)
+        ttk.Entry(self.output_file_frame, textvariable=self.output_file_var, width=40).pack(side=tk.LEFT, padx=5)
+        ttk.Button(self.output_file_frame, text="Browse", command=self.browse_output_file).pack(side=tk.LEFT, padx=5)
+        
+        # Action Buttons
+        button_frame = ttk.Frame(parent_tab)
+        button_frame.pack(fill=tk.X, pady=10)
+        
+        ttk.Button(button_frame, text="🎨 Launch Visualization", 
+                  command=self.launch_visualization).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="📊 Quick Preview", 
+                  command=self.quick_preview).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="🔄 Refresh Data", 
+                  command=self.refresh_visualization_data).pack(side=tk.LEFT, padx=5)
     
     # Advanced Indexing Methods
     def browse_advanced_folder(self):
@@ -556,6 +621,175 @@ Cross-references: {stats.get('cross_references', 0)}
                 messagebox.showinfo("Success", f"Progress log saved to {filename}")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to save progress log: {e}")
+    
+    # Visualization Methods
+    def browse_visualization_data(self):
+        """Browse for visualization data file."""
+        filename = filedialog.askopenfilename(
+            title="Select Visualization Data File",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+        if filename:
+            self.visualization_data_var.set(filename)
+    
+    def browse_output_file(self):
+        """Browse for output file."""
+        filename = filedialog.asksaveasfilename(
+            title="Select Output File",
+            defaultextension=".png",
+            filetypes=[
+                ("PNG files", "*.png"),
+                ("PDF files", "*.pdf"),
+                ("All files", "*.*")
+            ]
+        )
+        if filename:
+            self.output_file_var.set(filename)
+    
+    def toggle_output_file(self):
+        """Toggle output file frame visibility."""
+        if self.save_viz_var.get():
+            self.output_file_frame.pack(fill=tk.X, pady=5)
+        else:
+            self.output_file_frame.pack_forget()
+    
+    def launch_visualization(self):
+        """Launch the selected visualization."""
+        data_file = self.visualization_data_var.get()
+        viz_type = self.viz_type_var.get()
+        save_to_file = self.save_viz_var.get()
+        output_file = self.output_file_var.get() if save_to_file else None
+        
+        if not data_file:
+            messagebox.showerror("Error", "Please select a data file.")
+            return
+        
+        if save_to_file and not output_file:
+            messagebox.showerror("Error", "Please select an output file.")
+            return
+        
+        try:
+            # Import visualization tools
+            from .visualization_tools import (
+                TimelineVisualizer, RelationshipGraphVisualizer,
+                ContentAnalysisVisualizer, InteractiveVisualizationApp,
+                visualize_timeline, visualize_relationships, visualize_content_analysis
+            )
+            
+            # Load data
+            with open(data_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            self.update_progress(f"📊 Loaded {len(data)} items for visualization")
+            
+            if viz_type == "interactive":
+                # Launch interactive app
+                app = InteractiveVisualizationApp()
+                app.data = data
+                app.update_visualization()
+                self.update_progress("🎨 Launching interactive visualization app...")
+                app.run()
+                
+            elif viz_type == "timeline":
+                fig = visualize_timeline(data, output_file)
+                if not output_file:
+                    import matplotlib.pyplot as plt
+                    plt.show()
+                self.update_progress(f"📅 Timeline visualization {'saved' if output_file else 'displayed'}")
+                
+            elif viz_type == "network":
+                fig = visualize_relationships(data, output_file)
+                if not output_file:
+                    import matplotlib.pyplot as plt
+                    plt.show()
+                self.update_progress(f"🕸️ Network visualization {'saved' if output_file else 'displayed'}")
+                
+            elif viz_type == "content_analysis":
+                fig = visualize_content_analysis(data, output_file)
+                if not output_file:
+                    import matplotlib.pyplot as plt
+                    plt.show()
+                self.update_progress(f"📊 Content analysis visualization {'saved' if output_file else 'displayed'}")
+                
+            elif viz_type == "dashboard":
+                # Create comprehensive dashboard
+                visualizer = ContentAnalysisVisualizer()
+                fig = visualizer.create_content_analysis_dashboard(data)
+                if output_file:
+                    fig.savefig(output_file, dpi=300, bbox_inches='tight')
+                else:
+                    import matplotlib.pyplot as plt
+                    plt.show()
+                self.update_progress(f"📈 Dashboard visualization {'saved' if output_file else 'displayed'}")
+            
+            messagebox.showinfo("Success", f"Visualization completed successfully!")
+            
+        except ImportError as e:
+            error_msg = f"Visualization dependencies not available: {e}"
+            self.update_progress(f"❌ {error_msg}")
+            messagebox.showerror("Error", error_msg + "\n\nInstall with: pip install matplotlib seaborn networkx pandas")
+        except Exception as e:
+            error_msg = f"Visualization failed: {e}"
+            self.update_progress(f"❌ {error_msg}")
+            messagebox.showerror("Error", error_msg)
+    
+    def quick_preview(self):
+        """Generate a quick preview of the visualization."""
+        data_file = self.visualization_data_var.get()
+        
+        if not data_file:
+            messagebox.showerror("Error", "Please select a data file.")
+            return
+        
+        try:
+            # Load data and show basic info
+            with open(data_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Show data summary
+            summary = f"""
+Data Summary:
+- Total items: {len(data)}
+- Date range: {min([item.get('date', 'Unknown') for item in data])} to {max([item.get('date', 'Unknown') for item in data])}
+- Content types: {set([item.get('type', 'Unknown') for item in data])}
+- Average content length: {sum([len(str(item.get('content', ''))) for item in data]) // len(data)} characters
+            """
+            
+            messagebox.showinfo("Quick Preview", summary)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate preview: {e}")
+    
+    def refresh_visualization_data(self):
+        """Refresh visualization data from current index."""
+        if not self.advanced_index_data:
+            messagebox.showerror("Error", "No index data available. Please build or load an index first.")
+            return
+        
+        try:
+            # Convert index data to visualization format
+            viz_data = []
+            for file_path, file_data in self.advanced_index_data.get('files', {}).items():
+                for entry in file_data.get('entries', []):
+                    viz_data.append({
+                        'date': entry.get('timestamp', 'Unknown'),
+                        'content': entry.get('content', ''),
+                        'type': entry.get('type', 'conversation'),
+                        'source': file_path,
+                        'tags': entry.get('tags', [])
+                    })
+            
+            # Save to temporary file
+            temp_file = Path("temp_visualization_data.json")
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                json.dump(viz_data, f, indent=2, default=str)
+            
+            self.visualization_data_var.set(str(temp_file))
+            self.update_progress(f"🔄 Refreshed visualization data: {len(viz_data)} items")
+            messagebox.showinfo("Success", f"Refreshed visualization data with {len(viz_data)} items")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to refresh visualization data: {e}")
 
 # Export the enhanced app
 __all__ = ["EnhancedApp", "App", "apply_styles"]
