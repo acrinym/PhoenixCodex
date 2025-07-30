@@ -296,6 +296,56 @@ python gpt_export_index_tool.py chat-files --folder ./chats --remove-duplicates 
 python gpt_export_index_tool.py chat-files --find-indexes
 ```
 
+### 🆕 Visualization Command
+Create visualizations of AmandaMap and Phoenix Codex data.
+
+```bash
+python gpt_export_index_tool.py visualize [OPTIONS]
+```
+
+**Options:**
+- `--data PATH` - Path to JSON data file (required)
+- `--type TYPE` - Visualization type: timeline, network, content_analysis, dashboard, interactive (default: interactive)
+- `--output PATH` - Output file path for static visualizations
+- `--config PATH` - Path to visualization config file
+- `--verbose` - Verbose output
+
+**Examples:**
+```bash
+# Interactive visualization app
+python gpt_export_index_tool.py visualize --data data.json --type interactive
+
+# Timeline visualization
+python gpt_export_index_tool.py visualize --data data.json --type timeline --output timeline.png
+
+# Network graph
+python gpt_export_index_tool.py visualize --data data.json --type network --output network.png
+
+# Content analysis dashboard
+python gpt_export_index_tool.py visualize --data data.json --type content_analysis --output analysis.png
+
+# Comprehensive dashboard
+python gpt_export_index_tool.py visualize --data data.json --type dashboard --output dashboard.png
+```
+
+#### 🆕 Visualization Commands
+```bash
+# Interactive visualization app
+python gpt_export_index_tool.py visualize --data data.json --type interactive
+
+# Timeline visualization
+python gpt_export_index_tool.py visualize --data data.json --type timeline --output timeline.png
+
+# Network graph
+python gpt_export_index_tool.py visualize --data data.json --type network --output network.png
+
+# Content analysis dashboard
+python gpt_export_index_tool.py visualize --data data.json --type content_analysis --output analysis.png
+
+# Comprehensive dashboard
+python gpt_export_index_tool.py visualize --data data.json --type dashboard --output dashboard.png
+```
+
 ## 🎨 Enhanced GUI Features
 
 The enhanced GUI provides a comprehensive interface with **8 tabs**:
@@ -487,6 +537,16 @@ The tool automatically classifies content into:
 - **Date Extraction**: Extract chat dates from file content or modification dates
 - **Auto-Index Detection**: Find existing indexes in common locations
 - **Dry Run Mode**: Preview changes without making them
+
+#### 🆕 Visualization Tools System
+- **Timeline Visualization**: Interactive timeline of events and conversations
+- **Network Graph Visualization**: Relationship mapping between people and entities
+- **Content Analysis Dashboard**: Word frequency, topic distribution, and statistics
+- **Interactive Visualization App**: Full-featured GUI for data exploration
+- **Multiple Export Formats**: PNG, PDF, and other image formats
+- **Real-time Updates**: Dynamic visualization updates
+- **Customizable Themes**: Light/dark themes and color palettes
+- **Performance Optimized**: Handles large datasets efficiently
 
 ### Mirror Entity System
 

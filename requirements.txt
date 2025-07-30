@@ -6,3 +6,7 @@ PyYAML
 pillow
 ttkthemes
 psutil
+matplotlib
+seaborn
+networkx
+pandas

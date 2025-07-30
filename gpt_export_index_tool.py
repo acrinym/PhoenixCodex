@@ -634,6 +634,15 @@ Examples:
         performance_parser.add_argument('--config', action='store_true', help='Show optimization configuration')
         performance_parser.add_argument('--verbose', action='store_true', help='Verbose output')
         
+        # Add visualization subparser
+        viz_parser = subparsers.add_parser('visualize', help='Data visualization tools')
+        viz_parser.add_argument('--data', required=True, help='Path to JSON data file')
+        viz_parser.add_argument('--type', choices=['timeline', 'network', 'content_analysis', 'dashboard', 'interactive'], 
+                               default='interactive', help='Visualization type')
+        viz_parser.add_argument('--output', help='Output file path for static visualizations')
+        viz_parser.add_argument('--config', help='Path to visualization config file')
+        viz_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+        
         args = parser.parse_args()
         
         if not args.command:
@@ -665,6 +674,8 @@ Examples:
                 self._handle_chat_files(args)
             elif args.command == 'performance':
                 self._handle_performance(args)
+            elif args.command == 'visualize':
+                self._handle_visualize(args)
             elif args.command == 'gui':
                 self.tool.create_gui()
             else:
@@ -1051,6 +1062,73 @@ Examples:
             
         except Exception as e:
             logger.error(f"Error processing chat files: {e}")
+    
+    def _handle_visualize(self, args):
+        """Handle visualization command."""
+        try:
+            from modules.visualization_tools import (
+                TimelineVisualizer, RelationshipGraphVisualizer, 
+                ContentAnalysisVisualizer, InteractiveVisualizationApp,
+                visualize_timeline, visualize_relationships, visualize_content_analysis
+            )
+            
+            # Load data
+            data_path = Path(args.data)
+            if not data_path.exists():
+                logger.error(f"Data file does not exist: {data_path}")
+                return
+                
+            with open(data_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+            print(f"📊 Loaded {len(data)} items for visualization")
+            
+            viz_type = args.type
+            
+            if viz_type == 'interactive':
+                # Launch interactive app
+                app = InteractiveVisualizationApp()
+                app.data = data
+                app.update_visualization()
+                print("🎨 Launching interactive visualization app...")
+                app.run()
+                
+            elif viz_type == 'timeline':
+                fig = visualize_timeline(data, args.output)
+                if not args.output:
+                    plt.show()
+                print(f"📅 Timeline visualization {'saved' if args.output else 'displayed'}")
+                
+            elif viz_type == 'network':
+                fig = visualize_relationships(data, args.output)
+                if not args.output:
+                    plt.show()
+                print(f"🕸️ Network visualization {'saved' if args.output else 'displayed'}")
+                
+            elif viz_type == 'content_analysis':
+                fig = visualize_content_analysis(data, args.output)
+                if not args.output:
+                    plt.show()
+                print(f"📊 Content analysis visualization {'saved' if args.output else 'displayed'}")
+                
+            elif viz_type == 'dashboard':
+                # Create comprehensive dashboard
+                from modules.visualization_tools import ContentAnalysisVisualizer
+                visualizer = ContentAnalysisVisualizer()
+                fig = visualizer.create_content_analysis_dashboard(data)
+                if args.output:
+                    fig.savefig(args.output, dpi=300, bbox_inches='tight')
+                else:
+                    plt.show()
+                print(f"📈 Dashboard visualization {'saved' if args.output else 'displayed'}")
+                
+        except ImportError as e:
+            logger.error(f"Visualization dependencies not available: {e}")
+            print("❌ Visualization tools require matplotlib, seaborn, and networkx")
+            print("Install with: pip install matplotlib seaborn networkx pandas")
+        except Exception as e:
+            logger.error(f"Visualization failed: {e}")
+            print(f"❌ Visualization failed: {e}")
     
     def _handle_performance(self, args):
         """Handle performance command."""
