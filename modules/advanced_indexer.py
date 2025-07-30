@@ -446,4 +446,18 @@ class AdvancedIndexer:
             "index_size_mb": sum(f.size for f in index.files.values()) / (1024 * 1024),
             "created": index.created,
             "version": index.version
-        } 
+        }
+    
+    def load_index(self, index_path: Path) -> Index:
+        """Load an index from a file."""
+        try:
+            with open(index_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            index = self._deserialize_index(data)
+            logger.info(f"Loaded index from {index_path}: {len(index.files)} files, {len(index.tokens)} tokens")
+            return index
+            
+        except Exception as e:
+            logger.error(f"Error loading index from {index_path}: {e}")
+            raise ValueError(f"Failed to load index: {e}") 
