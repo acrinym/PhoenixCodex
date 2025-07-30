@@ -61,6 +61,10 @@ from modules.advanced_indexer import AdvancedIndexer, SearchOptions, SearchResul
 from modules.tagmap_generator import TagMapGenerator, TagMapEntry
 from modules.progress_service import progress_service, ConsoleProgressCallback
 from modules.settings_service import settings_service
+from modules.chat_file_manager import ChatFileManager, ChatFileManagementResult
+
+# Import performance optimization module
+from modules.performance_optimizer import get_optimizer, optimize_operation, OptimizationConfig
 
 # Configure logging
 logging.basicConfig(
@@ -105,8 +109,14 @@ class AdvancedGPTExportIndexTool:
         self.processing_queue = queue.Queue()
         self.is_processing = False
         
+        # Initialize performance optimizer
+        self.optimizer = get_optimizer()
+        
         # Ensure mirror entity vault exists
         ensure_mirror_entity_vault(self.config)
+        
+        # Log initial memory usage
+        self.optimizer.log_memory_usage("Application startup")
         
     def setup_logging(self, level: str = "INFO"):
         """Setup logging with specified level."""
@@ -137,6 +147,7 @@ class AdvancedGPTExportIndexTool:
                     return False
         return False
     
+    @optimize_operation("build_index_advanced")
     def build_index_advanced(
         self,
         folder_path: Path,
@@ -147,6 +158,12 @@ class AdvancedGPTExportIndexTool:
         """Build an advanced index with enhanced features."""
         
         logger.info(f"Building index for {folder_path} (type: {index_type})")
+        
+        # Check folder size limits
+        should_skip, reason = self.optimizer.check_folder_limits(folder_path)
+        if should_skip:
+            logger.warning(f"Skipping folder {folder_path}: {reason}")
+            return {"error": reason}
         
         # Determine file patterns based on index type
         if index_type == "json":
@@ -197,20 +214,27 @@ class AdvancedGPTExportIndexTool:
             logger.error(f"Failed to build index: {e}")
             raise
     
+    @optimize_operation("search_advanced")
     def search_advanced(self, search_job: SearchJob) -> Tuple[List[Tuple], Optional[str]]:
         """Perform advanced search with multiple search types."""
         
         logger.info(f"Performing search: '{search_job.query}' (semantic: {search_job.use_semantic})")
         
+        # Check for cached result
+        cached_result = self.optimizer.get_cached_search(search_job.query, str(search_job.index_data.get('metadata', {}).get('indexed_folder_path', '')))
+        if cached_result:
+            logger.info("Using cached search result")
+            return cached_result
+        
         if search_job.use_semantic:
-            return semantic_search(
+            result = semantic_search(
                 search_job.query,
                 search_job.index_data,
                 top_n=10,
                 context_lines=search_job.context_lines
             )
         else:
-            return search_with_context(
+            result = search_with_context(
                 search_job.query,
                 search_job.index_data,
                 context_lines=search_job.context_lines,
@@ -218,7 +242,14 @@ class AdvancedGPTExportIndexTool:
                 search_logic=search_job.search_logic,
                 use_nlp=True
             )
+        
+        # Cache the result
+        if result[0] and not result[1]:  # If we have results and no error
+            self.optimizer.cache_search_result(search_job.query, str(search_job.index_data.get('metadata', {}).get('indexed_folder_path', '')), result)
+        
+        return result
     
+    @optimize_operation("export_files_advanced")
     def export_files_advanced(self, export_job: ExportJob) -> Dict[str, Any]:
         """Export files with advanced features."""
         
@@ -234,10 +265,18 @@ class AdvancedGPTExportIndexTool:
         # Prepare output directory
         export_job.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Process each file
+        # Process each file with optimization
         for file_path in export_job.input_files:
             try:
                 logger.info(f"Processing: {file_path.name}")
+                
+                # Check file size limits
+                should_skip, reason = self.optimizer.check_file_limits(file_path)
+                if should_skip:
+                    logger.warning(f"Skipping file {file_path}: {reason}")
+                    results['errors'].append(f"Skipped {file_path.name}: {reason}")
+                    results['failed'] += 1
+                    continue
                 
                 # Parse the file
                 structured_content = parse_chatgpt_json_to_structured_content(
@@ -430,18 +469,19 @@ class AdvancedGPTExportIndexTool:
         return files
     
     def create_gui(self):
-        """Create and run the GUI version of the tool."""
+        """Create and run the enhanced GUI version of the tool with Avalonia features."""
         
         root = tk.Tk()
-        root.title("🚀 Advanced GPT Export & Index Tool")
-        root.geometry("1200x800")
+        root.title("🚀 Advanced GPT Export & Index Tool - Enhanced Edition")
+        root.geometry("1400x900")
         
         # Apply theme
         current_theme = self.config.get("theme", "Sea Green")
         apply_styles(root, theme_styles.get(current_theme, theme_styles["Sea Green"]))
         
-        # Create the main application
-        app = App(root)
+        # Create the enhanced application with Avalonia features
+        from modules.gui import EnhancedApp
+        app = EnhancedApp(root)
         
         # Start the GUI
         root.mainloop()
@@ -577,6 +617,23 @@ Examples:
         import_settings_parser.add_argument('--input', required=True, help='Input file path')
         import_settings_parser.add_argument('--verbose', action='store_true', help='Verbose output')
         
+        # Chat File Management command (Avalonia backported)
+        chat_files_parser = subparsers.add_parser('chat-files', help='Manage chat files (duplicates, renaming)')
+        chat_files_parser.add_argument('--folder', help='Folder containing chat files')
+        chat_files_parser.add_argument('--remove-duplicates', action='store_true', help='Remove duplicate files')
+        chat_files_parser.add_argument('--rename-files', action='store_true', help='Rename files with correct dates')
+        chat_files_parser.add_argument('--dry-run', action='store_true', help='Show what would be done without making changes')
+        chat_files_parser.add_argument('--find-indexes', action='store_true', help='Find existing indexes in common locations')
+        chat_files_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+        
+        # Performance monitoring and optimization command
+        performance_parser = subparsers.add_parser('performance', help='Performance monitoring and optimization')
+        performance_parser.add_argument('--stats', action='store_true', help='Show performance statistics')
+        performance_parser.add_argument('--cleanup', action='store_true', help='Force memory cleanup')
+        performance_parser.add_argument('--monitor', action='store_true', help='Start performance monitoring')
+        performance_parser.add_argument('--config', action='store_true', help='Show optimization configuration')
+        performance_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+        
         args = parser.parse_args()
         
         if not args.command:
@@ -604,6 +661,10 @@ Examples:
                 self._handle_tagmap(args)
             elif args.command == 'settings':
                 self._handle_settings(args)
+            elif args.command == 'chat-files':
+                self._handle_chat_files(args)
+            elif args.command == 'performance':
+                self._handle_performance(args)
             elif args.command == 'gui':
                 self.tool.create_gui()
             else:
@@ -918,6 +979,138 @@ Examples:
             
         except Exception as e:
             logger.error(f"Error processing settings: {e}")
+    
+    def _handle_chat_files(self, args):
+        """Handle chat-files command (Avalonia backported)."""
+        
+        if args.find_indexes:
+            # Find existing indexes (no folder required)
+            try:
+                chat_manager = ChatFileManager()
+                found_indexes = chat_manager.find_existing_indexes()
+                
+                if found_indexes:
+                    print("\nFound existing indexes:")
+                    for path, size_mb in found_indexes:
+                        print(f"  📁 {path} ({size_mb:.1f}MB)")
+                else:
+                    print("No existing indexes found in common locations.")
+                
+            except Exception as e:
+                logger.error(f"Error finding indexes: {e}")
+            return
+        
+        # For other operations, folder is required
+        if not args.folder:
+            print("Please specify --folder for file management operations")
+            return
+        
+        folder_path = Path(args.folder)
+        
+        if not folder_path.exists():
+            logger.error(f"Folder does not exist: {folder_path}")
+            return
+        
+        try:
+            # Create chat file manager
+            chat_manager = ChatFileManager()
+            
+            # Manage chat files
+            if not args.remove_duplicates and not args.rename_files:
+                print("Please specify --remove-duplicates and/or --rename-files")
+                return
+            
+            result = chat_manager.manage_chat_files(
+                directory_path=str(folder_path),
+                remove_duplicates=args.remove_duplicates,
+                rename_files=args.rename_files,
+                dry_run=args.dry_run
+            )
+            
+            print(f"\nChat File Management Results:")
+            print(f"  📊 Total files: {result.total_files}")
+            print(f"  🔍 Duplicates found: {result.duplicates_found}")
+            print(f"  🗑️  Duplicates removed: {result.duplicates_removed}")
+            print(f"  📝 Files renamed: {result.files_renamed}")
+            print(f"  ❌ Errors: {result.errors}")
+            
+            if result.removed_files:
+                print(f"\nRemoved files:")
+                for file_path in result.removed_files:
+                    print(f"  🗑️  {file_path}")
+            
+            if result.renamed_files:
+                print(f"\nRenamed files:")
+                for file_path in result.renamed_files:
+                    print(f"  📝 {file_path}")
+            
+            if result.errors_list:
+                print(f"\nErrors:")
+                for error in result.errors_list:
+                    print(f"  ❌ {error}")
+            
+        except Exception as e:
+            logger.error(f"Error processing chat files: {e}")
+    
+    def _handle_performance(self, args):
+        """Handle performance command."""
+        optimizer = self.tool.optimizer
+        
+        if args.stats:
+            print("📊 Performance Statistics:")
+            stats = optimizer.get_performance_stats()
+            
+            print(f"   Memory Usage: {stats['memory_usage_mb']:.2f} MB")
+            print(f"   Memory High: {'⚠️' if stats['memory_high'] else '✅'}")
+            print(f"   Memory Critical: {'🚨' if stats['memory_critical'] else '✅'}")
+            
+            if stats['recent_metrics']:
+                print(f"   Recent Operations:")
+                for metric in stats['recent_metrics']:
+                    print(f"     - {metric['operation']}: {metric['duration']:.2f}s, "
+                          f"Memory: {metric['memory_delta_mb']:+.2f}MB, "
+                          f"Files: {metric['file_count']}, "
+                          f"Errors: {metric['errors']}")
+            
+            if 'search_cache' in stats:
+                cache_stats = stats['search_cache']
+                print(f"   Search Cache: {cache_stats['size']}/{cache_stats['max_size']} entries")
+            
+            if 'file_cache_size' in stats:
+                print(f"   File Cache: {stats['file_cache_size']} entries")
+        
+        elif args.cleanup:
+            print("🧹 Forcing memory cleanup...")
+            freed_mb = optimizer.force_cleanup() / (1024 * 1024)
+            print(f"✅ Freed {freed_mb:.2f} MB of memory")
+        
+        elif args.monitor:
+            print("📈 Starting performance monitoring...")
+            print("Press Ctrl+C to stop monitoring")
+            try:
+                while True:
+                    stats = optimizer.get_performance_stats()
+                    print(f"\rMemory: {stats['memory_usage_mb']:.2f} MB | "
+                          f"High: {'⚠️' if stats['memory_high'] else '✅'} | "
+                          f"Critical: {'🚨' if stats['memory_critical'] else '✅'}", end='')
+                    time.sleep(2)
+            except KeyboardInterrupt:
+                print("\n✅ Monitoring stopped")
+        
+        elif args.config:
+            print("⚙️ Optimization Configuration:")
+            config = optimizer.config
+            print(f"   Max Memory Usage: {config.max_memory_usage_mb} MB")
+            print(f"   Memory Warning Threshold: {config.memory_warning_threshold_mb} MB")
+            print(f"   Max File Size: {config.max_file_size_mb} MB")
+            print(f"   Max Total Size: {config.max_total_size_gb} GB")
+            print(f"   Search Cache Enabled: {config.enable_search_cache}")
+            print(f"   File Cache Enabled: {config.enable_file_cache}")
+            print(f"   Auto Garbage Collection: {config.auto_garbage_collection}")
+            print(f"   Performance Monitoring: {config.enable_performance_monitoring}")
+        
+        else:
+            print("❓ Use --stats, --cleanup, --monitor, or --config to see performance information")
 
 def main():
     """Main entry point."""

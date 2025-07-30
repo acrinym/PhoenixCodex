@@ -5,3 +5,4 @@ openpyxl
 PyYAML
 pillow
 ttkthemes
+psutil

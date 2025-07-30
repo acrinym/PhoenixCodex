@@ -100,11 +100,14 @@ config = {} # Populated by load_config() in main()
 def log_debug(message):
     global debug_log_text_widget
     log_entry = f"{datetime.now().strftime('%H:%M:%S.%f')[:-3]} - {message}"
-    if debug_log_text_widget and debug_log_text_widget.winfo_exists():
-        debug_log_text_widget.insert(tk.END, log_entry + "\n")
-        debug_log_text_widget.see(tk.END)
-    else:
-        print(f"LOG_DEBUG_FALLBACK: {log_entry}")
+    try:
+        if debug_log_text_widget and hasattr(debug_log_text_widget, 'winfo_exists') and debug_log_text_widget.winfo_exists():
+            debug_log_text_widget.insert(tk.END, log_entry + "\n")
+            debug_log_text_widget.see(tk.END)
+        else:
+            print(f"LOG_DEBUG_FALLBACK: {log_entry}")
+    except Exception as e:
+        print(f"LOG_DEBUG_FALLBACK: {log_entry} (Error: {e})")
 
 # --- Config and Utility Functions (from your V6.2(timestamp Edition).py) ---
 def load_config(): # Your original load_config
@@ -795,9 +798,12 @@ def save_multiple_files(file_paths, cfg, output_dir, combine_all=False, export_l
     already_exported_files = set()
 
     def log_status_export(message):
-        if export_log_widget_ref and export_log_widget_ref.winfo_exists():
-            export_log_widget_ref.insert(tk.END, message + "\n"); export_log_widget_ref.see(tk.END); export_log_widget_ref.update_idletasks()
-        else: print(message)
+        try:
+            if export_log_widget_ref and hasattr(export_log_widget_ref, 'winfo_exists') and export_log_widget_ref.winfo_exists():
+                export_log_widget_ref.insert(tk.END, message + "\n"); export_log_widget_ref.see(tk.END); export_log_widget_ref.update_idletasks()
+            else: print(message)
+        except Exception as e:
+            print(f"EXPORT_LOG: {message} (Error: {e})")
     for file_path_str in file_paths:
         file_path = Path(file_path_str); chat_file_stem = file_path.stem
         log_status_export(f"Processing: {file_path.name} for format {cfg['export_format']}...")
@@ -960,6 +966,19 @@ def save_multiple_files(file_paths, cfg, output_dir, combine_all=False, export_l
 
 def _build_generic_index(folder_to_index, cfg, file_patterns, index_file_to_save, progress_text_widget, is_json_source, existing_loaded_index_data=None, tags_per_file=None, tagmap_entries=None):
     # --- INTEGRATED: Initialize new structure for file_details ---
+    
+    # Import performance optimizer here to avoid circular imports
+    try:
+        from .performance_optimizer import get_optimizer
+        optimizer = get_optimizer()
+        
+        # Check folder size limits
+        should_skip, reason = optimizer.check_folder_limits(Path(folder_to_index))
+        if should_skip:
+            log_debug(f"Skipping folder {folder_to_index}: {reason}")
+            return {"error": reason}
+    except ImportError:
+        log_debug("Performance optimizer not available, skipping size checks")
 
     if existing_loaded_index_data and isinstance(existing_loaded_index_data.get("index"), dict):
         existing_index_section = existing_loaded_index_data["index"]
@@ -978,15 +997,18 @@ def _build_generic_index(folder_to_index, cfg, file_patterns, index_file_to_save
 
     def update_progress_indexing(message):
         """Write progress text to the widget safely from worker threads."""
-        if progress_text_widget and progress_text_widget.winfo_exists():
-            def do_update(msg=message):
-                progress_text_widget.insert(tk.END, msg + "\n")
-                progress_text_widget.see(tk.END)
-                progress_text_widget.update_idletasks()
+        try:
+            if progress_text_widget and hasattr(progress_text_widget, 'winfo_exists') and progress_text_widget.winfo_exists():
+                def do_update(msg=message):
+                    progress_text_widget.insert(tk.END, msg + "\n")
+                    progress_text_widget.see(tk.END)
+                    progress_text_widget.update_idletasks()
 
-            progress_text_widget.after(0, do_update)
-        else:
-            print(f"INDEX_PROGRESS: {message}")
+                progress_text_widget.after(0, do_update)
+            else:
+                print(f"INDEX_PROGRESS: {message}")
+        except Exception as e:
+            print(f"INDEX_PROGRESS: {message} (Error: {e})")
 
     update_progress_indexing(f"Starting indexing for: {folder_to_index}...")
     all_files_to_index = []
@@ -1065,9 +1087,12 @@ def _build_generic_index(folder_to_index, cfg, file_patterns, index_file_to_save
         for fp in all_files_to_index:
             futures.append((fp, executor.submit(process_file, fp)))
         for processed_count, (fp, fut) in enumerate(futures, 1):
-            if progress_text_widget and not progress_text_widget.winfo_exists():
-                log_debug("Indexing cancelled: Progress widget closed.")
-                return None
+            try:
+                if progress_text_widget and hasattr(progress_text_widget, 'winfo_exists') and not progress_text_widget.winfo_exists():
+                    log_debug("Indexing cancelled: Progress widget closed.")
+                    return None
+            except Exception:
+                pass
             update_progress_indexing(f"Processing file {processed_count}/{total_files}: {fp.name}...")
             result = fut.result()
             if not result:
@@ -1155,15 +1180,18 @@ def _build_generic_index(folder_to_index, cfg, file_patterns, index_file_to_save
         save_config(config)
     except Exception as e_save_idx:
         update_progress_indexing(f"Error saving index: {e_save_idx}")
-        if progress_text_widget and progress_text_widget.winfo_exists():
-            progress_text_widget.after(
-                0,
-                lambda msg=e_save_idx: messagebox.showerror(
-                    "Index Error",
-                    f"Could not save search index: {msg}",
-                    parent=progress_text_widget.master.master,
-                ),
-            )
+        try:
+            if progress_text_widget and hasattr(progress_text_widget, 'winfo_exists') and progress_text_widget.winfo_exists():
+                progress_text_widget.after(
+                    0,
+                    lambda msg=e_save_idx: messagebox.showerror(
+                        "Index Error",
+                        f"Could not save search index: {msg}",
+                        parent=progress_text_widget.master.master,
+                    ),
+                )
+        except Exception:
+            pass
     return final_index_structure
 
 # --- MODIFIED: _build_generic_index - End of significant modifications ---

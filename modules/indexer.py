@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Iterable, List, Tuple
-from nltk.stem import PorterStemmer
+try:
+    from nltk.stem import PorterStemmer
+    NLTK_AVAILABLE = True
+except ImportError:
+    NLTK_AVAILABLE = False
+    PorterStemmer = None
 import re
 from .legacy_tool_v6_3 import _build_generic_index, search_with_persistent_index
 
@@ -187,13 +192,16 @@ def export_results_with_context(
         return str(exc)
 
 
-_stemmer = PorterStemmer()
+_stemmer = PorterStemmer() if NLTK_AVAILABLE else None
 
 
 def _stem(text: str) -> List[str]:
     """Return stemmed tokens for *text* using a simple regex tokenizer."""
     tokens = re.findall(r"\b\w+\b", text.lower())
-    return [_stemmer.stem(tok) for tok in tokens]
+    if NLTK_AVAILABLE and _stemmer:
+        return [_stemmer.stem(tok) for tok in tokens]
+    else:
+        return tokens  # Return unstemmed tokens if NLTK is not available
 
 
 def search_semantic(query: str, loaded_index: dict, *, threshold: float = 0.1):

@@ -86,6 +86,19 @@ class AdvancedIndexer:
         """
         logger.info(f"Building index for folder: {folder_path}")
         
+        # Import performance optimizer here to avoid circular imports
+        try:
+            from .performance_optimizer import get_optimizer
+            optimizer = get_optimizer()
+            
+            # Check folder size limits
+            should_skip, reason = optimizer.check_folder_limits(folder_path)
+            if should_skip:
+                logger.warning(f"Skipping folder {folder_path}: {reason}")
+                raise ValueError(f"Folder too large: {reason}")
+        except ImportError:
+            logger.warning("Performance optimizer not available, skipping size checks")
+        
         # Load existing index if it exists and not forcing rebuild
         existing_index = None
         if index_path.exists() and not force_rebuild:
@@ -129,9 +142,19 @@ class AdvancedIndexer:
         if progress_callback:
             progress_callback("Indexing files", 0, len(all_files))
         
-        # Process each file
+        # Process each file with size limits
         for i, file_path in enumerate(all_files):
             try:
+                # Check file size limits
+                try:
+                    file_size_mb = file_path.stat().st_size / (1024 * 1024)
+                    if file_size_mb > 50:  # 50MB limit
+                        logger.warning(f"Skipping large file: {file_path.name} ({file_size_mb:.1f}MB)")
+                        continue
+                except Exception as e:
+                    logger.warning(f"Error checking file size for {file_path}: {e}")
+                    continue
+                
                 self._process_file(file_path, folder_path, tokens, files)
                 
                 if progress_callback:

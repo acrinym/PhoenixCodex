@@ -1,6 +1,6 @@
 # 🚀 GPT Export & Index Tool - Advanced Edition
 
-A comprehensive tool for exporting, indexing, and searching ChatGPT conversations with advanced features including semantic search, content classification, and multi-format export capabilities.
+A comprehensive tool for exporting, indexing, and searching ChatGPT conversations with advanced features including semantic search, content classification, and multi-format export capabilities. **Now with Avalonia backported features!**
 
 ## ✨ Features
 
@@ -14,6 +14,7 @@ A comprehensive tool for exporting, indexing, and searching ChatGPT conversation
 - **Export with Images**: Include inline images in exports
 - **Configurable Themes**: Multiple UI themes (Sea Green, Phoenix Fire, Modern Light)
 - **Command-line & GUI**: Both interfaces available
+- **🆕 Avalonia Features**: Advanced indexing, tagmap management, progress tracking, settings management
 
 ## 🚀 Quick Start
 
@@ -21,6 +22,16 @@ A comprehensive tool for exporting, indexing, and searching ChatGPT conversation
 ```bash
 python gpt_export_index_tool.py gui
 ```
+
+**Enhanced GUI with 8 Tabs:**
+- **Export Chats** - Convert files to various formats
+- **Search Indexed Files** - Search with real-time results
+- **Debug Log** - View processing logs
+- **App Settings** - Configure themes and options
+- **🆕 Advanced Indexing** - Token-based indexing and search
+- **🆕 Tagmap Management** - Generate and manage tagmaps
+- **🆕 Settings Management** - Comprehensive settings control
+- **🆕 Progress Monitor** - Real-time operation tracking
 
 ### Command-line Mode
 
@@ -42,6 +53,38 @@ python gpt_export_index_tool.py export --input ./chats --output ./exports --form
 #### Classify Content
 ```bash
 python gpt_export_index_tool.py classify --input ./chats --output classification_results.json
+```
+
+#### 🆕 Advanced Indexing (Avalonia)
+```bash
+python gpt_export_index_tool.py advanced-index --folder ./chats --output advanced_index.json
+```
+
+#### 🆕 Tagmap Management (Avalonia)
+```bash
+python gpt_export_index_tool.py tagmap generate --folder ./chats
+python gpt_export_index_tool.py tagmap stats --folder ./chats
+```
+
+#### 🆕 Settings Management (Avalonia)
+```bash
+python gpt_export_index_tool.py settings show
+python gpt_export_index_tool.py settings export --output settings_backup.json
+```
+
+#### 🆕 Performance Monitoring (Optimization)
+```bash
+python gpt_export_index_tool.py performance --stats
+python gpt_export_index_tool.py performance --cleanup
+python gpt_export_index_tool.py performance --monitor
+python gpt_export_index_tool.py performance --config
+```
+
+#### 🆕 Chat File Management (Avalonia)
+```bash
+python gpt_export_index_tool.py chat-files --folder ./chats --remove-duplicates --rename-files
+python gpt_export_index_tool.py chat-files --folder ./chats --dry-run
+python gpt_export_index_tool.py chat-files --find-indexes
 ```
 
 ## 📋 Command Reference
@@ -153,50 +196,195 @@ python gpt_export_index_tool.py classify --input chat.json --output classificati
 python gpt_export_index_tool.py classify --input ./chats --output classification_results.json
 ```
 
-## 🎨 GUI Features
+### 🆕 Advanced Index Command (Avalonia)
+Build advanced token-based indexes with enhanced search capabilities.
 
-The GUI provides a user-friendly interface with:
+```bash
+python gpt_export_index_tool.py advanced-index [OPTIONS]
+```
 
+**Options:**
+- `--folder PATH` - Folder to index (required)
+- `--output PATH` - Output index file path (required)
+- `--force` - Force rebuild index
+- `--verbose` - Verbose output
+
+**Examples:**
+```bash
+# Build advanced index
+python gpt_export_index_tool.py advanced-index --folder ./chats --output advanced_index.json
+
+# Force rebuild advanced index
+python gpt_export_index_tool.py advanced-index --folder ./chats --output advanced_index.json --force
+```
+
+### 🆕 Tagmap Command (Avalonia)
+Generate and manage tagmaps for content organization.
+
+```bash
+python gpt_export_index_tool.py tagmap [COMMAND] [OPTIONS]
+```
+
+**Commands:**
+- `generate` - Generate new tagmap
+- `update` - Update existing tagmap
+- `stats` - Show tagmap statistics
+
+**Examples:**
+```bash
+# Generate tagmap
+python gpt_export_index_tool.py tagmap generate --folder ./chats
+
+# Update existing tagmap
+python gpt_export_index_tool.py tagmap update --folder ./chats
+
+# Show tagmap statistics
+python gpt_export_index_tool.py tagmap stats --folder ./chats
+```
+
+### 🆕 Settings Command (Avalonia)
+Manage application settings with comprehensive control.
+
+```bash
+python gpt_export_index_tool.py settings [COMMAND] [OPTIONS]
+```
+
+**Commands:**
+- `show` - Show current settings
+- `reset` - Reset to defaults
+- `export` - Export settings to file
+- `import` - Import settings from file
+
+**Examples:**
+```bash
+# Show current settings
+python gpt_export_index_tool.py settings show
+
+# Reset to defaults
+python gpt_export_index_tool.py settings reset
+
+# Export settings
+python gpt_export_index_tool.py settings export --output settings_backup.json
+
+# Import settings
+python gpt_export_index_tool.py settings import --input settings_backup.json
+```
+
+### 🆕 Chat Files Command (Avalonia)
+Manage chat files including duplicate detection and file renaming.
+
+```bash
+python gpt_export_index_tool.py chat-files [OPTIONS]
+```
+
+**Options:**
+- `--folder PATH` - Folder containing chat files (required)
+- `--remove-duplicates` - Remove duplicate files
+- `--rename-files` - Rename files with correct dates
+- `--dry-run` - Show what would be done without making changes
+- `--find-indexes` - Find existing indexes in common locations
+
+**Examples:**
+```bash
+# Remove duplicates and rename files
+python gpt_export_index_tool.py chat-files --folder ./chats --remove-duplicates --rename-files
+
+# Dry run to see what would be done
+python gpt_export_index_tool.py chat-files --folder ./chats --remove-duplicates --rename-files --dry-run
+
+# Find existing indexes
+python gpt_export_index_tool.py chat-files --find-indexes
+```
+
+## 🎨 Enhanced GUI Features
+
+The enhanced GUI provides a comprehensive interface with **8 tabs**:
+
+### Original Tabs (4)
 - **Export Tab**: Convert files to various formats
 - **Search Tab**: Search indexed files with real-time results
 - **Debug Tab**: View processing logs
 - **Settings Tab**: Configure themes, export options, and search settings
 
+### 🆕 Avalonia Backported Tabs (4)
+
+#### Advanced Indexing Tab
+- **Token-based Indexing**: Advanced indexing with semantic capabilities
+- **Fuzzy Search**: Search with typo tolerance
+- **Relevance Scoring**: Results ranked by relevance
+- **Category Detection**: Automatic content categorization
+- **Index Statistics**: Detailed index information
+
+#### Tagmap Management Tab
+- **Generate Tagmaps**: Create intelligent content maps
+- **Update Tagmaps**: Refresh existing tagmaps
+- **Tagmap Statistics**: View entry counts and categories
+- **Cross-references**: Link related content
+- **Preview Generation**: Automatic content previews
+
+#### Settings Management Tab
+- **Comprehensive Settings**: View all application settings
+- **Settings Export/Import**: Backup and restore configurations
+- **Reset to Defaults**: Restore factory settings
+- **Migration Support**: Automatic old format migration
+- **Validation**: Settings validation and error checking
+
+#### Progress Monitor Tab
+- **Real-time Progress**: Live operation tracking
+- **Progress Logging**: Detailed operation logs
+- **Log Export**: Save progress logs to files
+- **Operation Status**: Current operation information
+- **Background Processing**: Non-blocking operations
+
 ### GUI Usage
 1. Launch the GUI: `python gpt_export_index_tool.py gui`
-2. Use the **Export** tab to convert files
-3. Use the **Search** tab to find content
-4. Configure settings in the **Settings** tab
-5. View logs in the **Debug** tab
+2. Use **Original Tabs** for basic functionality
+3. Use **Avalonia Tabs** for advanced features
+4. Monitor progress in real-time
+5. Manage settings comprehensively
 
-## 🔧 Configuration
+## 🔧 Enhanced Configuration
 
-The tool uses a configuration file (`app_config.json`) that stores:
+The tool now supports comprehensive settings management with migration from old formats:
 
-- **Theme settings**: UI appearance
-- **Export options**: Default formats and settings
-- **Search settings**: Indexing and search parameters
-- **Mirror entity settings**: Redaction options
-- **Tagmap settings**: File organization options
+### Settings Categories
+- **Theme Settings**: UI appearance and styling
+- **Search Settings**: Indexing and search parameters
+- **Export Settings**: Format and processing options
+- **Index Settings**: Advanced indexing configuration
+- **General Settings**: Application behavior
 
 ### Key Configuration Options
 
 ```json
 {
-  "theme": "Sea Green",
-  "export_format": "Text",
-  "export_images_inline": false,
-  "export_images_folder": true,
-  "include_timestamps_in_export": false,
-  "combine_output_files": false,
-  "search_term_case_sensitive": false,
-  "search_logic": "AND",
-  "mirror_entity_redaction_enabled": true,
-  "use_tagmap_tagging": false
+  "theme": {
+    "selected_theme": "Magic",
+    "font_family": "Segoe UI",
+    "font_size": 12.0,
+    "enable_animations": true
+  },
+  "search": {
+    "case_sensitive": false,
+    "use_fuzzy": false,
+    "max_results": 100,
+    "similarity_threshold": 0.8
+  },
+  "export": {
+    "default_output_format": "markdown",
+    "include_images": true,
+    "include_timestamps": false,
+    "mirror_entity_redaction": true
+  },
+  "index": {
+    "auto_rebuild": false,
+    "max_file_size_mb": 50,
+    "supported_extensions": [".txt", ".json", ".md", ".html"]
+  }
 }
 ```
 
-## 🧠 Content Classification
+## 🧠 Enhanced Content Classification
 
 The tool automatically classifies content into:
 
@@ -211,8 +399,9 @@ The tool automatically classifies content into:
 - **Phoenix Codex Detection**: Identifies personal growth content
 - **Mirror Entity Detection**: Automatically redacts sensitive content
 - **Confidence Scoring**: Provides confidence levels for classifications
+- **🆕 Advanced Pattern Recognition**: Enhanced recognition patterns from dataset_builder.py
 
-## 🔍 Search Capabilities
+## 🔍 Enhanced Search Capabilities
 
 ### Search Types
 
@@ -220,6 +409,7 @@ The tool automatically classifies content into:
 2. **Fuzzy Search**: Find similar text with typos
 3. **Semantic Search**: Find conceptually related content
 4. **Context Search**: Show surrounding text for matches
+5. **🆕 Token-based Search**: Advanced tokenized search (Avalonia)
 
 ### Search Features
 
@@ -227,6 +417,8 @@ The tool automatically classifies content into:
 - **Search Logic**: AND/OR logic for multiple terms
 - **Context Lines**: Configurable context around matches
 - **Similarity Threshold**: Adjustable fuzzy matching
+- **🆕 Relevance Scoring**: Results ranked by relevance
+- **🆕 Category Filtering**: Filter by content categories
 
 ## 📊 Export Formats
 
@@ -237,7 +429,7 @@ The tool automatically classifies content into:
 3. **HTML (.html)**: Web-ready HTML with styling
 4. **RTF (.rtf)**: Rich text format for word processors
 5. **MHTML (.mht)**: Single-file HTML with embedded images
-6. **AmandaMap (.md)**: Specialized AmandaMap format
+6. **AmandaMap (.md)**: Specialized AmandaMap format with emoji markers
 
 ### Export Features
 
@@ -245,8 +437,56 @@ The tool automatically classifies content into:
 - **Timestamp Inclusion**: Optional chat timestamps
 - **File Combination**: Merge multiple files
 - **Mirror Entity Redaction**: Automatic sensitive content removal
+- **🆕 Enhanced AmandaMap Format**: Proper emoji markers (🔥, 🕯️, 📜, 🪶, 🔱)
 
 ## 🛠️ Advanced Features
+
+### 🆕 Avalonia Backported Features
+
+#### Advanced Indexing System
+- **Token-based Indexing**: Advanced content tokenization
+- **Semantic Search**: Conceptual content matching
+- **Relevance Scoring**: Intelligent result ranking
+- **Category Detection**: Automatic content categorization
+- **Cross-reference Building**: Link related content
+
+#### Tagmap Management System
+- **Intelligent Tagging**: Automatic tag generation
+- **Contextual Analysis**: Smart content analysis
+- **Cross-references**: Link related entries
+- **Preview Generation**: Automatic content previews
+- **Statistics**: Detailed tagmap analytics
+
+#### Progress Tracking System
+- **Real-time Updates**: Live operation progress
+- **Multiple Callbacks**: Support for multiple progress listeners
+- **Operation Logging**: Detailed operation tracking
+- **Background Processing**: Non-blocking operations
+- **Error Handling**: Graceful error recovery
+
+#### Settings Management System
+- **Comprehensive Settings**: All application settings
+- **Migration Support**: Automatic old format migration
+- **Export/Import**: Settings backup and restore
+- **Validation**: Settings validation and error checking
+- **Default Management**: Factory reset capabilities
+
+#### Performance Optimization System
+- **Memory Management**: Automatic memory monitoring and cleanup
+- **File Size Limits**: Skip files larger than 50MB to prevent crashes
+- **Folder Size Limits**: Skip folders larger than 10GB
+- **Search Caching**: Cache search results for improved performance
+- **File Caching**: Cache file content to avoid repeated disk reads
+- **Performance Monitoring**: Real-time performance metrics and statistics
+- **Auto Cleanup**: Background garbage collection when memory is high
+
+#### Chat File Management System
+- **Duplicate Detection**: Find and remove duplicate files using content hashing
+- **File Renaming**: Rename files with correct dates extracted from content
+- **Backup File Detection**: Identify and handle backup files
+- **Date Extraction**: Extract chat dates from file content or modification dates
+- **Auto-Index Detection**: Find existing indexes in common locations
+- **Dry Run Mode**: Preview changes without making them
 
 ### Mirror Entity System
 
@@ -265,6 +505,7 @@ For advanced file organization:
 - **Automatic Tagging**: Apply tags based on content
 - **Search by Tags**: Find files by tag combinations
 - **Export by Tags**: Export only files with specific tags
+- **🆕 Intelligent Tagging**: Advanced automatic tag generation
 
 ### Batch Processing
 
@@ -272,6 +513,7 @@ For advanced file organization:
 - **Error Handling**: Graceful error recovery
 - **Resume Capability**: Continue interrupted operations
 - **Memory Efficient**: Processes large files efficiently
+- **🆕 Background Processing**: Non-blocking operations
 
 ## 🐛 Troubleshooting
 
@@ -281,6 +523,7 @@ For advanced file organization:
 2. **File Not Found**: Check file paths and permissions
 3. **Memory Issues**: Reduce batch size for large files
 4. **GUI Not Launching**: Check tkinter installation
+5. **🆕 Settings Migration**: Old format settings are automatically migrated
 
 ### Debug Mode
 
@@ -294,6 +537,7 @@ python gpt_export_index_tool.py index --folder ./chats --verbose
 The tool creates log files:
 - `gpt_export_index_tool.log`: Main application log
 - Debug tab in GUI: Real-time processing logs
+- **🆕 Progress Monitor**: Live operation tracking
 
 ## 📦 Dependencies
 
@@ -317,6 +561,8 @@ The tool creates log files:
 3. **Memory Management**: Close large files when not needed
 4. **SSD Storage**: Use SSD for faster file operations
 5. **Parallel Processing**: Use multiple cores for large datasets
+6. **🆕 Advanced Indexing**: Use token-based indexing for better search performance
+7. **🆕 Background Processing**: Leverage non-blocking operations
 
 ## 🤝 Contributing
 
@@ -327,6 +573,12 @@ The tool is built on a modular architecture:
 - `modules/mirror_entity_utils.py`: Mirror entity detection
 - `modules/tagmap_loader.py`: Tag-based organization
 - `modules/json_scanner.py`: JSON file processing
+- **🆕 `modules/advanced_indexer.py`**: Avalonia backported advanced indexing
+- **🆕 `modules/tagmap_generator.py`**: Avalonia backported tagmap management
+- **🆕 `modules/progress_service.py`**: Avalonia backported progress tracking
+- **🆕 `modules/settings_service.py`**: Avalonia backported settings management
+- **🆕 `modules/chat_file_manager.py`**: Avalonia backported chat file management
+- **🆕 `modules/gui.py`**: Enhanced GUI with Avalonia features
 
 ## 📄 License
 
@@ -334,4 +586,4 @@ This tool is part of the PhoenixCodex project and follows the same licensing ter
 
 ---
 
-**🎉 The GPT Export & Index Tool is definitely NOT doomed to failure!** It's a robust, feature-rich tool that successfully builds upon the existing codebase and provides comprehensive functionality for managing ChatGPT conversations. 
+**🎉 The GPT Export & Index Tool is definitely NOT doomed to failure!** It's a robust, feature-rich tool that successfully builds upon the existing codebase and provides comprehensive functionality for managing ChatGPT conversations. **Now enhanced with Avalonia backported features for even more powerful capabilities!** 
