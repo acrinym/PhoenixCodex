@@ -351,6 +351,13 @@ class EnhancedApp(App):
             ttk.Radiobutton(format_frame, text=text, variable=self.sms_format_var, 
                            value=value).pack(side=tk.LEFT, padx=10)
         
+        # Append mode checkbox
+        append_frame = ttk.Frame(output_frame)
+        append_frame.pack(fill=tk.X, pady=5)
+        self.sms_append_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(append_frame, text="Append to existing files (don't overwrite)", 
+                       variable=self.sms_append_var).pack(side=tk.LEFT)
+        
         # Action Buttons
         button_frame = ttk.Frame(parent_tab)
         button_frame.pack(fill=tk.X, pady=10)
@@ -869,6 +876,7 @@ Data Summary:
         sms_file = self.sms_file_var.get()
         output_dir = self.sms_output_dir_var.get()
         output_format = self.sms_format_var.get()
+        append_mode = self.sms_append_var.get()
         
         if not sms_file:
             messagebox.showerror("Error", "Please select an SMS XML file.")
@@ -880,32 +888,56 @@ Data Summary:
             # Initialize parser
             parser = SMSParser()
             
-            # Parse SMS file
-            self.update_progress(f"📱 Parsing SMS file: {sms_file}")
-            conversations = parser.parse_sms_file(Path(sms_file))
+            # Create output directory
+            output_path = Path(output_dir)
+            output_path.mkdir(exist_ok=True)
+            
+            # Determine output files
+            amandamap_file = output_path / "amandamap_sms_conversations.json"
+            phoenix_file = output_path / "phoenix_sms_conversations.json"
+            
+            # Check append mode
+            if append_mode:
+                self.update_progress(f"📱 Parsing SMS file in APPEND mode: {sms_file}")
+                if amandamap_file.exists() and output_format in ['amandamap', 'both']:
+                    self.update_progress(f"   AmandaMap file exists: {amandamap_file}")
+                if phoenix_file.exists() and output_format in ['phoenix', 'both']:
+                    self.update_progress(f"   Phoenix Codex file exists: {phoenix_file}")
+            else:
+                self.update_progress(f"📱 Parsing SMS file in OVERWRITE mode: {sms_file}")
+            
+            # Parse SMS file with append mode
+            conversations = parser.parse_sms_file(
+                Path(sms_file),
+                append_mode=append_mode,
+                amandamap_file=amandamap_file if output_format in ['amandamap', 'both'] else None,
+                phoenix_file=phoenix_file if output_format in ['phoenix', 'both'] else None
+            )
             
             if not conversations:
                 messagebox.showerror("Error", "No conversations found in SMS file.")
                 return
             
             self.update_progress(f"✅ Parsed {len(conversations)} conversation entries")
-            
-            # Create output directory
-            output_path = Path(output_dir)
-            output_path.mkdir(exist_ok=True)
+            if append_mode:
+                self.update_progress(f"   Added {parser.new_entries_count} new entries")
+                self.update_progress(f"   Skipped {parser.skipped_entries_count} existing entries")
             
             # Export based on format
             if output_format in ['amandamap', 'both']:
-                amandamap_file = output_path / "amandamap_sms_conversations.json"
-                if parser.export_to_amandamap(amandamap_file):
+                if parser.export_to_amandamap(amandamap_file, append_mode=append_mode):
                     self.update_progress(f"✅ Exported AmandaMap format: {amandamap_file}")
             
             if output_format in ['phoenix', 'both']:
-                phoenix_file = output_path / "phoenix_sms_conversations.json"
-                if parser.export_to_phoenix_codex(phoenix_file):
+                if parser.export_to_phoenix_codex(phoenix_file, append_mode=append_mode):
                     self.update_progress(f"✅ Exported Phoenix Codex format: {phoenix_file}")
             
-            messagebox.showinfo("Success", f"SMS parsing completed successfully!\n\nParsed {len(conversations)} conversation entries.")
+            success_msg = f"SMS parsing completed successfully!\n\nParsed {len(conversations)} conversation entries."
+            if append_mode:
+                success_msg += f"\nAdded {parser.new_entries_count} new entries"
+                success_msg += f"\nSkipped {parser.skipped_entries_count} existing entries"
+            
+            messagebox.showinfo("Success", success_msg)
             
         except Exception as e:
             error_msg = f"SMS parsing failed: {e}"

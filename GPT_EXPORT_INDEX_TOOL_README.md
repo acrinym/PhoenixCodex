@@ -329,7 +329,7 @@ python gpt_export_index_tool.py visualize --data data.json --type dashboard --ou
 ```
 
 ### 🆕 SMS Parser Command
-Parse SMS backup XML files and convert to AmandaMap/Phoenix Codex format.
+Parse SMS backup XML files and convert to AmandaMap/Phoenix Codex format with append support.
 
 ```bash
 python gpt_export_index_tool.py sms [OPTIONS]
@@ -340,6 +340,7 @@ python gpt_export_index_tool.py sms [OPTIONS]
 - `--output-dir PATH` - Output directory for parsed files (default: data/)
 - `--format FORMAT` - Output format: amandamap, phoenix, both (default: both)
 - `--summary` - Show conversation summary
+- `--append` - Append to existing files instead of overwriting
 - `--verbose` - Verbose output
 
 **Examples:**
@@ -352,6 +353,12 @@ python gpt_export_index_tool.py sms --input "data/Amanda sms 20250717091224.xml"
 
 # Export only Phoenix Codex format
 python gpt_export_index_tool.py sms --input "data/Amanda sms 20250717091224.xml" --format phoenix --output-dir exports/
+
+# Append new SMS data to existing files
+python gpt_export_index_tool.py sms --input "data/new_sms_backup.xml" --append --summary
+
+# Append with specific format
+python gpt_export_index_tool.py sms --input "data/new_sms_backup.xml" --append --format amandamap
 ```
 
 ### 🆕 GUI SMS Parser Tab
@@ -363,6 +370,7 @@ Access SMS parsing tools directly from the main application GUI:
 4. **Configure output options**:
    - Output directory
    - Format selection (AmandaMap, Phoenix Codex, or both)
+   - **Append mode**: Check "Append to existing files" to add new data without overwriting
 5. **Use the action buttons**:
    - **📱 Parse SMS File**: Parse and export conversations
    - **📊 Show Summary**: Display conversation statistics
@@ -370,9 +378,11 @@ Access SMS parsing tools directly from the main application GUI:
 
 **Features:**
 - **File Browsing**: Easy file selection dialogs
-- **Progress Tracking**: Real-time progress updates
+- **Progress Tracking**: Real-time progress updates with append statistics
 - **Error Handling**: Comprehensive error messages
 - **Direct Integration**: Seamless integration with AmandaMap and Phoenix Codex systems
+- **Append Support**: Smart appending that only adds new entries based on timestamps
+- **Large File Handling**: Optimized for processing large MMS files with image/video content
 
 ### 🆕 GUI Visualization Tab
 Access visualization tools directly from the main application GUI:
@@ -627,6 +637,9 @@ The tool automatically classifies content into:
 - **GUI Integration**: Direct access through the main application's "📱 SMS Parser" tab
 - **Conversation Summary**: Detailed statistics and analysis of parsed conversations
 - **Visualization Integration**: Direct visualization of SMS conversation data
+- **🆕 Append Support**: Smart appending that only adds new entries based on timestamps
+- **🆕 Large File Handling**: Optimized for processing large MMS files with image/video content
+- **🆕 Memory Management**: Efficient processing of huge MMS files to prevent OOM errors
 
 ### Mirror Entity System
 

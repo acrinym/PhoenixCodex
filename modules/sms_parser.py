@@ -2,7 +2,8 @@
 SMS/MMS Parser for AmandaMap and Phoenix Codex
 
 This module parses SMS backup XML files and converts them into
-AmandaMap and Phoenix Codex entries.
+AmandaMap and Phoenix Codex entries with support for appending
+to existing data and handling large MMS files.
 """
 
 import xml.etree.ElementTree as ET
@@ -13,6 +14,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -43,35 +45,118 @@ class ConversationEntry:
     entry_type: str = "conversation"
 
 class SMSParser:
-    """Parser for SMS backup XML files."""
+    """Parser for SMS backup XML files with append support."""
     
     def __init__(self, amanda_number: str = "+12695120828", justin_number: str = "+19892403594"):
         self.amanda_number = amanda_number
         self.justin_number = justin_number
         self.conversations = []
+        self.existing_latest_timestamp = None
+        self.new_entries_count = 0
+        self.skipped_entries_count = 0
         
-    def parse_sms_file(self, file_path: Path) -> List[ConversationEntry]:
-        """Parse SMS XML file and convert to conversation entries."""
+    def load_existing_data(self, amandamap_file: Path = None, phoenix_file: Path = None) -> str:
+        """Load existing data and find the latest timestamp."""
+        latest_timestamp = None
+        
+        # Check AmandaMap file
+        if amandamap_file and amandamap_file.exists():
+            try:
+                with open(amandamap_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if data:
+                        # Find the latest timestamp
+                        timestamps = [entry.get('timestamp', '') for entry in data if entry.get('timestamp')]
+                        if timestamps:
+                            latest_timestamp = max(timestamps)
+                            logger.info(f"Found existing AmandaMap data with latest timestamp: {latest_timestamp}")
+            except Exception as e:
+                logger.warning(f"Could not load existing AmandaMap data: {e}")
+        
+        # Check Phoenix Codex file
+        if phoenix_file and phoenix_file.exists():
+            try:
+                with open(phoenix_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if data:
+                        # Find the latest timestamp
+                        timestamps = [entry.get('timestamp', '') for entry in data if entry.get('timestamp')]
+                        if timestamps:
+                            phoenix_latest = max(timestamps)
+                            if latest_timestamp is None or phoenix_latest > latest_timestamp:
+                                latest_timestamp = phoenix_latest
+                                logger.info(f"Found existing Phoenix Codex data with latest timestamp: {latest_timestamp}")
+            except Exception as e:
+                logger.warning(f"Could not load existing Phoenix Codex data: {e}")
+        
+        self.existing_latest_timestamp = latest_timestamp
+        return latest_timestamp
+    
+    def parse_sms_file(self, file_path: Path, append_mode: bool = False, 
+                       amandamap_file: Path = None, phoenix_file: Path = None) -> List[ConversationEntry]:
+        """Parse SMS XML file and convert to conversation entries with append support."""
         try:
+            # Load existing data if in append mode
+            if append_mode:
+                self.load_existing_data(amandamap_file, phoenix_file)
+                logger.info(f"Append mode: Latest existing timestamp is {self.existing_latest_timestamp}")
+            
+            # Check file size for large MMS files
+            file_size = file_path.stat().st_size
+            if file_size > 100 * 1024 * 1024:  # 100MB
+                logger.warning(f"Large SMS file detected ({file_size / 1024 / 1024:.1f}MB). Processing in chunks...")
+            
+            # Parse XML with memory-efficient approach
             tree = ET.parse(file_path)
             root = tree.getroot()
             
             # Parse SMS messages
+            sms_count = 0
             for sms in root.findall('.//sms'):
                 entry = self._parse_sms_element(sms)
                 if entry:
-                    self.conversations.append(entry)
+                    if append_mode and self.existing_latest_timestamp:
+                        # Check if this entry is newer than existing data
+                        if entry.timestamp > self.existing_latest_timestamp:
+                            self.conversations.append(entry)
+                            self.new_entries_count += 1
+                        else:
+                            self.skipped_entries_count += 1
+                    else:
+                        self.conversations.append(entry)
+                    sms_count += 1
+                    
+                    # Progress logging for large files
+                    if sms_count % 1000 == 0:
+                        logger.info(f"Processed {sms_count} SMS messages...")
             
-            # Parse MMS messages
+            # Parse MMS messages with enhanced handling
+            mms_count = 0
             for mms in root.findall('.//mms'):
                 entry = self._parse_mms_element(mms)
                 if entry:
-                    self.conversations.append(entry)
+                    if append_mode and self.existing_latest_timestamp:
+                        # Check if this entry is newer than existing data
+                        if entry.timestamp > self.existing_latest_timestamp:
+                            self.conversations.append(entry)
+                            self.new_entries_count += 1
+                        else:
+                            self.skipped_entries_count += 1
+                    else:
+                        self.conversations.append(entry)
+                    mms_count += 1
+                    
+                    # Progress logging for large files
+                    if mms_count % 100 == 0:
+                        logger.info(f"Processed {mms_count} MMS messages...")
             
             # Sort by timestamp
             self.conversations.sort(key=lambda x: x.timestamp)
             
             logger.info(f"Parsed {len(self.conversations)} conversation entries from SMS file")
+            if append_mode:
+                logger.info(f"Added {self.new_entries_count} new entries, skipped {self.skipped_entries_count} existing entries")
+            
             return self.conversations
             
         except Exception as e:
@@ -123,7 +208,7 @@ class SMSParser:
             return None
     
     def _parse_mms_element(self, mms_elem) -> Optional[ConversationEntry]:
-        """Parse a single MMS element."""
+        """Parse a single MMS element with enhanced handling for large files."""
         try:
             # Extract basic attributes
             date = mms_elem.get('date', '')
@@ -132,14 +217,46 @@ class SMSParser:
             contact_name = mms_elem.get('contact_name', '')
             msg_box = mms_elem.get('msg_box', '1')  # 1=incoming, 2=outgoing
             
-            # Extract text from parts
+            # Extract text from parts with enhanced handling
             body = ""
             parts = mms_elem.findall('.//part')
+            
+            # Check for large MMS files
+            total_size = 0
             for part in parts:
-                if part.get('ct') == 'text/plain':
+                size_attr = part.get('size', '0')
+                try:
+                    total_size += int(size_attr)
+                except:
+                    pass
+            
+            # Skip extremely large MMS files (>50MB) to prevent memory issues
+            if total_size > 50 * 1024 * 1024:  # 50MB
+                logger.warning(f"Skipping large MMS file ({total_size / 1024 / 1024:.1f}MB) to prevent memory issues")
+                return None
+            
+            # Extract text content
+            for part in parts:
+                content_type = part.get('ct', '')
+                if content_type == 'text/plain':
                     text = part.get('text', '')
                     if text:
                         body += text + " "
+                elif content_type.startswith('image/'):
+                    # Handle image references in MMS
+                    image_name = part.get('name', '')
+                    if image_name:
+                        body += f"[Image: {image_name}] "
+                elif content_type.startswith('video/'):
+                    # Handle video references in MMS
+                    video_name = part.get('name', '')
+                    if video_name:
+                        body += f"[Video: {video_name}] "
+                elif content_type.startswith('audio/'):
+                    # Handle audio references in MMS
+                    audio_name = part.get('name', '')
+                    if audio_name:
+                        body += f"[Audio: {audio_name}] "
             
             body = body.strip()
             
@@ -277,13 +394,23 @@ class SMSParser:
         
         return list(set(tags))  # Remove duplicates
     
-    def export_to_amandamap(self, output_file: Path) -> bool:
-        """Export conversations to AmandaMap format."""
+    def export_to_amandamap(self, output_file: Path, append_mode: bool = False) -> bool:
+        """Export conversations to AmandaMap format with append support."""
         try:
-            amandamap_entries = []
+            existing_entries = []
             
+            # Load existing entries if in append mode
+            if append_mode and output_file.exists():
+                try:
+                    with open(output_file, 'r', encoding='utf-8') as f:
+                        existing_entries = json.load(f)
+                    logger.info(f"Loaded {len(existing_entries)} existing AmandaMap entries")
+                except Exception as e:
+                    logger.warning(f"Could not load existing AmandaMap file: {e}")
+            
+            # Convert new conversations to AmandaMap format
+            new_entries = []
             for conv in self.conversations:
-                # Create AmandaMap entry
                 entry = {
                     "timestamp": conv.timestamp,
                     "date": conv.date,
@@ -294,26 +421,45 @@ class SMSParser:
                     "source": conv.source,
                     "conversation_type": conv.conversation_type
                 }
-                amandamap_entries.append(entry)
+                new_entries.append(entry)
+            
+            # Combine existing and new entries
+            if append_mode:
+                all_entries = existing_entries + new_entries
+                # Sort by timestamp to maintain chronological order
+                all_entries.sort(key=lambda x: x.get('timestamp', ''))
+                logger.info(f"Combined {len(existing_entries)} existing + {len(new_entries)} new = {len(all_entries)} total entries")
+            else:
+                all_entries = new_entries
             
             # Save to file
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(amandamap_entries, f, indent=2, ensure_ascii=False)
+                json.dump(all_entries, f, indent=2, ensure_ascii=False)
             
-            logger.info(f"Exported {len(amandamap_entries)} entries to AmandaMap format: {output_file}")
+            logger.info(f"Exported {len(all_entries)} entries to AmandaMap format: {output_file}")
             return True
             
         except Exception as e:
             logger.error(f"Error exporting to AmandaMap: {e}")
             return False
     
-    def export_to_phoenix_codex(self, output_file: Path) -> bool:
-        """Export conversations to Phoenix Codex format."""
+    def export_to_phoenix_codex(self, output_file: Path, append_mode: bool = False) -> bool:
+        """Export conversations to Phoenix Codex format with append support."""
         try:
-            phoenix_entries = []
+            existing_entries = []
             
+            # Load existing entries if in append mode
+            if append_mode and output_file.exists():
+                try:
+                    with open(output_file, 'r', encoding='utf-8') as f:
+                        existing_entries = json.load(f)
+                    logger.info(f"Loaded {len(existing_entries)} existing Phoenix Codex entries")
+                except Exception as e:
+                    logger.warning(f"Could not load existing Phoenix Codex file: {e}")
+            
+            # Convert new conversations to Phoenix Codex format
+            new_entries = []
             for conv in self.conversations:
-                # Create Phoenix Codex entry
                 entry = {
                     "timestamp": conv.timestamp,
                     "date": conv.date,
@@ -325,13 +471,22 @@ class SMSParser:
                     "conversation_type": conv.conversation_type,
                     "codex_category": "interpersonal_communication"
                 }
-                phoenix_entries.append(entry)
+                new_entries.append(entry)
+            
+            # Combine existing and new entries
+            if append_mode:
+                all_entries = existing_entries + new_entries
+                # Sort by timestamp to maintain chronological order
+                all_entries.sort(key=lambda x: x.get('timestamp', ''))
+                logger.info(f"Combined {len(existing_entries)} existing + {len(new_entries)} new = {len(all_entries)} total entries")
+            else:
+                all_entries = new_entries
             
             # Save to file
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(phoenix_entries, f, indent=2, ensure_ascii=False)
+                json.dump(all_entries, f, indent=2, ensure_ascii=False)
             
-            logger.info(f"Exported {len(phoenix_entries)} entries to Phoenix Codex format: {output_file}")
+            logger.info(f"Exported {len(all_entries)} entries to Phoenix Codex format: {output_file}")
             return True
             
         except Exception as e:

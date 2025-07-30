@@ -649,6 +649,7 @@ Examples:
         sms_parser.add_argument('--output-dir', help='Output directory for parsed files')
         sms_parser.add_argument('--format', choices=['amandamap', 'phoenix', 'both'], default='both', help='Output format')
         sms_parser.add_argument('--summary', action='store_true', help='Show conversation summary')
+        sms_parser.add_argument('--append', action='store_true', help='Append to existing files instead of overwriting')
         sms_parser.add_argument('--verbose', action='store_true', help='Verbose output')
         
         args = parser.parse_args()
@@ -1217,14 +1218,38 @@ Examples:
             # Initialize parser
             parser = SMSParser()
             
-            print(f"📱 Parsing SMS file: {input_file}")
-            conversations = parser.parse_sms_file(input_file)
+            # Determine output files
+            amandamap_file = output_dir / "amandamap_sms_conversations.json"
+            phoenix_file = output_dir / "phoenix_sms_conversations.json"
+            
+            # Check if we're in append mode
+            append_mode = getattr(args, 'append', False)
+            if append_mode:
+                print(f"📱 Parsing SMS file in APPEND mode: {input_file}")
+                print(f"   Will append new entries to existing files")
+                if amandamap_file.exists():
+                    print(f"   AmandaMap file exists: {amandamap_file}")
+                if phoenix_file.exists():
+                    print(f"   Phoenix Codex file exists: {phoenix_file}")
+            else:
+                print(f"📱 Parsing SMS file in OVERWRITE mode: {input_file}")
+            
+            # Parse SMS file with append mode
+            conversations = parser.parse_sms_file(
+                input_file, 
+                append_mode=append_mode,
+                amandamap_file=amandamap_file if args.format in ['amandamap', 'both'] else None,
+                phoenix_file=phoenix_file if args.format in ['phoenix', 'both'] else None
+            )
             
             if not conversations:
                 print("❌ No conversations found in SMS file")
                 return
             
             print(f"✅ Parsed {len(conversations)} conversation entries")
+            if append_mode:
+                print(f"   Added {parser.new_entries_count} new entries")
+                print(f"   Skipped {parser.skipped_entries_count} existing entries")
             
             # Show summary if requested
             if args.summary:
@@ -1243,13 +1268,11 @@ Examples:
             
             # Export based on format
             if args.format in ['amandamap', 'both']:
-                amandamap_file = output_dir / "amandamap_sms_conversations.json"
-                if parser.export_to_amandamap(amandamap_file):
+                if parser.export_to_amandamap(amandamap_file, append_mode=append_mode):
                     print(f"✅ Exported AmandaMap format: {amandamap_file}")
             
             if args.format in ['phoenix', 'both']:
-                phoenix_file = output_dir / "phoenix_sms_conversations.json"
-                if parser.export_to_phoenix_codex(phoenix_file):
+                if parser.export_to_phoenix_codex(phoenix_file, append_mode=append_mode):
                     print(f"✅ Exported Phoenix Codex format: {phoenix_file}")
             
             print(f"🎉 SMS parsing completed successfully!")
