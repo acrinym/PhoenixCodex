@@ -307,6 +307,10 @@ class SettingsService:
         self.settings.index = index_settings
         self.save_settings()
     
+    def get_all_settings(self) -> Dict[str, Any]:
+        """Get all settings as a dictionary."""
+        return self._serialize_settings()
+    
     def get_setting(self, key: str, default: Any = None) -> Any:
         """Get a specific setting value."""
         return getattr(self.settings, key, default)
