@@ -317,6 +317,8 @@ class EnhancedApp(App):
                   command=self.quick_preview).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="🔄 Refresh Data", 
                   command=self.refresh_visualization_data).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="📝 Create Sample Data", 
+                  command=self.create_sample_visualization_data).pack(side=tk.LEFT, padx=5)
     
     def create_sms_tab_content(self, parent_tab):
         """Create content for SMS Parser tab."""
@@ -787,32 +789,44 @@ Last Regular Index Path: {last_regular_index or 'None'}
             with open(data_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            self.update_progress(f"📊 Loaded {len(data)} items for visualization")
+            # Validate data structure
+            if not isinstance(data, list):
+                messagebox.showerror("Error", "Data file must contain a list of items.")
+                return
+            
+            # Check for valid visualization data
+            valid_items = [item for item in data if isinstance(item, dict) and 'date' in item and 'content' in item]
+            
+            if not valid_items:
+                messagebox.showerror("Error", "No valid visualization data found. Items must have 'date' and 'content' fields.")
+                return
+            
+            self.update_progress(f"📊 Loaded {len(valid_items)} valid items for visualization (skipped {len(data) - len(valid_items)} invalid items)")
             
             if viz_type == "interactive":
                 # Launch interactive app
                 app = InteractiveVisualizationApp()
-                app.data = data
+                app.data = valid_items  # Use only valid items
                 app.update_visualization()
                 self.update_progress("🎨 Launching interactive visualization app...")
                 app.run()
                 
             elif viz_type == "timeline":
-                fig = visualize_timeline(data, output_file)
+                fig = visualize_timeline(valid_items, output_file)
                 if not output_file:
                     import matplotlib.pyplot as plt
                     plt.show()
                 self.update_progress(f"📅 Timeline visualization {'saved' if output_file else 'displayed'}")
                 
             elif viz_type == "network":
-                fig = visualize_relationships(data, output_file)
+                fig = visualize_relationships(valid_items, output_file)
                 if not output_file:
                     import matplotlib.pyplot as plt
                     plt.show()
                 self.update_progress(f"🕸️ Network visualization {'saved' if output_file else 'displayed'}")
                 
             elif viz_type == "content_analysis":
-                fig = visualize_content_analysis(data, output_file)
+                fig = visualize_content_analysis(valid_items, output_file)
                 if not output_file:
                     import matplotlib.pyplot as plt
                     plt.show()
@@ -821,7 +835,7 @@ Last Regular Index Path: {last_regular_index or 'None'}
             elif viz_type == "dashboard":
                 # Create comprehensive dashboard
                 visualizer = ContentAnalysisVisualizer()
-                fig = visualizer.create_content_analysis_dashboard(data)
+                fig = visualizer.create_content_analysis_dashboard(valid_items)
                 if output_file:
                     fig.savefig(output_file, dpi=300, bbox_inches='tight')
                 else:
@@ -835,6 +849,10 @@ Last Regular Index Path: {last_regular_index or 'None'}
             error_msg = f"Visualization dependencies not available: {e}"
             self.update_progress(f"❌ {error_msg}")
             messagebox.showerror("Error", error_msg + "\n\nInstall with: pip install matplotlib seaborn networkx pandas")
+        except ValueError as e:
+            error_msg = f"Data validation error: {e}"
+            self.update_progress(f"❌ {error_msg}")
+            messagebox.showerror("Error", error_msg + "\n\nPlease ensure your data file contains items with 'date' and 'content' fields in a valid format.")
         except Exception as e:
             error_msg = f"Visualization failed: {e}"
             self.update_progress(f"❌ {error_msg}")
@@ -853,19 +871,78 @@ Last Regular Index Path: {last_regular_index or 'None'}
             with open(data_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
+            # Validate data structure
+            if not isinstance(data, list):
+                messagebox.showerror("Error", "Data file must contain a list of items.")
+                return
+            
+            # Filter out non-dictionary items and validate structure
+            valid_items = []
+            invalid_items = 0
+            
+            for item in data:
+                if isinstance(item, dict):
+                    # Check if item has required fields for visualization
+                    if 'date' in item and 'content' in item:
+                        valid_items.append(item)
+                    else:
+                        invalid_items += 1
+                else:
+                    invalid_items += 1
+            
+            if not valid_items:
+                messagebox.showerror("Error", "No valid visualization data found. Items must have 'date' and 'content' fields.")
+                return
+            
             # Show data summary
+            dates = [item.get('date', 'Unknown') for item in valid_items]
+            content_types = set([item.get('type', 'Unknown') for item in valid_items])
+            avg_length = sum([len(str(item.get('content', ''))) for item in valid_items]) // len(valid_items)
+            
             summary = f"""
 Data Summary:
-- Total items: {len(data)}
-- Date range: {min([item.get('date', 'Unknown') for item in data])} to {max([item.get('date', 'Unknown') for item in data])}
-- Content types: {set([item.get('type', 'Unknown') for item in data])}
-- Average content length: {sum([len(str(item.get('content', ''))) for item in data]) // len(data)} characters
+- Total valid items: {len(valid_items)}
+- Invalid items skipped: {invalid_items}
+- Date range: {min(dates)} to {max(dates)}
+- Content types: {content_types}
+- Average content length: {avg_length} characters
             """
             
             messagebox.showinfo("Quick Preview", summary)
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate preview: {e}")
+    
+    def create_sample_visualization_data(self):
+        """Create sample visualization data for testing."""
+        try:
+            from datetime import datetime, timedelta
+            
+            # Create sample data
+            sample_data = []
+            base_date = datetime.now() - timedelta(days=30)
+            
+            for i in range(20):
+                date = base_date + timedelta(days=i)
+                sample_data.append({
+                    'date': date.isoformat(),
+                    'content': f'Sample conversation entry {i+1}',
+                    'type': 'conversation' if i % 2 == 0 else 'event',
+                    'source': f'sample_file_{i//5}.json',
+                    'tags': ['sample', 'test']
+                })
+            
+            # Save sample data
+            sample_file = Path("sample_visualization_data.json")
+            with open(sample_file, 'w', encoding='utf-8') as f:
+                json.dump(sample_data, f, indent=2, default=str)
+            
+            self.visualization_data_var.set(str(sample_file))
+            self.update_progress(f"📝 Created sample visualization data: {len(sample_data)} items")
+            messagebox.showinfo("Success", f"Created sample visualization data with {len(sample_data)} items.\n\nThis demonstrates the expected format for visualization data.")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to create sample data: {e}")
     
     def refresh_visualization_data(self):
         """Refresh visualization data from current index."""

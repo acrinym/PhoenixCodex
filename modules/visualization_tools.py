@@ -49,10 +49,38 @@ class TimelineVisualizer:
     def load_data(self, data: List[Dict]):
         """Load timeline data"""
         self.data = []
+        valid_count = 0
+        invalid_count = 0
+        
         for item in data:
             if 'date' in item and 'content' in item:
                 try:
-                    date = datetime.fromisoformat(item['date'].replace('Z', '+00:00'))
+                    # Handle different date formats
+                    date_str = str(item['date'])
+                    if date_str == 'Unknown' or date_str == 'None':
+                        continue
+                    
+                    # Try different date parsing approaches
+                    date = None
+                    try:
+                        # Try ISO format first
+                        date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    except ValueError:
+                        try:
+                            # Try common date formats
+                            for fmt in ['%Y-%m-%d', '%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S']:
+                                try:
+                                    date = datetime.strptime(date_str, fmt)
+                                    break
+                                except ValueError:
+                                    continue
+                        except:
+                            pass
+                    
+                    if date is None:
+                        invalid_count += 1
+                        continue
+                    
                     self.data.append({
                         'date': date,
                         'content': item['content'],
@@ -60,14 +88,23 @@ class TimelineVisualizer:
                         'source': item.get('source', 'unknown'),
                         'tags': item.get('tags', [])
                     })
-                except (ValueError, TypeError):
+                    valid_count += 1
+                    
+                except (ValueError, TypeError) as e:
+                    invalid_count += 1
                     continue
+        
         self.data.sort(key=lambda x: x['date'])
+        
+        if not self.data:
+            raise ValueError(f"No valid timeline data found. Processed {valid_count} valid items, {invalid_count} invalid items. Items must have parseable 'date' and 'content' fields.")
+        
+        print(f"TimelineVisualizer: Loaded {len(self.data)} valid items, skipped {invalid_count} invalid items")
         
     def create_timeline(self, figsize: Tuple[int, int] = None) -> Figure:
         """Create a timeline visualization"""
         if not self.data:
-            raise ValueError("No data loaded for timeline visualization")
+            raise ValueError("No data loaded for timeline visualization. Please ensure your data contains items with 'date' and 'content' fields that can be parsed.")
             
         figsize = figsize or self.config.figure_size
         self.fig, self.ax = plt.subplots(figsize=figsize, dpi=self.config.dpi)
