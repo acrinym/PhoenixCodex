@@ -58,6 +58,8 @@ class IndexSettings:
     max_file_size_mb: int = 50
     supported_extensions: List[str] = None
     exclude_patterns: List[str] = None
+    last_index_path: Optional[str] = None
+    last_advanced_index_path: Optional[str] = None
     
     def __post_init__(self):
         if self.supported_extensions is None:
@@ -305,6 +307,24 @@ class SettingsService:
     def set_index_settings(self, index_settings: IndexSettings) -> None:
         """Set index settings."""
         self.settings.index = index_settings
+        self.save_settings()
+    
+    def get_last_index_path(self) -> Optional[str]:
+        """Get the last used index path."""
+        return self.settings.index.last_index_path
+    
+    def set_last_index_path(self, path: str) -> None:
+        """Set the last used index path."""
+        self.settings.index.last_index_path = path
+        self.save_settings()
+    
+    def get_last_advanced_index_path(self) -> Optional[str]:
+        """Get the last used advanced index path."""
+        return self.settings.index.last_advanced_index_path
+    
+    def set_last_advanced_index_path(self, path: str) -> None:
+        """Set the last used advanced index path."""
+        self.settings.index.last_advanced_index_path = path
         self.save_settings()
     
     def get_all_settings(self) -> Dict[str, Any]:

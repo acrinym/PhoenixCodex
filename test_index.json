@@ -1,0 +1,37 @@
+{
+  "tokens": {
+    "this": [
+      "test.txt"
+    ],
+    "test": [
+      "test.txt"
+    ],
+    "for": [
+      "test.txt"
+    ],
+    "file": [
+      "test.txt"
+    ],
+    "is": [
+      "test.txt"
+    ],
+    "a": [
+      "test.txt"
+    ],
+    "indexing": [
+      "test.txt"
+    ]
+  },
+  "files": {
+    "test.txt": {
+      "filename": "test.txt",
+      "modified": 1753842803,
+      "category": null,
+      "preview": "This is a test file for indexing.",
+      "size": 33,
+      "line_count": 1
+    }
+  },
+  "created": "2025-07-29T22:33:23.696801",
+  "version": "1.0"
+}

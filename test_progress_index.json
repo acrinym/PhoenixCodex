@@ -1,0 +1,77 @@
+{
+  "tokens": {
+    "this": [
+      "file1.txt",
+      "file3.md"
+    ],
+    "some": [
+      "file1.txt"
+    ],
+    "the": [
+      "file1.txt"
+    ],
+    "first": [
+      "file1.txt"
+    ],
+    "with": [
+      "file1.txt"
+    ],
+    "content": [
+      "file1.txt",
+      "file2.json"
+    ],
+    "file": [
+      "file1.txt",
+      "file3.md"
+    ],
+    "is": [
+      "file1.txt",
+      "file3.md"
+    ],
+    "test": [
+      "file1.txt",
+      "file3.md",
+      "file2.json"
+    ],
+    "data": [
+      "file2.json"
+    ],
+    "more": [
+      "file2.json"
+    ],
+    "markdown": [
+      "file3.md"
+    ],
+    "a": [
+      "file3.md"
+    ]
+  },
+  "files": {
+    "file1.txt": {
+      "filename": "file1.txt",
+      "modified": 1753843585,
+      "category": null,
+      "preview": "This is the first test file with some content.",
+      "size": 46,
+      "line_count": 1
+    },
+    "file2.json": {
+      "filename": "file2.json",
+      "modified": 1753843585,
+      "category": null,
+      "preview": "{\"data\": \"test\", \"content\": \"more test data\"}",
+      "size": 45,
+      "line_count": 1
+    },
+    "file3.md": {
+      "filename": "file3.md",
+      "modified": 1753843585,
+      "category": null,
+      "preview": "# Test File",
+      "size": 44,
+      "line_count": 3
+    }
+  },
+  "created": "2025-07-29T22:46:25.012225",
+  "version": "1.0"
+}

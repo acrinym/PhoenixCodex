@@ -1,0 +1,78 @@
+{
+  "tokens": {
+    "file": [
+      "test3.md",
+      "test1.txt"
+    ],
+    "for": [
+      "test1.txt"
+    ],
+    "some": [
+      "test1.txt"
+    ],
+    "with": [
+      "test1.txt"
+    ],
+    "test": [
+      "test3.md",
+      "test2.json",
+      "test1.txt"
+    ],
+    "this": [
+      "test3.md",
+      "test1.txt"
+    ],
+    "a": [
+      "test3.md",
+      "test1.txt"
+    ],
+    "is": [
+      "test3.md",
+      "test1.txt"
+    ],
+    "content": [
+      "test2.json",
+      "test1.txt"
+    ],
+    "indexing": [
+      "test1.txt"
+    ],
+    "data": [
+      "test2.json"
+    ],
+    "more": [
+      "test2.json"
+    ],
+    "markdown": [
+      "test3.md"
+    ]
+  },
+  "files": {
+    "test1.txt": {
+      "filename": "test1.txt",
+      "modified": 1753843516,
+      "category": null,
+      "preview": "This is a test file for indexing with some content.",
+      "size": 51,
+      "line_count": 1
+    },
+    "test2.json": {
+      "filename": "test2.json",
+      "modified": 1753843516,
+      "category": null,
+      "preview": "{\"test\": \"data\", \"content\": \"more content\"}",
+      "size": 43,
+      "line_count": 1
+    },
+    "test3.md": {
+      "filename": "test3.md",
+      "modified": 1753843516,
+      "category": null,
+      "preview": "# Test Markdown",
+      "size": 48,
+      "line_count": 3
+    }
+  },
+  "created": "2025-07-29T22:45:16.562688",
+  "version": "1.0"
+}

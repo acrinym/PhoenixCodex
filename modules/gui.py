@@ -96,8 +96,21 @@ class EnhancedApp(App):
         index_file_frame.pack(fill=tk.X, pady=5)
         ttk.Label(index_file_frame, text="Index File:").pack(side=tk.LEFT)
         self.index_file_var = tk.StringVar()
+        
+        # Load last used index path
+        last_index_path = self.settings_service.get_last_advanced_index_path()
+        if last_index_path:
+            self.index_file_var.set(last_index_path)
+        
         ttk.Entry(index_file_frame, textvariable=self.index_file_var, width=40).pack(side=tk.LEFT, padx=5)
         ttk.Button(index_file_frame, text="Browse", command=self.browse_index_file).pack(side=tk.LEFT, padx=5)
+        
+        # Show last used path info
+        if last_index_path:
+            info_frame = ttk.Frame(options_frame)
+            info_frame.pack(fill=tk.X, pady=2)
+            ttk.Label(info_frame, text=f"Last used: {last_index_path}", 
+                     font=("TkDefaultFont", 8), foreground="gray").pack(side=tk.LEFT)
         
         # Action Buttons
         button_frame = ttk.Frame(parent_tab)
@@ -387,6 +400,8 @@ class EnhancedApp(App):
         )
         if filename:
             self.index_file_var.set(filename)
+            # Save the selected path
+            self.settings_service.set_last_advanced_index_path(filename)
     
     def build_advanced_index(self):
         """Build advanced index in background thread."""
@@ -413,6 +428,9 @@ class EnhancedApp(App):
                 self.advanced_index_data = index_data
                 self.progress_service.complete_operation("Advanced index built successfully")
                 
+                # Save the index path
+                self.settings_service.set_last_advanced_index_path(index_file)
+                
                 # Update GUI in main thread
                 self.master.after(0, lambda: self.update_status_bar(f"Advanced index built: {len(index_data.get('files', {}))} files"))
                 
@@ -432,6 +450,8 @@ class EnhancedApp(App):
         
         try:
             self.advanced_index_data = self.advanced_indexer.load_index(Path(index_file))
+            # Save the index path
+            self.settings_service.set_last_advanced_index_path(index_file)
             self.update_status_bar(f"Loaded advanced index: {len(self.advanced_index_data.get('files', {}))} files")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load index: {e}")
@@ -621,7 +641,19 @@ Cross-references: {stats.get('cross_references', 0)}
         
         # Clear and populate settings text
         self.settings_text.delete(1.0, tk.END)
-        self.settings_text.insert(1.0, json.dumps(settings, indent=2, default=str))
+        
+        # Add a special section for index paths at the top
+        last_advanced_index = self.settings_service.get_last_advanced_index_path()
+        last_regular_index = self.settings_service.get_last_index_path()
+        
+        index_paths_info = f"""=== INDEX PATHS ===
+Last Advanced Index Path: {last_advanced_index or 'None'}
+Last Regular Index Path: {last_regular_index or 'None'}
+
+=== ALL SETTINGS ===
+"""
+        
+        self.settings_text.insert(1.0, index_paths_info + json.dumps(settings, indent=2, default=str))
     
     def reset_settings(self):
         """Reset settings to defaults."""
