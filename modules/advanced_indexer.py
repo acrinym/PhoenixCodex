@@ -140,7 +140,7 @@ class AdvancedIndexer:
         logger.info(f"Found {len(all_files)} files to index")
         
         if progress_callback:
-            progress_callback("Indexing files", 0, len(all_files))
+            progress_callback("Indexing files")
         
         # Process each file with size limits
         for i, file_path in enumerate(all_files):
@@ -158,7 +158,7 @@ class AdvancedIndexer:
                 self._process_file(file_path, folder_path, tokens, files)
                 
                 if progress_callback:
-                    progress_callback(f"Indexed {file_path.name}", i + 1, len(all_files))
+                    progress_callback(f"Indexed {file_path.name} ({i + 1}/{len(all_files)})")
                     
             except Exception as e:
                 logger.error(f"Error processing file {file_path}: {e}")
