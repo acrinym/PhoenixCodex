@@ -328,6 +328,52 @@ python gpt_export_index_tool.py visualize --data data.json --type content_analys
 python gpt_export_index_tool.py visualize --data data.json --type dashboard --output dashboard.png
 ```
 
+### 🆕 SMS Parser Command
+Parse SMS backup XML files and convert to AmandaMap/Phoenix Codex format.
+
+```bash
+python gpt_export_index_tool.py sms [OPTIONS]
+```
+
+**Options:**
+- `--input PATH` - Path to SMS XML file (required)
+- `--output-dir PATH` - Output directory for parsed files (default: data/)
+- `--format FORMAT` - Output format: amandamap, phoenix, both (default: both)
+- `--summary` - Show conversation summary
+- `--verbose` - Verbose output
+
+**Examples:**
+```bash
+# Parse SMS file and export both formats
+python gpt_export_index_tool.py sms --input "data/Amanda sms 20250717091224.xml" --summary
+
+# Export only AmandaMap format
+python gpt_export_index_tool.py sms --input "data/Amanda sms 20250717091224.xml" --format amandamap
+
+# Export only Phoenix Codex format
+python gpt_export_index_tool.py sms --input "data/Amanda sms 20250717091224.xml" --format phoenix --output-dir exports/
+```
+
+### 🆕 GUI SMS Parser Tab
+Access SMS parsing tools directly from the main application GUI:
+
+1. **Launch the GUI**: `python gpt_export_index_tool.py gui`
+2. **Navigate to the "📱 SMS Parser" tab**
+3. **Select your SMS XML file** (from Android SMS backup)
+4. **Configure output options**:
+   - Output directory
+   - Format selection (AmandaMap, Phoenix Codex, or both)
+5. **Use the action buttons**:
+   - **📱 Parse SMS File**: Parse and export conversations
+   - **📊 Show Summary**: Display conversation statistics
+   - **🎨 Visualize Conversations**: Launch interactive visualization
+
+**Features:**
+- **File Browsing**: Easy file selection dialogs
+- **Progress Tracking**: Real-time progress updates
+- **Error Handling**: Comprehensive error messages
+- **Direct Integration**: Seamless integration with AmandaMap and Phoenix Codex systems
+
 ### 🆕 GUI Visualization Tab
 Access visualization tools directly from the main application GUI:
 
@@ -570,6 +616,17 @@ The tool automatically classifies content into:
 - **Real-time Updates**: Dynamic visualization updates
 - **Customizable Themes**: Light/dark themes and color palettes
 - **Performance Optimized**: Handles large datasets efficiently
+
+#### 🆕 SMS Parser System
+- **SMS/MMS XML Parsing**: Parse SMS backup XML files from Android devices
+- **Conversation Extraction**: Extract and organize text conversations
+- **AmandaMap Integration**: Convert SMS conversations to AmandaMap format
+- **Phoenix Codex Integration**: Convert SMS conversations to Phoenix Codex format
+- **Smart Tagging**: Automatic tag generation based on content analysis
+- **Emoji Decoding**: Proper handling of HTML-encoded emojis and special characters
+- **GUI Integration**: Direct access through the main application's "📱 SMS Parser" tab
+- **Conversation Summary**: Detailed statistics and analysis of parsed conversations
+- **Visualization Integration**: Direct visualization of SMS conversation data
 
 ### Mirror Entity System
 

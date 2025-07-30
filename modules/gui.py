@@ -66,6 +66,11 @@ class EnhancedApp(App):
         self.visualization_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
         self.notebook.add(self.visualization_tab, text='📊 Visualization')
         self.create_visualization_tab_content(self.visualization_tab)
+        
+        # SMS Parser Tab
+        self.sms_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
+        self.notebook.add(self.sms_tab, text='📱 SMS Parser')
+        self.create_sms_tab_content(self.sms_tab)
     
     def create_advanced_index_tab_content(self, parent_tab):
         """Create content for Advanced Indexing tab."""
@@ -304,6 +309,58 @@ class EnhancedApp(App):
                   command=self.quick_preview).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="🔄 Refresh Data", 
                   command=self.refresh_visualization_data).pack(side=tk.LEFT, padx=5)
+    
+    def create_sms_tab_content(self, parent_tab):
+        """Create content for SMS Parser tab."""
+        
+        # File Selection Frame
+        file_frame = ttk.LabelFrame(parent_tab, text="SMS File Selection", padding="10")
+        file_frame.pack(fill=tk.X, pady=5)
+        
+        # SMS file selection
+        sms_file_frame = ttk.Frame(file_frame)
+        sms_file_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(sms_file_frame, text="SMS XML File:").pack(side=tk.LEFT)
+        self.sms_file_var = tk.StringVar()
+        ttk.Entry(sms_file_frame, textvariable=self.sms_file_var, width=50).pack(side=tk.LEFT, padx=5)
+        ttk.Button(sms_file_frame, text="Browse", command=self.browse_sms_file).pack(side=tk.LEFT, padx=5)
+        
+        # Output Options Frame
+        output_frame = ttk.LabelFrame(parent_tab, text="Output Options", padding="10")
+        output_frame.pack(fill=tk.X, pady=5)
+        
+        # Output directory
+        output_dir_frame = ttk.Frame(output_frame)
+        output_dir_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(output_dir_frame, text="Output Directory:").pack(side=tk.LEFT)
+        self.sms_output_dir_var = tk.StringVar(value="data")
+        ttk.Entry(output_dir_frame, textvariable=self.sms_output_dir_var, width=40).pack(side=tk.LEFT, padx=5)
+        ttk.Button(output_dir_frame, text="Browse", command=self.browse_sms_output_dir).pack(side=tk.LEFT, padx=5)
+        
+        # Format selection
+        format_frame = ttk.Frame(output_frame)
+        format_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(format_frame, text="Output Format:").pack(side=tk.LEFT)
+        self.sms_format_var = tk.StringVar(value="both")
+        format_options = [
+            ("AmandaMap Only", "amandamap"),
+            ("Phoenix Codex Only", "phoenix"),
+            ("Both Formats", "both")
+        ]
+        for text, value in format_options:
+            ttk.Radiobutton(format_frame, text=text, variable=self.sms_format_var, 
+                           value=value).pack(side=tk.LEFT, padx=10)
+        
+        # Action Buttons
+        button_frame = ttk.Frame(parent_tab)
+        button_frame.pack(fill=tk.X, pady=10)
+        
+        ttk.Button(button_frame, text="📱 Parse SMS File", 
+                  command=self.parse_sms_file).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="📊 Show Summary", 
+                  command=self.show_sms_summary).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="🎨 Visualize Conversations", 
+                  command=self.visualize_sms_conversations).pack(side=tk.LEFT, padx=5)
     
     # Advanced Indexing Methods
     def browse_advanced_folder(self):
@@ -790,6 +847,165 @@ Data Summary:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to refresh visualization data: {e}")
+    
+    # SMS Parser Methods
+    def browse_sms_file(self):
+        """Browse for SMS XML file."""
+        filename = filedialog.askopenfilename(
+            title="Select SMS XML File",
+            filetypes=[("XML files", "*.xml"), ("All files", "*.*")]
+        )
+        if filename:
+            self.sms_file_var.set(filename)
+    
+    def browse_sms_output_dir(self):
+        """Browse for SMS output directory."""
+        directory = filedialog.askdirectory(title="Select Output Directory")
+        if directory:
+            self.sms_output_dir_var.set(directory)
+    
+    def parse_sms_file(self):
+        """Parse SMS file and export to selected format."""
+        sms_file = self.sms_file_var.get()
+        output_dir = self.sms_output_dir_var.get()
+        output_format = self.sms_format_var.get()
+        
+        if not sms_file:
+            messagebox.showerror("Error", "Please select an SMS XML file.")
+            return
+        
+        try:
+            from .sms_parser import SMSParser
+            
+            # Initialize parser
+            parser = SMSParser()
+            
+            # Parse SMS file
+            self.update_progress(f"📱 Parsing SMS file: {sms_file}")
+            conversations = parser.parse_sms_file(Path(sms_file))
+            
+            if not conversations:
+                messagebox.showerror("Error", "No conversations found in SMS file.")
+                return
+            
+            self.update_progress(f"✅ Parsed {len(conversations)} conversation entries")
+            
+            # Create output directory
+            output_path = Path(output_dir)
+            output_path.mkdir(exist_ok=True)
+            
+            # Export based on format
+            if output_format in ['amandamap', 'both']:
+                amandamap_file = output_path / "amandamap_sms_conversations.json"
+                if parser.export_to_amandamap(amandamap_file):
+                    self.update_progress(f"✅ Exported AmandaMap format: {amandamap_file}")
+            
+            if output_format in ['phoenix', 'both']:
+                phoenix_file = output_path / "phoenix_sms_conversations.json"
+                if parser.export_to_phoenix_codex(phoenix_file):
+                    self.update_progress(f"✅ Exported Phoenix Codex format: {phoenix_file}")
+            
+            messagebox.showinfo("Success", f"SMS parsing completed successfully!\n\nParsed {len(conversations)} conversation entries.")
+            
+        except Exception as e:
+            error_msg = f"SMS parsing failed: {e}"
+            self.update_progress(f"❌ {error_msg}")
+            messagebox.showerror("Error", error_msg)
+    
+    def show_sms_summary(self):
+        """Show SMS conversation summary."""
+        sms_file = self.sms_file_var.get()
+        
+        if not sms_file:
+            messagebox.showerror("Error", "Please select an SMS XML file.")
+            return
+        
+        try:
+            from .sms_parser import SMSParser
+            
+            # Initialize parser and parse file
+            parser = SMSParser()
+            conversations = parser.parse_sms_file(Path(sms_file))
+            
+            if not conversations:
+                messagebox.showerror("Error", "No conversations found in SMS file.")
+                return
+            
+            # Get summary
+            summary = parser.get_conversation_summary()
+            
+            # Create summary text
+            summary_text = f"""
+SMS Conversation Summary
+========================
+
+Total Messages: {summary.get('total_messages', 0)}
+Amanda Messages: {summary.get('amanda_messages', 0)}
+Justin Messages: {summary.get('justin_messages', 0)}
+Date Range: {summary.get('date_range', 'Unknown')}
+
+Conversation Types:
+"""
+            for conv_type, count in summary.get('conversation_types', {}).items():
+                summary_text += f"  {conv_type.upper()}: {count}\n"
+            
+            if summary.get('most_common_tags'):
+                summary_text += "\nMost Common Tags:\n"
+                for tag, count in summary['most_common_tags']:
+                    summary_text += f"  {tag}: {count}\n"
+            
+            messagebox.showinfo("SMS Summary", summary_text)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate SMS summary: {e}")
+    
+    def visualize_sms_conversations(self):
+        """Visualize SMS conversations using the visualization tools."""
+        sms_file = self.sms_file_var.get()
+        
+        if not sms_file:
+            messagebox.showerror("Error", "Please select an SMS XML file.")
+            return
+        
+        try:
+            from .sms_parser import SMSParser
+            
+            # Parse SMS file
+            parser = SMSParser()
+            conversations = parser.parse_sms_file(Path(sms_file))
+            
+            if not conversations:
+                messagebox.showerror("Error", "No conversations found in SMS file.")
+                return
+            
+            # Convert to visualization format
+            viz_data = []
+            for conv in conversations:
+                viz_data.append({
+                    'date': conv.timestamp,
+                    'content': conv.content,
+                    'type': 'conversation',
+                    'source': conv.source,
+                    'tags': conv.tags,
+                    'sender': conv.sender,
+                    'receiver': conv.receiver
+                })
+            
+            # Save to temporary file for visualization
+            temp_file = Path("temp_sms_visualization_data.json")
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                json.dump(viz_data, f, indent=2, default=str)
+            
+            # Launch visualization
+            from .visualization_tools import InteractiveVisualizationApp
+            app = InteractiveVisualizationApp()
+            app.data = viz_data
+            app.update_visualization()
+            self.update_progress("🎨 Launching SMS conversation visualization...")
+            app.run()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to visualize SMS conversations: {e}")
 
 # Export the enhanced app
 __all__ = ["EnhancedApp", "App", "apply_styles"]

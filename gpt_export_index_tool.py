@@ -643,6 +643,14 @@ Examples:
         viz_parser.add_argument('--config', help='Path to visualization config file')
         viz_parser.add_argument('--verbose', action='store_true', help='Verbose output')
         
+        # SMS Parser command
+        sms_parser = subparsers.add_parser('sms', help='Parse SMS backup files')
+        sms_parser.add_argument('--input', required=True, help='Path to SMS XML file')
+        sms_parser.add_argument('--output-dir', help='Output directory for parsed files')
+        sms_parser.add_argument('--format', choices=['amandamap', 'phoenix', 'both'], default='both', help='Output format')
+        sms_parser.add_argument('--summary', action='store_true', help='Show conversation summary')
+        sms_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+        
         args = parser.parse_args()
         
         if not args.command:
@@ -676,6 +684,8 @@ Examples:
                 self._handle_performance(args)
             elif args.command == 'visualize':
                 self._handle_visualize(args)
+            elif args.command == 'sms':
+                self._handle_sms(args)
             elif args.command == 'gui':
                 self.tool.create_gui()
             else:
@@ -1189,6 +1199,64 @@ Examples:
         
         else:
             print("❓ Use --stats, --cleanup, --monitor, or --config to see performance information")
+    
+    def _handle_sms(self, args):
+        """Handle SMS parsing operations."""
+        try:
+            from modules.sms_parser import SMSParser
+            
+            input_file = Path(args.input)
+            if not input_file.exists():
+                print(f"❌ SMS file not found: {input_file}")
+                return
+            
+            # Create output directory
+            output_dir = Path(args.output_dir) if args.output_dir else Path("data")
+            output_dir.mkdir(exist_ok=True)
+            
+            # Initialize parser
+            parser = SMSParser()
+            
+            print(f"📱 Parsing SMS file: {input_file}")
+            conversations = parser.parse_sms_file(input_file)
+            
+            if not conversations:
+                print("❌ No conversations found in SMS file")
+                return
+            
+            print(f"✅ Parsed {len(conversations)} conversation entries")
+            
+            # Show summary if requested
+            if args.summary:
+                summary = parser.get_conversation_summary()
+                print("\n📊 Conversation Summary:")
+                print(f"  Total Messages: {summary.get('total_messages', 0)}")
+                print(f"  Amanda Messages: {summary.get('amanda_messages', 0)}")
+                print(f"  Justin Messages: {summary.get('justin_messages', 0)}")
+                print(f"  Date Range: {summary.get('date_range', 'Unknown')}")
+                print(f"  Conversation Types: {summary.get('conversation_types', {})}")
+                
+                if summary.get('most_common_tags'):
+                    print("  Most Common Tags:")
+                    for tag, count in summary['most_common_tags']:
+                        print(f"    {tag}: {count}")
+            
+            # Export based on format
+            if args.format in ['amandamap', 'both']:
+                amandamap_file = output_dir / "amandamap_sms_conversations.json"
+                if parser.export_to_amandamap(amandamap_file):
+                    print(f"✅ Exported AmandaMap format: {amandamap_file}")
+            
+            if args.format in ['phoenix', 'both']:
+                phoenix_file = output_dir / "phoenix_sms_conversations.json"
+                if parser.export_to_phoenix_codex(phoenix_file):
+                    print(f"✅ Exported Phoenix Codex format: {phoenix_file}")
+            
+            print(f"🎉 SMS parsing completed successfully!")
+            
+        except Exception as e:
+            logger.error(f"SMS parsing failed: {e}")
+            print(f"❌ SMS parsing failed: {e}")
 
 def main():
     """Main entry point."""
