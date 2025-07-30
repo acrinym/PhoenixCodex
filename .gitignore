@@ -34,14 +34,24 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build artifacts (but keep config files)
-*.mhtml
-*.html
-*.css
-*.js
+# Build artifacts (but keep important source and config files)
+# Allow important directories and files
 !vite.config.js
 !package.json
 !package-lock.json
+!js/
+!js/*.js
+!styles/
+!styles/*.css
+!scripts/
+!scripts/*.js
+!bundles/
+!bundles/*.mhtml
+# Exclude generated/built CSS and JS
+# but allow our source files
+*.min.css
+*.min.js
+/dist/
 
 allfiles.txt
 debuglog.txt
