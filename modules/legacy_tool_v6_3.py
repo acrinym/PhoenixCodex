@@ -1400,6 +1400,14 @@ class App: # Your original App class structure
         self.search_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
         self.notebook.add(self.search_tab, text='Search Indexed Files')
         self.create_search_tab_content(self.search_tab)
+        # --- NEW: AmandaMap and Phoenix Codex tabs ---
+        self.amandamap_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
+        self.notebook.add(self.amandamap_tab, text='🔱 AmandaMap Entries')
+        self.create_amandamap_tab_content(self.amandamap_tab)
+        self.phoenix_codex_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
+        self.notebook.add(self.phoenix_codex_tab, text='🪶 Phoenix Codex Entries')
+        self.create_phoenix_codex_tab_content(self.phoenix_codex_tab)
+        # --- END NEW TABS ---
         self.debug_log_tab = ttk.Frame(self.notebook, style='TFrame', padding=10)
         self.notebook.add(self.debug_log_tab, text='Debug Log')
         self.create_debug_log_tab_content(self.debug_log_tab)
@@ -1498,19 +1506,21 @@ class App: # Your original App class structure
         search_files_button.pack(side=tk.LEFT, padx=5)
         search_results_lf = ttk.LabelFrame(parent_tab, text="Search Results / Indexed Files", padding="5", style='TLabelframe'); search_results_lf.pack(expand=True, fill=tk.BOTH, pady=5)
 
-        # --- MODIFIED: GUI - Treeview columns for timestamps ---
-        tree_columns = ("display_filename", "started_at", "ended_at", "category", "full_path")
+        # --- MODIFIED: GUI - Treeview columns for timestamps and preview ---
+        tree_columns = ("display_filename", "started_at", "ended_at", "category", "full_path", "preview")
         self.search_results_tree = ttk.Treeview(search_results_lf, columns=tree_columns, show="headings", style='Treeview', selectmode='extended')
         self.search_results_tree.heading("display_filename", text="File Name", command=lambda: self.sort_treeview_column_action(self.search_results_tree, "display_filename", False))
         self.search_results_tree.heading("started_at", text="Chat Started", command=lambda: self.sort_treeview_column_action(self.search_results_tree, "started_at", False))
         self.search_results_tree.heading("ended_at", text="Chat Ended", command=lambda: self.sort_treeview_column_action(self.search_results_tree, "ended_at", False))
         self.search_results_tree.heading("category", text="Category", command=lambda: self.sort_treeview_column_action(self.search_results_tree, "category", False))
         self.search_results_tree.heading("full_path", text="Full Path", command=lambda: self.sort_treeview_column_action(self.search_results_tree, "full_path", False))
-        self.search_results_tree.column("display_filename", width=250, stretch=tk.YES, anchor=tk.W)
-        self.search_results_tree.column("started_at", width=150, stretch=tk.NO, anchor="center")
-        self.search_results_tree.column("ended_at", width=150, stretch=tk.NO, anchor="center")
-        self.search_results_tree.column("category", width=120, stretch=tk.NO, anchor="center")
-        self.search_results_tree.column("full_path", width=300, stretch=tk.YES, anchor=tk.W)
+        self.search_results_tree.heading("preview", text="Preview", command=lambda: self.sort_treeview_column_action(self.search_results_tree, "preview", False))
+        self.search_results_tree.column("display_filename", width=200, stretch=tk.NO, anchor=tk.W)
+        self.search_results_tree.column("started_at", width=120, stretch=tk.NO, anchor="center")
+        self.search_results_tree.column("ended_at", width=120, stretch=tk.NO, anchor="center")
+        self.search_results_tree.column("category", width=100, stretch=tk.NO, anchor="center")
+        self.search_results_tree.column("full_path", width=200, stretch=tk.NO, anchor=tk.W)
+        self.search_results_tree.column("preview", width=300, stretch=tk.YES, anchor=tk.W)
         tree_yscroll = ttk.Scrollbar(search_results_lf, orient=tk.VERTICAL, command=self.search_results_tree.yview, style='TScrollbar')
         tree_xscroll = ttk.Scrollbar(search_results_lf, orient=tk.HORIZONTAL, command=self.search_results_tree.xview, style='TScrollbar')
         self.search_results_tree.configure(yscrollcommand=tree_yscroll.set, xscrollcommand=tree_xscroll.set)
@@ -1518,6 +1528,7 @@ class App: # Your original App class structure
         search_results_lf.rowconfigure(0, weight=1); search_results_lf.columnconfigure(0, weight=1)
         self.search_results_tree.bind("<Double-1>", self.on_treeview_double_click_action)
         self.search_results_tree.bind("<ButtonRelease-1>", self.on_treeview_single_click_update_status_action)
+        self.search_results_tree.bind("<Button-1>", self.on_treeview_click_show_snippets_action)
         convert_selected_button = ttk.Button(search_results_lf, text="Convert Selected JSON(s) from Results", command=self.convert_selected_from_search_results_action)
         convert_selected_button.grid(row=2, column=0, columnspan=2, pady=(5,0), sticky=tk.EW)
 
@@ -1790,7 +1801,7 @@ class App: # Your original App class structure
                 if v.get("category"):
                     cat_set.add(v["category"])
             cat_str = ", ".join(sorted(cat_set))
-            tree_values = (display_name, started_at_val, ended_at_val, cat_str, full_path_str)
+            tree_values = (display_name, started_at_val, ended_at_val, cat_str, full_path_str, "")
             try:
                 tree.insert("", "end", iid=file_id, values=tree_values, tags=('file_row',))
                 displayed_count +=1
@@ -1813,22 +1824,51 @@ class App: # Your original App class structure
         for i in self.search_results_tree.get_children(): self.search_results_tree.delete(i)
         case_sensitive = config.get("search_term_case_sensitive", False)
         search_logic = config.get("search_logic", "AND")
-        results_with_details, error_msg = search_with_persistent_index(keyword_to_search, loaded_search_index, case_sensitive, search_logic)
-        if error_msg: self.search_results_tree.insert("", tk.END, values=(error_msg, "", "", "", ""), tags=('error',))
-        elif results_with_details:
-            for res_tuple in results_with_details:
-                display_name, started_at, ended_at, full_path_obj, file_id_str, details = res_tuple
+        
+        # Use context-aware search to get snippets
+        from .indexer import search_with_context
+        results_with_context, error_msg = search_with_context(
+            keyword_to_search, 
+            loaded_search_index, 
+            context_lines=3,  # Show 3 lines of context
+            case_sensitive=case_sensitive, 
+            search_logic=search_logic
+        )
+        
+        if error_msg: self.search_results_tree.insert("", tk.END, values=(error_msg, "", "", "", "", ""), tags=('error',))
+        elif results_with_context:
+            for res_tuple in results_with_context:
+                display_name, started_at, ended_at, full_path_obj, snippets, file_id_str, details = res_tuple
                 cat_set = set()
                 for v in details.get("tagmap", {}).values():
                     if v.get("category"):
                         cat_set.add(v["category"])
                 cat_str = ", ".join(sorted(cat_set))
-                tree_values = (display_name, started_at, ended_at, cat_str, str(full_path_obj))
-                try: self.search_results_tree.insert("", "end", iid=file_id_str, values=tree_values, tags=('file_row',))
-                except tk.TclError: self.search_results_tree.insert("", "end", iid=f"{file_id_str}_search", values=tree_values, tags=('file_row',))
-        else: self.search_results_tree.insert("", tk.END, values=("No matches found.", "", "", "", ""), tags=('no_match',))
+                
+                # Create a preview from the first snippet
+                preview = ""
+                if snippets:
+                    first_snippet = snippets[0]
+                    # Clean up the snippet for display
+                    preview = first_snippet.replace('\n', ' ').strip()
+                    if len(preview) > 100:
+                        preview = preview[:97] + "..."
+                
+                tree_values = (display_name, started_at, ended_at, cat_str, str(full_path_obj), preview)
+                try: 
+                    self.search_results_tree.insert("", "end", iid=file_id_str, values=tree_values, tags=('file_row',))
+                    # Store snippets for later display
+                    if not hasattr(self, 'search_snippets'):
+                        self.search_snippets = {}
+                    self.search_snippets[file_id_str] = snippets
+                except tk.TclError: 
+                    self.search_results_tree.insert("", "end", iid=f"{file_id_str}_search", values=tree_values, tags=('file_row',))
+                    if not hasattr(self, 'search_snippets'):
+                        self.search_snippets = {}
+                    self.search_snippets[f"{file_id_str}_search"] = snippets
+        else: self.search_results_tree.insert("", tk.END, values=("No matches found.", "", "", "", "", ""), tags=('no_match',))
         self.search_results_tree.tag_configure('error', foreground='red'); self.search_results_tree.tag_configure('no_match', foreground='grey')
-        self.update_status_bar(f"Search for '{keyword_to_search}' complete. {len(results_with_details) if results_with_details else 0} results.")
+        self.update_status_bar(f"Search for '{keyword_to_search}' complete. {len(results_with_context) if results_with_context else 0} results.")
 
     def convert_selected_from_search_results_action(self): # Your original
         selected_ids = self.search_results_tree.selection()
@@ -1838,8 +1878,8 @@ class App: # Your original App class structure
         files_to_convert_paths = []
         for item_iid in selected_ids:
             item_values = self.search_results_tree.item(item_iid, "values")
-            if item_values and len(item_values) == 4:
-                full_path_str = item_values[3]
+            if item_values and len(item_values) >= 5:
+                full_path_str = item_values[4]  # Index 4 is the full path (5th column)
                 if Path(full_path_str).suffix.lower() == '.json': files_to_convert_paths.append(full_path_str)
                 else: log_debug(f"Skipping non-JSON: {full_path_str}")
             else: log_debug(f"Bad path for item: {item_iid}, values: {item_values}")
@@ -1956,12 +1996,95 @@ class App: # Your original App class structure
         treeview = event.widget; selected_item_id = treeview.focus()
         if not selected_item_id: return
         item_values = treeview.item(selected_item_id, "values")
-        if not item_values or len(item_values) < 4: log_debug(f"Warning: Double-click item '{selected_item_id}' bad values: {item_values}"); return
-        file_path_to_open_str = item_values[3] # Index 3 is 'full_path'
+        if not item_values or len(item_values) < 5: log_debug(f"Warning: Double-click item '{selected_item_id}' bad values: {item_values}"); return
+        file_path_to_open_str = item_values[4] # Index 4 is 'full_path' (5th column)
         if not file_path_to_open_str or file_path_to_open_str == "Error": messagebox.showwarning("Cannot Open", "No valid file path.", parent=self.master); return
+        
+        # Try to resolve the path to the converted MD file if it exists
         file_path_to_open = Path(file_path_to_open_str)
-        if file_path_to_open.exists(): launch_editor(file_path_to_open, config) # Pass global config
-        else: messagebox.showerror("File Not Found", f"File not found:\n{file_path_to_open}", parent=self.master); log_debug(f"ERROR: File not found on double-click: {file_path_to_open}")
+        
+        # If this is a JSON file and we're searching converted files, try to find the corresponding MD file
+        if file_path_to_open.suffix.lower() == '.json':
+            # Look for corresponding MD file in the converted files directory
+            md_file_path = self._find_converted_md_file(file_path_to_open)
+            if md_file_path and md_file_path.exists():
+                file_path_to_open = md_file_path
+                log_debug(f"INFO: Redirecting to converted MD file: {md_file_path}")
+        
+        if file_path_to_open.exists(): 
+            launch_editor(file_path_to_open, config) # Pass global config
+        else: 
+            messagebox.showerror("File Not Found", f"File not found:\n{file_path_to_open}", parent=self.master); 
+            log_debug(f"ERROR: File not found on double-click: {file_path_to_open}")
+    
+    def _find_converted_md_file(self, json_file_path):
+        """Try to find the corresponding converted MD file for a JSON file."""
+        try:
+            # Get the converted files folder path from config
+            converted_folder = config.get("last_indexed_converted_files_folder_path", "")
+            if not converted_folder:
+                return None
+            
+            converted_folder_path = Path(converted_folder)
+            if not converted_folder_path.exists():
+                return None
+            
+            # Look for MD file with same stem
+            md_file_path = converted_folder_path / f"{json_file_path.stem}.md"
+            if md_file_path.exists():
+                return md_file_path
+            
+            # Also check for HTML version
+            html_file_path = converted_folder_path / f"{json_file_path.stem}.html"
+            if html_file_path.exists():
+                return html_file_path
+                
+        except Exception as e:
+            log_debug(f"ERROR: Error finding converted file: {e}")
+        
+        return None
+
+    def on_treeview_click_show_snippets_action(self, event):
+        """Show snippets when clicking on a search result."""
+        treeview = event.widget
+        selected_item_id = treeview.focus()
+        if not selected_item_id:
+            return
+        
+        # Check if we have snippets for this item
+        if not hasattr(self, 'search_snippets') or selected_item_id not in self.search_snippets:
+            return
+        
+        snippets = self.search_snippets[selected_item_id]
+        if not snippets:
+            return
+        
+        # Create a popup window to show snippets
+        snippet_window = tk.Toplevel(self.master)
+        snippet_window.title("Search Results - Snippets")
+        snippet_window.geometry("800x600")
+        snippet_window.transient(self.master)
+        snippet_window.grab_set()
+        
+        # Create text widget to display snippets
+        text_widget = scrolledtext.ScrolledText(snippet_window, wrap=tk.WORD, font=tkFont.nametofont("TkFixedFont"))
+        text_widget.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+        
+        # Configure text widget colors
+        text_widget.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"])
+        
+        # Display snippets
+        for i, snippet in enumerate(snippets, 1):
+            text_widget.insert(tk.END, f"--- Snippet {i} ---\n")
+            text_widget.insert(tk.END, snippet)
+            text_widget.insert(tk.END, "\n\n")
+        
+        # Add close button
+        close_button = ttk.Button(snippet_window, text="Close", command=snippet_window.destroy)
+        close_button.pack(pady=10)
+        
+        # Make text widget read-only
+        text_widget.config(state=tk.DISABLED)
 
     def on_treeview_single_click_update_status_action(self, event): # Your original
         treeview = event.widget; selected_items = treeview.selection()
@@ -2042,6 +2165,1076 @@ class App: # Your original App class structure
         else:
             log_debug(f"WARNING: last_indexed_path_label widget not found or not accessible when trying to update. Intended text: '{label_text}'")
     # --- END METHOD CORRECTION ---
+
+    def create_amandamap_tab_content(self, parent_tab):
+        """Create the AmandaMap entries tab content."""
+        # Import content recognition module
+        from modules.content_recognition import recognize_amandamap_content, analyze_file_content
+        from pathlib import Path
+        
+        # Top frame for controls
+        controls_frame = ttk.Frame(parent_tab, style='TFrame')
+        controls_frame.pack(fill=tk.X, pady=5)
+        
+        # Folder selection
+        folder_frame = ttk.Frame(controls_frame, style='TFrame')
+        folder_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(folder_frame, text="Search Folder:").pack(side=tk.LEFT, padx=(0,5))
+        self.amandamap_folder_var = tk.StringVar(value=config.get("last_amandamap_search_folder", ""))
+        self.amandamap_folder_entry = ttk.Entry(folder_frame, textvariable=self.amandamap_folder_var, width=50)
+        self.amandamap_folder_entry.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
+        ttk.Button(folder_frame, text="Browse", command=self.select_amandamap_folder_action).pack(side=tk.LEFT, padx=5)
+        
+        # Search controls
+        search_frame = ttk.Frame(controls_frame, style='TFrame')
+        search_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(search_frame, text="Filter Text:").pack(side=tk.LEFT, padx=(0,5))
+        self.amandamap_filter_var = tk.StringVar()
+        self.amandamap_filter_entry = ttk.Entry(search_frame, textvariable=self.amandamap_filter_var, width=30)
+        self.amandamap_filter_entry.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
+        ttk.Button(search_frame, text="Find AmandaMap Entries", command=self.find_amandamap_entries_action).pack(side=tk.LEFT, padx=5)
+        ttk.Button(search_frame, text="Export to File", command=self.export_amandamap_entries_action).pack(side=tk.LEFT, padx=5)
+        
+        # Progress frame
+        progress_frame = ttk.LabelFrame(parent_tab, text="Progress", style='TLabelframe', padding=5)
+        progress_frame.pack(fill=tk.X, pady=5)
+        self.amandamap_progress_text = scrolledtext.ScrolledText(progress_frame, height=4, relief=tk.SUNKEN, borderwidth=1, wrap=tk.WORD)
+        self.amandamap_progress_text.pack(expand=True, fill=tk.BOTH)
+        self.amandamap_progress_text.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"], font=tkFont.nametofont("TkFixedFont"))
+        
+        # Results frame
+        results_frame = ttk.LabelFrame(parent_tab, text="AmandaMap Entries", padding="5", style='TLabelframe')
+        results_frame.pack(expand=True, fill=tk.BOTH, pady=5)
+        
+        # Treeview for results
+        tree_columns = ("entry_type", "number", "title", "file_path", "date")
+        self.amandamap_tree = ttk.Treeview(results_frame, columns=tree_columns, show="headings", style='Treeview', selectmode='extended')
+        self.amandamap_tree.heading("entry_type", text="Type", command=lambda: self.sort_treeview_column_action(self.amandamap_tree, "entry_type", False))
+        self.amandamap_tree.heading("number", text="Number", command=lambda: self.sort_treeview_column_action(self.amandamap_tree, "number", False))
+        self.amandamap_tree.heading("title", text="Title", command=lambda: self.sort_treeview_column_action(self.amandamap_tree, "title", False))
+        self.amandamap_tree.heading("file_path", text="File", command=lambda: self.sort_treeview_column_action(self.amandamap_tree, "file_path", False))
+        self.amandamap_tree.heading("date", text="Date", command=lambda: self.sort_treeview_column_action(self.amandamap_tree, "date", False))
+        
+        self.amandamap_tree.column("entry_type", width=120, stretch=tk.NO, anchor=tk.W)
+        self.amandamap_tree.column("number", width=80, stretch=tk.NO, anchor="center")
+        self.amandamap_tree.column("title", width=300, stretch=tk.YES, anchor=tk.W)
+        self.amandamap_tree.column("file_path", width=200, stretch=tk.NO, anchor=tk.W)
+        self.amandamap_tree.column("date", width=120, stretch=tk.NO, anchor="center")
+        
+        tree_yscroll = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.amandamap_tree.yview, style='TScrollbar')
+        tree_xscroll = ttk.Scrollbar(results_frame, orient=tk.HORIZONTAL, command=self.amandamap_tree.xview, style='TScrollbar')
+        self.amandamap_tree.configure(yscrollcommand=tree_yscroll.set, xscrollcommand=tree_xscroll.set)
+        self.amandamap_tree.grid(row=0, column=0, sticky=tk.NSEW)
+        tree_yscroll.grid(row=0, column=1, sticky=tk.NS)
+        tree_xscroll.grid(row=1, column=0, sticky=tk.EW)
+        results_frame.rowconfigure(0, weight=1)
+        results_frame.columnconfigure(0, weight=1)
+        
+        # Bind double-click to open file
+        self.amandamap_tree.bind("<Double-1>", self.on_amandamap_tree_double_click_action)
+        
+        # Store AmandaMap entries data
+        self.amandamap_entries_data = {}
+
+
+    def create_phoenix_codex_tab_content(self, parent_tab):
+        """Create the Phoenix Codex entries tab content."""
+        # Import content recognition module
+        from modules.content_recognition import recognize_phoenix_codex_content, analyze_file_content
+        from pathlib import Path
+        
+        # Top frame for controls
+        controls_frame = ttk.Frame(parent_tab, style='TFrame')
+        controls_frame.pack(fill=tk.X, pady=5)
+        
+        # Folder selection
+        folder_frame = ttk.Frame(controls_frame, style='TFrame')
+        folder_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(folder_frame, text="Search Folder:").pack(side=tk.LEFT, padx=(0,5))
+        self.phoenix_folder_var = tk.StringVar(value=config.get("last_phoenix_search_folder", ""))
+        self.phoenix_folder_entry = ttk.Entry(folder_frame, textvariable=self.phoenix_folder_var, width=50)
+        self.phoenix_folder_entry.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
+        ttk.Button(folder_frame, text="Browse", command=self.select_phoenix_folder_action).pack(side=tk.LEFT, padx=5)
+        
+        # Search controls
+        search_frame = ttk.Frame(controls_frame, style='TFrame')
+        search_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(search_frame, text="Filter Text:").pack(side=tk.LEFT, padx=(0,5))
+        self.phoenix_filter_var = tk.StringVar()
+        self.phoenix_filter_entry = ttk.Entry(search_frame, textvariable=self.phoenix_filter_var, width=30)
+        self.phoenix_filter_entry.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
+        ttk.Button(search_frame, text="Find Phoenix Codex Entries", command=self.find_phoenix_entries_action).pack(side=tk.LEFT, padx=5)
+        ttk.Button(search_frame, text="Export to File", command=self.export_phoenix_entries_action).pack(side=tk.LEFT, padx=5)
+        
+        # Progress frame
+        progress_frame = ttk.LabelFrame(parent_tab, text="Progress", style='TLabelframe', padding=5)
+        progress_frame.pack(fill=tk.X, pady=5)
+        self.phoenix_progress_text = scrolledtext.ScrolledText(progress_frame, height=4, relief=tk.SUNKEN, borderwidth=1, wrap=tk.WORD)
+        self.phoenix_progress_text.pack(expand=True, fill=tk.BOTH)
+        self.phoenix_progress_text.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"], font=tkFont.nametofont("TkFixedFont"))
+        
+        # Results frame
+        results_frame = ttk.LabelFrame(parent_tab, text="Phoenix Codex Entries", padding="5", style='TLabelframe')
+        results_frame.pack(expand=True, fill=tk.BOTH, pady=5)
+        
+        # Treeview for results
+        tree_columns = ("entry_type", "number", "title", "file_path", "date")
+        self.phoenix_tree = ttk.Treeview(results_frame, columns=tree_columns, show="headings", style='Treeview', selectmode='extended')
+        self.phoenix_tree.heading("entry_type", text="Type", command=lambda: self.sort_treeview_column_action(self.phoenix_tree, "entry_type", False))
+        self.phoenix_tree.heading("number", text="Number", command=lambda: self.sort_treeview_column_action(self.phoenix_tree, "number", False))
+        self.phoenix_tree.heading("title", text="Title", command=lambda: self.sort_treeview_column_action(self.phoenix_tree, "title", False))
+        self.phoenix_tree.heading("file_path", text="File", command=lambda: self.sort_treeview_column_action(self.phoenix_tree, "file_path", False))
+        self.phoenix_tree.heading("date", text="Date", command=lambda: self.sort_treeview_column_action(self.phoenix_tree, "date", False))
+        
+        self.phoenix_tree.column("entry_type", width=120, stretch=tk.NO, anchor=tk.W)
+        self.phoenix_tree.column("number", width=80, stretch=tk.NO, anchor="center")
+        self.phoenix_tree.column("title", width=300, stretch=tk.YES, anchor=tk.W)
+        self.phoenix_tree.column("file_path", width=200, stretch=tk.NO, anchor=tk.W)
+        self.phoenix_tree.column("date", width=120, stretch=tk.NO, anchor="center")
+        
+        tree_yscroll = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.phoenix_tree.yview, style='TScrollbar')
+        tree_xscroll = ttk.Scrollbar(results_frame, orient=tk.HORIZONTAL, command=self.phoenix_tree.xview, style='TScrollbar')
+        self.phoenix_tree.configure(yscrollcommand=tree_yscroll.set, xscrollcommand=tree_xscroll.set)
+        self.phoenix_tree.grid(row=0, column=0, sticky=tk.NSEW)
+        tree_yscroll.grid(row=0, column=1, sticky=tk.NS)
+        tree_xscroll.grid(row=1, column=0, sticky=tk.EW)
+        results_frame.rowconfigure(0, weight=1)
+        results_frame.columnconfigure(0, weight=1)
+        
+        # Bind double-click to open file
+        self.phoenix_tree.bind("<Double-1>", self.on_phoenix_tree_double_click_action)
+        
+        # Store Phoenix Codex entries data
+        self.phoenix_entries_data = {}
+
+
+    def on_search_settings_changed_action(self, event=None): # --- NEW ---
+        global config
+        config["search_term_case_sensitive"] = self.case_sensitive_search_var.get()
+        config["search_logic"] = self.search_logic_var.get()
+        self.update_status_bar("Search settings updated. Will be saved on app exit.")
+        log_debug("DEBUG: Search settings changed in GUI.")
+
+    def on_performance_settings_changed_action(self, event=None):
+        global config
+        config["num_tokenizers"] = self.num_tokenizers_var.get()
+        config["num_indexers"] = self.num_indexers_var.get()
+        config["cpu_usage_percent"] = self.cpu_usage_percent_var.get()
+        self.update_status_bar("Performance settings updated. Will be saved on exit.")
+        log_debug("DEBUG: Performance settings changed in GUI.")
+
+    def on_tagmap_settings_changed_action(self, event=None):
+        global config
+        config["use_tagmap_tagging"] = self.use_tagmap_tagging_var.get()
+        self.update_status_bar("TagMap option updated. Will be saved on exit.")
+        log_debug("DEBUG: TagMap tagging option changed in GUI.")
+
+    def on_export_options_changed_action(self, event=None): # Your original update_and_save_config_export_tab
+        global config
+        config["theme"] = self.theme_cb_var.get()
+        config["export_format"] = self.export_format_var.get()
+        config["export_images_inline"] = self.img_inline_var.get()
+        config["export_images_folder"] = self.img_folder_var.get()
+        config["image_folder_name"] = self.image_folder_name_var.get()
+        config["combine_output_files"] = self.combine_var.get()
+        config["include_timestamps_in_export"] = self.include_timestamps_export_var.get()
+        config["skip_system_tool_messages"] = self.skip_system_tool_var.get()
+        config["use_pillow_for_unknown_images"] = self.use_pillow_var.get() if PIL_AVAILABLE else False
+        config["amandamap_mode"] = self.amandamap_mode_var.get()
+        self.update_amandamap_mode_state()
+        self.update_status_bar("Export options noted. Will be saved on exit.")
+        log_debug("DEBUG: Export options updated in memory from GUI interaction.")
+
+    def export_files_action(self): # Your original
+        files = filedialog.askopenfilenames(title="Select JSON File(s) to Convert", filetypes=[("JSON files", "*.json"), ("All files", "*.*")], parent=self.master)
+        if not files: return
+        out_dir = filedialog.askdirectory(title="Select Output Folder for Converted Files", parent=self.master)
+        if not out_dir: return
+        if export_log_text_widget: export_log_text_widget.delete('1.0', tk.END)
+        current_cfg_for_export = config.copy()
+        current_cfg_for_export.update({
+            "export_format": self.export_format_var.get(), "export_images_inline": self.img_inline_var.get(),
+            "export_images_folder": self.img_folder_var.get(), "image_folder_name": self.image_folder_name_var.get(),
+            "combine_output_files": self.combine_var.get(), "include_timestamps_in_export": self.include_timestamps_export_var.get(),
+            "skip_system_tool_messages": self.skip_system_tool_var.get(), "use_pillow_for_unknown_images": self.use_pillow_var.get() if PIL_AVAILABLE else False,
+            "amandamap_mode": self.amandamap_mode_var.get()
+        })
+        self.update_status_bar(f"Starting export of {len(files)} file(s)...")
+        threading.Thread(target=save_multiple_files, args=(files, current_cfg_for_export, out_dir, current_cfg_for_export.get("combine_output_files",False), export_log_text_widget), daemon=True).start()
+
+    def export_folder_action(self): # Your original
+        folder = filedialog.askdirectory(title="Select Folder of JSONs to Convert", parent=self.master)
+        if not folder: return
+        out_dir = filedialog.askdirectory(title="Select Output Folder for Converted Files", parent=self.master)
+        if not out_dir: return
+        files = [str(p) for p in Path(folder).rglob("*.json")]
+        if not files: messagebox.showinfo("No Files", "No JSON files found in the selected folder or subfolders.", parent=self.master); return
+        if export_log_text_widget: export_log_text_widget.delete('1.0', tk.END)
+        current_cfg_for_export = config.copy()
+        current_cfg_for_export.update({
+            "export_format": self.export_format_var.get(), "export_images_inline": self.img_inline_var.get(),
+            "export_images_folder": self.img_folder_var.get(), "image_folder_name": self.image_folder_name_var.get(),
+            "combine_output_files": self.combine_var.get(), "include_timestamps_in_export": self.include_timestamps_export_var.get(),
+            "skip_system_tool_messages": self.skip_system_tool_var.get(), "use_pillow_for_unknown_images": self.use_pillow_var.get() if PIL_AVAILABLE else False,
+            "amandamap_mode": self.amandamap_mode_var.get()
+        })
+        self.update_status_bar(f"Starting export of folder: {Path(folder).name}...")
+        threading.Thread(target=save_multiple_files, args=(files, current_cfg_for_export, out_dir, current_cfg_for_export.get("combine_output_files",False), export_log_text_widget), daemon=True).start()
+
+    def run_build_index_threaded_generic_action(self, is_json_index): # Your original, adapted
+        if self.active_indexing_thread and self.active_indexing_thread.is_alive():
+            messagebox.showwarning("Busy", "An indexing operation is already in progress.", parent=self.master); return
+        target_button = self.build_json_index_button if is_json_index else self.build_converted_index_button
+        other_button = self.build_converted_index_button if is_json_index else self.build_json_index_button
+        original_text = target_button.cget("text")
+        prompt_title = "Select Folder of Original JSONs to Index" if is_json_index else "Select Folder of Converted (TXT/MD/HTML) Files to Index"
+        initial_dir_key = "last_indexed_original_json_folder_path" if is_json_index else "last_indexed_converted_files_folder_path"
+        folder_to_index_str = filedialog.askdirectory(title=prompt_title, initialdir=config.get(initial_dir_key, str(Path.home())), parent=self.master)
+        if not folder_to_index_str: return
+        folder_to_index = Path(folder_to_index_str)
+        target_button.config(state=tk.DISABLED, text="Indexing...")
+        other_button.config(state=tk.DISABLED)
+        if hasattr(self, 'index_progress_text'): self.index_progress_text.delete('1.0', tk.END)
+
+        def _build_task():
+            global loaded_search_index, config
+            try:
+                file_patterns = ["*.json"] if is_json_index else ["*.txt", "*.md", "*.html", "*.rtf"]
+                index_file_path_str = ORIGINAL_JSON_INDEX_FILE if is_json_index else CONVERTED_FILES_INDEX_FILE
+                current_selected_type_name_gui = self.selected_index_type_var.get()
+                expected_type_name_for_this_build = self.index_type_options[0] if is_json_index else self.index_type_options[1]
+                existing_idx_to_pass = None
+                if current_selected_type_name_gui == expected_type_name_for_this_build and loaded_search_index:
+                    if not is_json_index:
+                         existing_idx_to_pass = loaded_search_index
+                         log_debug(f"INFO: Passing existing '{current_selected_type_name_gui}' index to _build_generic_index.")
+
+                tags_data = (
+                    load_json_tagmap(folder_to_index)
+                    if self.use_tagmap_tagging_var.get()
+                    else None
+                )
+                tagmap_entries = None
+                tagmap_path = self.tagmap_file_var.get().strip() if hasattr(self, 'tagmap_file_var') else ''
+                if tagmap_path:
+                    try:
+                        tagmap_entries = load_tagmap(tagmap_path)
+                        log_debug(
+                            f"INFO: Loaded TagMap with {len(tagmap_entries)} entries"
+                        )
+                    except Exception as e_tm:
+                        log_debug(f"ERROR: Failed to load TagMap: {e_tm}")
+                new_index = _build_generic_index(
+                    folder_to_index,
+                    config,
+                    file_patterns,
+                    index_file_path_str,
+                    self.index_progress_text,
+                    is_json_index,
+                    existing_idx_to_pass,
+                    tags_data,
+                    tagmap_entries,
+                )
+
+                if self.selected_index_type_var.get() == expected_type_name_for_this_build:
+                    loaded_search_index = new_index
+                    if hasattr(self.master, 'after'):
+                        self.master.after(0, self.populate_search_results_tree_with_all_files)
+                if hasattr(self.master, 'after'):
+                    self.master.after(0, self.update_last_indexed_label) 
+                    if self.index_progress_text.winfo_exists():
+                         self.master.after(0, lambda: messagebox.showinfo("Index Complete", f"{expected_type_name_for_this_build} index built!", parent=self.master))
+            except Exception as e_build_task:
+                err_msg = str(e_build_task)
+                log_debug(f"ERROR: Exception during _build_task: {err_msg}")
+                if hasattr(self.master, 'after') and self.index_progress_text.winfo_exists():
+                    self.master.after(0, lambda msg=err_msg: messagebox.showerror("Index Error", f"Failed to build index: {msg}", parent=self.master))
+                    self.master.after(0, lambda msg=err_msg: self.index_progress_text.insert(tk.END, f"Error: {msg}\n"))
+            finally:
+                if hasattr(self.master, 'after'):
+                    self.master.after(0, lambda: target_button.config(state=tk.NORMAL, text=original_text))
+                    self.master.after(0, lambda: other_button.config(state=tk.NORMAL))
+                self.active_indexing_thread = None
+                self.update_status_bar("Indexing finished or failed.")
+        self.active_indexing_thread = threading.Thread(target=_build_task, daemon=True)
+        self.active_indexing_thread.start()
+        self.update_status_bar(f"Indexing {Path(folder_to_index).name} in background...")
+
+    # --- MODIFIED: load_active_index with more robust validation ---
+    def load_active_index(self):
+        global loaded_search_index, config
+        current_selected_type = self.selected_index_type_var.get()
+        index_file_to_load = ORIGINAL_JSON_INDEX_FILE if current_selected_type == "Original JSONs (Indexed)" else CONVERTED_FILES_INDEX_FILE
+        loaded_search_index = None
+        progress_widget = self.index_progress_text if hasattr(self, 'index_progress_text') else None
+        def _log_progress_local(msg):
+            if progress_widget and progress_widget.winfo_exists():
+                progress_widget.insert(tk.END, msg + "\n"); progress_widget.see(tk.END);
+            else: log_debug(f"INDEX_LOAD_LOG: {msg}")
+        if os.path.exists(index_file_to_load):
+            try:
+                _log_progress_local(f"Loading {current_selected_type} index ({Path(index_file_to_load).name})...")
+                with open(index_file_to_load, 'r', encoding='utf-8') as f:
+                    loaded_data_from_file = json.load(f)
+                # --- INTEGRATED: More robust validation of loaded index structure ---
+                if isinstance(loaded_data_from_file, dict) and \
+                   isinstance(loaded_data_from_file.get("metadata"), dict) and \
+                   isinstance(loaded_data_from_file.get("index"), dict) and \
+                   isinstance(loaded_data_from_file["index"].get("tokens"), dict) and \
+                   isinstance(loaded_data_from_file["index"].get("files"), dict) and \
+                   isinstance(loaded_data_from_file["index"].get("file_details"), dict): # Check for file_details
+                    loaded_search_index = loaded_data_from_file
+                    _log_progress_local("Index loaded and structure validated successfully.")
+                else:
+                    _log_progress_local("ERROR: Loaded index file has an invalid or incomplete structure.")
+                    if self.master.winfo_exists(): # Check root window before showing messagebox
+                        messagebox.showerror("Index Structure Error",
+                                             f"The index file '{Path(index_file_to_load).name}' has an invalid structure or is missing essential parts (e.g., metadata, index map, tokens, files, file_details).\n\nPlease try rebuilding the index for '{current_selected_type}'.",
+                                             parent=self.master)
+                    loaded_search_index = None # Invalidate it
+            except json.JSONDecodeError as e_json:
+                _log_progress_local(f"ERROR: Could not decode JSON from {index_file_to_load}: {e_json}")
+                if self.master.winfo_exists():
+                    messagebox.showerror("Index Load Error", f"Failed to load index: {Path(index_file_to_load).name}\nFile might be corrupted, empty, or not valid JSON.\nDetails: {e_json}", parent=self.master)
+                loaded_search_index = None
+            except Exception as e_load_other:
+                _log_progress_local(f"ERROR: Unexpected error loading {index_file_to_load}: {e_load_other}")
+                if self.master.winfo_exists():
+                    messagebox.showerror("Index Load Error", f"An unexpected error occurred while loading {Path(index_file_to_load).name}:\n{e_load_other}", parent=self.master)
+                loaded_search_index = None
+        else:
+            _log_progress_local(f"INFO: No {current_selected_type} index found ({Path(index_file_to_load).name}). Please build one.")
+        self.populate_search_results_tree_with_all_files()
+        self.update_last_indexed_label() 
+
+    # --- NEW/MODIFIED: Function to populate treeview with all files from the loaded index ---
+    def populate_search_results_tree_with_all_files(self):
+        global loaded_search_index
+        tree = self.search_results_tree
+        for i in tree.get_children(): tree.delete(i)
+        if not loaded_search_index or not isinstance(loaded_search_index.get("index"), dict):
+            self.update_status_bar("Index not loaded or invalid. Cannot display files."); return
+        files_map = loaded_search_index["index"].get("files", {})
+        file_details_map = loaded_search_index["index"].get("file_details", {})
+        if not files_map :
+            self.update_status_bar("Index loaded, but no file entries found to display."); return
+        base_folder_str = loaded_search_index.get("metadata", {}).get("indexed_folder_path", "")
+        base_folder = Path(base_folder_str if base_folder_str else ".")
+        is_converted_files_type = self.selected_index_type_var.get() == "Converted Files (Indexed)"
+        displayed_count = 0
+        # Iterate through files_map to ensure all files with paths are considered
+        for file_id, relative_path_str in files_map.items():
+            details = file_details_map.get(file_id, {}) # Get details; defaults to {} if no details for this file_id
+            display_name = details.get("filename", Path(relative_path_str).name)
+            full_path_str = str(base_folder / relative_path_str)
+            started_at_val, ended_at_val = "", ""
+            if is_converted_files_type:
+                started_at_val = details.get("chat_started_at", "")
+                ended_at_val = details.get("chat_ended_at", "")
+            cat_set = set()
+            for v in details.get("tagmap", {}).values():
+                if v.get("category"):
+                    cat_set.add(v["category"])
+            cat_str = ", ".join(sorted(cat_set))
+            tree_values = (display_name, started_at_val, ended_at_val, cat_str, full_path_str, "")
+            try:
+                tree.insert("", "end", iid=file_id, values=tree_values, tags=('file_row',))
+                displayed_count +=1
+            except tk.TclError:
+                try: tree.insert("", "end", iid=f"{file_id}_pop_{displayed_count}", values=tree_values, tags=('file_row',)); displayed_count +=1
+                except Exception as e_ins_tree: log_debug(f"ERROR: Failed to insert item {file_id} into tree: {e_ins_tree}")
+        self.update_status_bar(f"Displaying {displayed_count} indexed files. Search to filter.")
+        if displayed_count == 0 and (files_map or file_details_map) :
+             self.update_status_bar("Index loaded, but could not display file entries (check consistency).")
+
+    def run_indexed_search_action(self, event=None): # Your original, MODIFIED for new tree structure
+        global loaded_search_index
+        if not loaded_search_index:
+            self.load_active_index()
+            if not loaded_search_index:
+                if self.master.winfo_exists(): messagebox.showwarning("No Index Loaded", f"{self.selected_index_type_var.get()} index not loaded.", parent=self.master)
+                return
+        keyword_to_search = self.search_entry.get().strip()
+        if not keyword_to_search: self.populate_search_results_tree_with_all_files(); return
+        for i in self.search_results_tree.get_children(): self.search_results_tree.delete(i)
+        case_sensitive = config.get("search_term_case_sensitive", False)
+        search_logic = config.get("search_logic", "AND")
+        
+        # Use context-aware search to get snippets
+        from .indexer import search_with_context
+        results_with_context, error_msg = search_with_context(
+            keyword_to_search, 
+            loaded_search_index, 
+            context_lines=3,  # Show 3 lines of context
+            case_sensitive=case_sensitive, 
+            search_logic=search_logic
+        )
+        
+        if error_msg: self.search_results_tree.insert("", tk.END, values=(error_msg, "", "", "", "", ""), tags=('error',))
+        elif results_with_context:
+            for res_tuple in results_with_context:
+                display_name, started_at, ended_at, full_path_obj, snippets, file_id_str, details = res_tuple
+                cat_set = set()
+                for v in details.get("tagmap", {}).values():
+                    if v.get("category"):
+                        cat_set.add(v["category"])
+                cat_str = ", ".join(sorted(cat_set))
+                
+                # Create a preview from the first snippet
+                preview = ""
+                if snippets:
+                    first_snippet = snippets[0]
+                    # Clean up the snippet for display
+                    preview = first_snippet.replace('\n', ' ').strip()
+                    if len(preview) > 100:
+                        preview = preview[:97] + "..."
+                
+                tree_values = (display_name, started_at, ended_at, cat_str, str(full_path_obj), preview)
+                try: 
+                    self.search_results_tree.insert("", "end", iid=file_id_str, values=tree_values, tags=('file_row',))
+                    # Store snippets for later display
+                    if not hasattr(self, 'search_snippets'):
+                        self.search_snippets = {}
+                    self.search_snippets[file_id_str] = snippets
+                except tk.TclError: 
+                    self.search_results_tree.insert("", "end", iid=f"{file_id_str}_search", values=tree_values, tags=('file_row',))
+                    if not hasattr(self, 'search_snippets'):
+                        self.search_snippets = {}
+                    self.search_snippets[f"{file_id_str}_search"] = snippets
+        else: self.search_results_tree.insert("", tk.END, values=("No matches found.", "", "", "", "", ""), tags=('no_match',))
+        self.search_results_tree.tag_configure('error', foreground='red'); self.search_results_tree.tag_configure('no_match', foreground='grey')
+        self.update_status_bar(f"Search for '{keyword_to_search}' complete. {len(results_with_context) if results_with_context else 0} results.")
+
+    def convert_selected_from_search_results_action(self): # Your original
+        selected_ids = self.search_results_tree.selection()
+        if not selected_ids: messagebox.showinfo("No Selection", "Select files to convert.", parent=self.master); return
+        if self.selected_index_type_var.get() != "Original JSONs (Indexed)":
+            messagebox.showwarning("Invalid Source", "Convert works on original JSONs.", parent=self.master); return
+        files_to_convert_paths = []
+        for item_iid in selected_ids:
+            item_values = self.search_results_tree.item(item_iid, "values")
+            if item_values and len(item_values) >= 5:
+                full_path_str = item_values[4]  # Index 4 is the full path (5th column)
+                if Path(full_path_str).suffix.lower() == '.json': files_to_convert_paths.append(full_path_str)
+                else: log_debug(f"Skipping non-JSON: {full_path_str}")
+            else: log_debug(f"Bad path for item: {item_iid}, values: {item_values}")
+        if not files_to_convert_paths: messagebox.showinfo("No JSONs", "No valid JSONs selected.", parent=self.master); return
+        out_dir = filedialog.askdirectory(title="Select Output Folder", parent=self.master)
+        if not out_dir: return
+        if export_log_text_widget: export_log_text_widget.delete('1.0', tk.END)
+        current_export_cfg = config.copy()
+        current_export_cfg.update({
+            "export_format": self.export_format_var.get(), "export_images_inline": self.img_inline_var.get(),
+            "export_images_folder": self.img_folder_var.get(), "image_folder_name": self.image_folder_name_var.get(),
+            "combine_output_files": self.combine_var.get(), "include_timestamps_in_export": self.include_timestamps_export_var.get(),
+            "skip_system_tool_messages": self.skip_system_tool_var.get(), "use_pillow_for_unknown_images": self.use_pillow_var.get() if PIL_AVAILABLE else False
+        })
+        self.update_status_bar(f"Converting {len(files_to_convert_paths)} selected JSON(s)...")
+        threading.Thread(target=save_multiple_files, args=(files_to_convert_paths, current_export_cfg, out_dir, current_export_cfg.get("combine_output_files", False), export_log_text_widget), daemon=True).start()
+
+    def clear_debug_log_action(self): # Your original
+        if debug_log_text_widget: debug_log_text_widget.delete('1.0', tk.END)
+
+    def save_debug_log_action(self): # Your original
+        if debug_log_text_widget:
+            log_content = debug_log_text_widget.get('1.0', tk.END).strip()
+            if not log_content: messagebox.showinfo("Empty Log", "Debug log empty.", parent=self.master); return
+            save_path = filedialog.asksaveasfilename(title="Save Debug Log", defaultextension=".txt", filetypes=[("Text", "*.txt"), ("Log", "*.log"), ("All", "*.*")], parent=self.master)
+            if save_path:
+                try:
+                    with open(save_path, 'w', encoding='utf-8') as f: f.write(log_content)
+                    messagebox.showinfo("Log Saved", f"Debug log saved to:\n{save_path}", parent=self.master)
+                except Exception as e_save_log: messagebox.showerror("Save Error", f"Could not save log:\n{e_save_log}", parent=self.master)
+
+    def set_editor_action(self): # Your original
+        global config
+        path = filedialog.askopenfilename(title="Choose Default Text Editor", parent=self.master)
+        if path:
+            config["default_editor"] = path
+            messagebox.showinfo("Editor Set", f"Default editor set to:\n{path}", parent=self.master)
+            log_debug(f"INFO: Default editor set to {path}")
+
+    def set_tag_file_action(self):
+        global config
+        path = filedialog.askopenfilename(title="Choose Tag Definition File", parent=self.master)
+        if path:
+            config["tag_definition_file"] = path
+            self.tag_definition_var.set(path)
+            messagebox.showinfo("Tag File Set", f"Tag definitions loaded from:\n{path}", parent=self.master)
+            log_debug(f"INFO: Tag definition file set to {path}")
+
+    def select_tagmap_file_action(self):
+        global config
+        path = filedialog.askopenfilename(title="Select TagMap File", parent=self.master)
+        if path:
+            self.tagmap_file_var.set(path)
+            config["tagmap_file_path"] = path
+            self.update_status_bar(f"TagMap selected: {Path(path).name}")
+            log_debug(f"INFO: TagMap file set to {path}")
+
+    def clear_config_action(self): # Your original
+        if messagebox.askyesno("Confirm Reset", "WIPE settings & ALL indexes, then CLOSE app?", icon='warning', parent=self.master):
+            wipe_config()
+            messagebox.showinfo("Reset Complete", "Please restart app.", parent=self.master)
+            self.master.destroy()
+
+    def on_theme_change_action(self, event=None): # Your original
+        global config
+        new_theme_name = self.theme_cb_var.get()
+        if new_theme_name != config.get("theme"):
+            config["theme"] = new_theme_name
+            self.current_style_colors = theme_styles[new_theme_name]
+            apply_styles(self.master, self.current_style_colors)
+            if export_log_text_widget: export_log_text_widget.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"])
+            if hasattr(self, 'index_progress_text'): self.index_progress_text.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"])
+            if debug_log_text_widget: debug_log_text_widget.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"])
+            self.master.title(f"GPT Export & Index Tool V6.3 {self.current_style_colors['emoji']} (Accuracy Edition)") # Version updated
+            log_debug(f"INFO: Theme changed to {new_theme_name}.")
+            self.update_status_bar(f"Theme changed to {new_theme_name}.")
+            if messagebox.askyesno("Theme Update", "Theme changed. Restart for full effect?", parent=self.master): self.master.destroy()
+
+    def on_index_type_changed(self, event=None): # Your original
+        global loaded_search_index, config
+        log_debug(f"INFO: Index type selection changed to: {self.selected_index_type_var.get()}")
+        loaded_search_index = None
+        config["selected_index_type"] = self.selected_index_type_var.get()
+        self.load_active_index()
+        # update_last_indexed_label is called within load_active_index
+        if loaded_search_index and loaded_search_index.get("index", {}).get("file_details"): 
+             num_files = len(loaded_search_index['index']['file_details']) 
+             if num_files == 0 and loaded_search_index['index'].get('files'): 
+                num_files = len(loaded_search_index['index']['files'])
+             self.update_status_bar(f"Loaded '{self.selected_index_type_var.get()}'. {num_files} files listed.")
+        elif loaded_search_index:
+             self.update_status_bar(f"Loaded '{self.selected_index_type_var.get()}'. Index empty or no file details.")
+        else: self.update_status_bar(f"No index loaded for '{self.selected_index_type_var.get()}'.")
+
+    def sort_treeview_column_action(self, tree, col, reverse): # Your original, adapted for dates
+        if not tree.get_children(''): log_debug(f"DEBUG: Treeview empty, cannot sort '{col}'."); return
+        l = []; date_format = "%Y-%m-%d %H:%M:%S"
+        for k in tree.get_children(''):
+            val = tree.set(k, col); l.append((val if val is not None else "", k))
+        try:
+            if col in ["started_at", "ended_at"]:
+                l.sort(key=lambda t: (datetime.strptime(t[0], date_format) if t[0] else (datetime.max if reverse else datetime.min)), reverse=reverse)
+            elif col == "display_filename": l.sort(key=lambda t: str(t[0]).lower(), reverse=reverse)
+            else: # Other columns (attempt numeric, then string for full_path)
+                try: l.sort(key=lambda t: (float(t[0]) if t[0] and t[0].replace('.','',1).isdigit() else str(t[0]).lower()), reverse=reverse)
+                except ValueError: l.sort(key=lambda t: str(t[0]).lower(), reverse=reverse)
+        except ValueError as e_sort_val: log_debug(f"WARNING: Sort ValueError '{col}': {e_sort_val}. String sort."); l.sort(key=lambda t: str(t[0]).lower(), reverse=reverse)
+        except TypeError as e_sort_type: log_debug(f"WARNING: Sort TypeError '{col}': {e_sort_type}. String sort."); l.sort(key=lambda t: str(t[0]).lower(), reverse=reverse)
+        for index, (val, k) in enumerate(l): tree.move(k, '', index)
+        tree.heading(col, command=lambda: self.sort_treeview_column_action(tree, col, not reverse))
+        self.update_status_bar(f"Sorted by '{tree.heading(col, 'text')}' {'descending' if reverse else 'ascending'}.")
+
+    def on_treeview_double_click_action(self, event): # Your original, adapted
+        treeview = event.widget; selected_item_id = treeview.focus()
+        if not selected_item_id: return
+        item_values = treeview.item(selected_item_id, "values")
+        if not item_values or len(item_values) < 5: log_debug(f"Warning: Double-click item '{selected_item_id}' bad values: {item_values}"); return
+        file_path_to_open_str = item_values[4] # Index 4 is 'full_path' (5th column)
+        if not file_path_to_open_str or file_path_to_open_str == "Error": messagebox.showwarning("Cannot Open", "No valid file path.", parent=self.master); return
+        
+        # Try to resolve the path to the converted MD file if it exists
+        file_path_to_open = Path(file_path_to_open_str)
+        
+        # If this is a JSON file and we're searching converted files, try to find the corresponding MD file
+        if file_path_to_open.suffix.lower() == '.json':
+            # Look for corresponding MD file in the converted files directory
+            md_file_path = self._find_converted_md_file(file_path_to_open)
+            if md_file_path and md_file_path.exists():
+                file_path_to_open = md_file_path
+                log_debug(f"INFO: Redirecting to converted MD file: {md_file_path}")
+        
+        if file_path_to_open.exists(): 
+            launch_editor(file_path_to_open, config) # Pass global config
+        else: 
+            messagebox.showerror("File Not Found", f"File not found:\n{file_path_to_open}", parent=self.master); 
+            log_debug(f"ERROR: File not found on double-click: {file_path_to_open}")
+    
+    def _find_converted_md_file(self, json_file_path):
+        """Try to find the corresponding converted MD file for a JSON file."""
+        try:
+            # Get the converted files folder path from config
+            converted_folder = config.get("last_indexed_converted_files_folder_path", "")
+            if not converted_folder:
+                return None
+            
+            converted_folder_path = Path(converted_folder)
+            if not converted_folder_path.exists():
+                return None
+            
+            # Look for MD file with same stem
+            md_file_path = converted_folder_path / f"{json_file_path.stem}.md"
+            if md_file_path.exists():
+                return md_file_path
+            
+            # Also check for HTML version
+            html_file_path = converted_folder_path / f"{json_file_path.stem}.html"
+            if html_file_path.exists():
+                return html_file_path
+                
+        except Exception as e:
+            log_debug(f"ERROR: Error finding converted file: {e}")
+        
+        return None
+
+    def on_treeview_click_show_snippets_action(self, event):
+        """Show snippets when clicking on a search result."""
+        treeview = event.widget
+        selected_item_id = treeview.focus()
+        if not selected_item_id:
+            return
+        
+        # Check if we have snippets for this item
+        if not hasattr(self, 'search_snippets') or selected_item_id not in self.search_snippets:
+            return
+        
+        snippets = self.search_snippets[selected_item_id]
+        if not snippets:
+            return
+        
+        # Create a popup window to show snippets
+        snippet_window = tk.Toplevel(self.master)
+        snippet_window.title("Search Results - Snippets")
+        snippet_window.geometry("800x600")
+        snippet_window.transient(self.master)
+        snippet_window.grab_set()
+        
+        # Create text widget to display snippets
+        text_widget = scrolledtext.ScrolledText(snippet_window, wrap=tk.WORD, font=tkFont.nametofont("TkFixedFont"))
+        text_widget.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+        
+        # Configure text widget colors
+        text_widget.config(bg=self.current_style_colors["list_bg"], fg=self.current_style_colors["list_fg"])
+        
+        # Display snippets
+        for i, snippet in enumerate(snippets, 1):
+            text_widget.insert(tk.END, f"--- Snippet {i} ---\n")
+            text_widget.insert(tk.END, snippet)
+            text_widget.insert(tk.END, "\n\n")
+        
+        # Add close button
+        close_button = ttk.Button(snippet_window, text="Close", command=snippet_window.destroy)
+        close_button.pack(pady=10)
+        
+        # Make text widget read-only
+        text_widget.config(state=tk.DISABLED)
+
+    def on_treeview_single_click_update_status_action(self, event): # Your original
+        treeview = event.widget; selected_items = treeview.selection()
+        total_visible_items = len(treeview.get_children(''))
+        if selected_items: self.update_status_bar(f"{len(selected_items)} of {total_visible_items} files selected.")
+        else: self.update_status_bar(f"{total_visible_items} files listed.")
+
+    def update_status_bar(self, message): # Your original
+        if hasattr(self, 'status_bar_text_var') and self.status_bar_text_var.get() != message :
+            self.status_bar_text_var.set(message)
+
+    def update_amandamap_mode_state(self):
+        if hasattr(self, 'amandamap_mode_cb'):
+            if self.export_format_var.get() == "AmandaMap Markdown":
+                self.amandamap_mode_cb.config(state=tk.NORMAL)
+            else:
+                self.amandamap_mode_cb.config(state=tk.DISABLED)
+
+    # --- METHOD CORRECTED TO PREVENT CRASH ---
+    def update_last_indexed_label(self):
+        global config, loaded_search_index
+        label_text = "Last Indexed: None"
+        current_selected_type = ""
+
+        # Safely get the current selected index type
+        if hasattr(self, 'selected_index_type_var'): # Check if the StringVar attribute exists
+            try:
+                current_selected_type = self.selected_index_type_var.get()
+            except tk.TclError: # Handles case where the underlying Tk variable might be destroyed
+                log_debug("WARNING: tk.TclError getting selected_index_type_var in update_last_indexed_label. Falling back to config.")
+                current_selected_type = config.get("selected_index_type",
+                                                   self.index_type_options[1] if hasattr(self, 'index_type_options') else "Converted Files (Indexed)")
+        else:
+            log_debug("WARNING: selected_index_type_var attribute not found in update_last_indexed_label. Falling back to config.")
+            current_selected_type = config.get("selected_index_type",
+                                               self.index_type_options[1] if hasattr(self, 'index_type_options') else "Converted Files (Indexed)")
+
+        key_to_check = ""
+        descriptive_name = "" 
+
+        if current_selected_type == "Original JSONs (Indexed)":
+            key_to_check = "last_indexed_original_json_folder_path"
+            descriptive_name = "Original JSONs"
+        elif current_selected_type == "Converted Files (Indexed)":
+            key_to_check = "last_indexed_converted_files_folder_path"
+            descriptive_name = "Converted Files"
+
+        path_from_config = config.get(key_to_check)
+
+        if path_from_config:
+            folder_path = Path(path_from_config)
+            label_text = f"Last Indexed: {folder_path.name} (in {descriptive_name})"
+        elif loaded_search_index and \
+             isinstance(loaded_search_index, dict) and \
+             isinstance(loaded_search_index.get("metadata"), dict) and \
+             loaded_search_index["metadata"].get("indexed_folder_path") and \
+             loaded_search_index["metadata"].get("indexed_folder_path") != ".": 
+            folder_path_str = loaded_search_index["metadata"]["indexed_folder_path"]
+            folder_path = Path(folder_path_str)
+            index_file_name_in_meta = loaded_search_index["metadata"].get("index_file_name", "")
+            current_descriptive_name = "Unknown Type"
+
+            if current_selected_type == "Original JSONs (Indexed)" and index_file_name_in_meta == ORIGINAL_JSON_INDEX_FILE:
+                current_descriptive_name = "Original JSONs"
+            elif current_selected_type == "Converted Files (Indexed)" and index_file_name_in_meta == CONVERTED_FILES_INDEX_FILE:
+                current_descriptive_name = "Converted Files"
+            elif index_file_name_in_meta == ORIGINAL_JSON_INDEX_FILE: 
+                 current_descriptive_name = "Original JSONs (loaded index)"
+            elif index_file_name_in_meta == CONVERTED_FILES_INDEX_FILE:
+                 current_descriptive_name = "Converted Files (loaded index)"
+
+            label_text = f"Last Indexed: {folder_path.name} (from current {current_descriptive_name})"
+            log_debug(f"INFO: update_last_indexed_label using fallback path from loaded_search_index: {folder_path_str} for {current_descriptive_name}")
+        
+        if hasattr(self, 'last_indexed_path_label') and self.last_indexed_path_label.winfo_exists():
+            self.last_indexed_path_label.config(text=label_text)
+            log_debug(f"INFO: Updated last_indexed_path_label to: {label_text}")
+        else:
+            log_debug(f"WARNING: last_indexed_path_label widget not found or not accessible when trying to update. Intended text: '{label_text}'")
+    # --- END METHOD CORRECTION ---
+
+    def select_amandamap_folder_action(self):
+        """Select folder for AmandaMap search."""
+        folder = filedialog.askdirectory(title="Select Folder to Search for AmandaMap Entries", parent=self.master)
+        if folder:
+            self.amandamap_folder_var.set(folder)
+            config["last_amandamap_search_folder"] = folder
+            self.update_status_bar(f"AmandaMap search folder set to: {folder}")
+
+
+    def select_phoenix_folder_action(self):
+        """Select folder for Phoenix Codex search."""
+        folder = filedialog.askdirectory(title="Select Folder to Search for Phoenix Codex Entries", parent=self.master)
+        if folder:
+            self.phoenix_folder_var.set(folder)
+            config["last_phoenix_search_folder"] = folder
+            self.update_status_bar(f"Phoenix Codex search folder set to: {folder}")
+
+
+    def find_amandamap_entries_action(self):
+        """Find AmandaMap entries in the selected folder."""
+        folder_path = self.amandamap_folder_var.get()
+        if not folder_path:
+            messagebox.showwarning("No Folder", "Please select a folder to search for AmandaMap entries.", parent=self.master)
+            return
+        
+        folder = Path(folder_path)
+        if not folder.exists():
+            messagebox.showerror("Invalid Folder", f"The folder does not exist: {folder_path}", parent=self.master)
+            return
+        
+        # Clear previous results
+        self.amandamap_tree.delete(*self.amandamap_tree.get_children())
+        self.amandamap_entries_data.clear()
+        
+        # Update progress
+        self.amandamap_progress_text.delete('1.0', tk.END)
+        self.amandamap_progress_text.insert(tk.END, f"Searching for AmandaMap entries in: {folder_path}\n")
+        self.update_status_bar("Searching for AmandaMap entries...")
+        
+        # Run search in background thread
+        threading.Thread(target=self._find_amandamap_entries_thread, args=(folder,), daemon=True).start()
+
+
+    def find_phoenix_entries_action(self):
+        """Find Phoenix Codex entries in the selected folder."""
+        folder_path = self.phoenix_folder_var.get()
+        if not folder_path:
+            messagebox.showwarning("No Folder", "Please select a folder to search for Phoenix Codex entries.", parent=self.master)
+            return
+        
+        folder = Path(folder_path)
+        if not folder.exists():
+            messagebox.showerror("Invalid Folder", f"The folder does not exist: {folder_path}", parent=self.master)
+            return
+        
+        # Clear previous results
+        self.phoenix_tree.delete(*self.phoenix_tree.get_children())
+        self.phoenix_entries_data.clear()
+        
+        # Update progress
+        self.phoenix_progress_text.delete('1.0', tk.END)
+        self.phoenix_progress_text.insert(tk.END, f"Searching for Phoenix Codex entries in: {folder_path}\n")
+        self.update_status_bar("Searching for Phoenix Codex entries...")
+        
+        # Run search in background thread
+        threading.Thread(target=self._find_phoenix_entries_thread, args=(folder,), daemon=True).start()
+
+
+    def _find_amandamap_entries_thread(self, folder):
+        """Background thread to find AmandaMap entries."""
+        try:
+            from modules.content_recognition import recognize_amandamap_content, analyze_file_content
+            
+            # Find all text files
+            file_patterns = ["*.txt", "*.md", "*.html", "*.json"]
+            files = []
+            for pattern in file_patterns:
+                files.extend(folder.rglob(pattern))
+            
+            if not files:
+                self.master.after(0, lambda: self._update_amandamap_progress("No files found to search.\n"))
+                return
+            
+            self.master.after(0, lambda: self._update_amandamap_progress(f"Found {len(files)} files to search...\n"))
+            
+            all_entries = []
+            filter_text = self.amandamap_filter_var.get().lower()
+            
+            for i, file_path in enumerate(files):
+                try:
+                    self.master.after(0, lambda f=file_path, i=i, total=len(files): 
+                        self._update_amandamap_progress(f"Processing {i+1}/{total}: {f.name}\n"))
+                    
+                    # Read file content
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                    
+                    # Find AmandaMap entries
+                    entries = recognize_amandamap_content(content, str(file_path))
+                    
+                    # Apply filter if specified
+                    if filter_text:
+                        entries = [e for e in entries if filter_text in e.title.lower() or filter_text in e.content.lower()]
+                    
+                    all_entries.extend(entries)
+                    
+                except Exception as e:
+                    self.master.after(0, lambda f=file_path, e=e: 
+                        self._update_amandamap_progress(f"Error processing {f.name}: {e}\n"))
+            
+            # Update UI with results
+            self.master.after(0, lambda: self._display_amandamap_entries(all_entries))
+            
+        except Exception as e:
+            self.master.after(0, lambda: self._update_amandamap_progress(f"Error during search: {e}\n"))
+
+
+    def _find_phoenix_entries_thread(self, folder):
+        """Background thread to find Phoenix Codex entries."""
+        try:
+            from modules.content_recognition import recognize_phoenix_codex_content, analyze_file_content
+            
+            # Find all text files
+            file_patterns = ["*.txt", "*.md", "*.html", "*.json"]
+            files = []
+            for pattern in file_patterns:
+                files.extend(folder.rglob(pattern))
+            
+            if not files:
+                self.master.after(0, lambda: self._update_phoenix_progress("No files found to search.\n"))
+                return
+            
+            self.master.after(0, lambda: self._update_phoenix_progress(f"Found {len(files)} files to search...\n"))
+            
+            all_entries = []
+            filter_text = self.phoenix_filter_var.get().lower()
+            
+            for i, file_path in enumerate(files):
+                try:
+                    self.master.after(0, lambda f=file_path, i=i, total=len(files): 
+                        self._update_phoenix_progress(f"Processing {i+1}/{total}: {f.name}\n"))
+                    
+                    # Read file content
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                    
+                    # Find Phoenix Codex entries
+                    entries = recognize_phoenix_codex_content(content, str(file_path))
+                    
+                    # Apply filter if specified
+                    if filter_text:
+                        entries = [e for e in entries if filter_text in e.title.lower() or filter_text in e.content.lower()]
+                    
+                    all_entries.extend(entries)
+                    
+                except Exception as e:
+                    self.master.after(0, lambda f=file_path, e=e: 
+                        self._update_phoenix_progress(f"Error processing {f.name}: {e}\n"))
+            
+            # Update UI with results
+            self.master.after(0, lambda: self._display_phoenix_entries(all_entries))
+            
+        except Exception as e:
+            self.master.after(0, lambda: self._update_phoenix_progress(f"Error during search: {e}\n"))
+
+
+    def _update_amandamap_progress(self, message):
+        """Update AmandaMap progress text."""
+        self.amandamap_progress_text.insert(tk.END, message)
+        self.amandamap_progress_text.see(tk.END)
+
+
+    def _update_phoenix_progress(self, message):
+        """Update Phoenix Codex progress text."""
+        self.phoenix_progress_text.insert(tk.END, message)
+        self.phoenix_progress_text.see(tk.END)
+
+
+    def _display_amandamap_entries(self, entries):
+        """Display AmandaMap entries in the treeview."""
+        self.amandamap_tree.delete(*self.amandamap_tree.get_children())
+        self.amandamap_entries_data.clear()
+        
+        for i, entry in enumerate(entries):
+            item_id = f"amandamap_{i}"
+            self.amandamap_entries_data[item_id] = entry
+            
+            # Extract entry type and number
+            entry_type = entry.content_type
+            number = str(entry.number) if entry.number else ""
+            title = entry.title[:100] + "..." if len(entry.title) > 100 else entry.title
+            file_path = Path(entry.file_path).name if entry.file_path else ""
+            date = entry.date if entry.date else ""
+            
+            self.amandamap_tree.insert("", tk.END, iid=item_id, values=(entry_type, number, title, file_path, date))
+        
+        self._update_amandamap_progress(f"\nFound {len(entries)} AmandaMap entries.\n")
+        self.update_status_bar(f"Found {len(entries)} AmandaMap entries")
+
+
+    def _display_phoenix_entries(self, entries):
+        """Display Phoenix Codex entries in the treeview."""
+        self.phoenix_tree.delete(*self.phoenix_tree.get_children())
+        self.phoenix_entries_data.clear()
+        
+        for i, entry in enumerate(entries):
+            item_id = f"phoenix_{i}"
+            self.phoenix_entries_data[item_id] = entry
+            
+            # Extract entry type and number
+            entry_type = entry.content_type
+            number = str(entry.number) if entry.number else ""
+            title = entry.title[:100] + "..." if len(entry.title) > 100 else entry.title
+            file_path = Path(entry.file_path).name if entry.file_path else ""
+            date = entry.date if entry.date else ""
+            
+            self.phoenix_tree.insert("", tk.END, iid=item_id, values=(entry_type, number, title, file_path, date))
+        
+        self._update_phoenix_progress(f"\nFound {len(entries)} Phoenix Codex entries.\n")
+        self.update_status_bar(f"Found {len(entries)} Phoenix Codex entries")
+
+
+    def on_amandamap_tree_double_click_action(self, event):
+        """Handle double-click on AmandaMap tree item."""
+        selected_item_id = self.amandamap_tree.focus()
+        if not selected_item_id or selected_item_id not in self.amandamap_entries_data:
+            return
+        
+        entry = self.amandamap_entries_data[selected_item_id]
+        if not entry.file_path:
+            return
+        
+        file_path = Path(entry.file_path)
+        if file_path.exists():
+            launch_editor(file_path, config)
+        else:
+            messagebox.showerror("File Not Found", f"File not found:\n{file_path}", parent=self.master)
+
+
+    def on_phoenix_tree_double_click_action(self, event):
+        """Handle double-click on Phoenix Codex tree item."""
+        selected_item_id = self.phoenix_tree.focus()
+        if not selected_item_id or selected_item_id not in self.phoenix_entries_data:
+            return
+        
+        entry = self.phoenix_entries_data[selected_item_id]
+        if not entry.file_path:
+            return
+        
+        file_path = Path(entry.file_path)
+        if file_path.exists():
+            launch_editor(file_path, config)
+        else:
+            messagebox.showerror("File Not Found", f"File not found:\n{file_path}", parent=self.master)
+
+
+    def export_amandamap_entries_action(self):
+        """Export AmandaMap entries to file."""
+        if not self.amandamap_entries_data:
+            messagebox.showinfo("No Entries", "No AmandaMap entries to export.", parent=self.master)
+            return
+        
+        file_path = filedialog.asksaveasfilename(
+            title="Export AmandaMap Entries",
+            defaultextension=".md",
+            filetypes=[("Markdown files", "*.md"), ("Text files", "*.txt"), ("All files", "*.*")],
+            parent=self.master
+        )
+        
+        if not file_path:
+            return
+        
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write("# AmandaMap Entries\n\n")
+                f.write(f"Exported on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"Total entries: {len(self.amandamap_entries_data)}\n\n")
+                
+                for item_id, entry in self.amandamap_entries_data.items():
+                    f.write(f"## {entry.content_type}")
+                    if entry.number:
+                        f.write(f" #{entry.number}")
+                    f.write(f": {entry.title}\n\n")
+                    f.write(f"**File:** {entry.file_path}\n")
+                    if entry.date:
+                        f.write(f"**Date:** {entry.date}\n")
+                    f.write(f"**Content:**\n{entry.content}\n\n")
+                    f.write("---\n\n")
+            
+            messagebox.showinfo("Export Complete", f"Exported {len(self.amandamap_entries_data)} AmandaMap entries to:\n{file_path}", parent=self.master)
+            self.update_status_bar(f"Exported {len(self.amandamap_entries_data)} AmandaMap entries")
+            
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Error exporting entries:\n{e}", parent=self.master)
+
+
+    def export_phoenix_entries_action(self):
+        """Export Phoenix Codex entries to file."""
+        if not self.phoenix_entries_data:
+            messagebox.showinfo("No Entries", "No Phoenix Codex entries to export.", parent=self.master)
+            return
+        
+        file_path = filedialog.asksaveasfilename(
+            title="Export Phoenix Codex Entries",
+            defaultextension=".md",
+            filetypes=[("Markdown files", "*.md"), ("Text files", "*.txt"), ("All files", "*.*")],
+            parent=self.master
+        )
+        
+        if not file_path:
+            return
+        
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write("# Phoenix Codex Entries\n\n")
+                f.write(f"Exported on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"Total entries: {len(self.phoenix_entries_data)}\n\n")
+                
+                for item_id, entry in self.phoenix_entries_data.items():
+                    f.write(f"## {entry.content_type}")
+                    if entry.number:
+                        f.write(f" #{entry.number}")
+                    f.write(f": {entry.title}\n\n")
+                    f.write(f"**File:** {entry.file_path}\n")
+                    if entry.date:
+                        f.write(f"**Date:** {entry.date}\n")
+                    f.write(f"**Content:**\n{entry.content}\n\n")
+                    f.write("---\n\n")
+            
+            messagebox.showinfo("Export Complete", f"Exported {len(self.phoenix_entries_data)} Phoenix Codex entries to:\n{file_path}", parent=self.master)
+            self.update_status_bar(f"Exported {len(self.phoenix_entries_data)} Phoenix Codex entries")
+            
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Error exporting entries:\n{e}", parent=self.master)
 
 # --- Main execution (from your V6.2(timestamp Edition).py, with top-level error handler) ---
 def main():

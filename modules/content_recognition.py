@@ -294,6 +294,9 @@ def extract_title_from_text(text: str) -> str:
 
 def extract_content_after_match(full_content: str, match) -> str:
     """Extract content after a regex match."""
+    if not match:
+        return ""
+    
     start_pos = match.end()
     end_pos = full_content.find('\n\n', start_pos)
     if end_pos == -1:
@@ -310,6 +313,9 @@ def recognize_amandamap_content(text: str, file_path: str = "") -> List[Recogniz
         number_group = match.group(1)
         text_group = match.group(2)
         
+        if not text_group:
+            continue
+            
         number = int(number_group) if number_group else None
         raw_content = text_group.strip()
         
@@ -328,9 +334,15 @@ def recognize_amandamap_content(text: str, file_path: str = "") -> List[Recogniz
     
     # Extract emoji-based numbered entries
     for match in _EMOJI_NUMBERED_PATTERN.finditer(text):
-        entry_type = match.group("type").strip()
+        entry_type = match.group("type")
         number_str = match.group("number")
-        title = match.group("title").strip()
+        title = match.group("title")
+        
+        if not entry_type or not title:
+            continue
+            
+        entry_type = entry_type.strip()
+        title = title.strip()
         
         if number_str:
             number = int(number_str)
@@ -351,26 +363,34 @@ def recognize_amandamap_content(text: str, file_path: str = "") -> List[Recogniz
     
     # Extract real-world AmandaMap logging statements
     for match in _AMANDA_LOGGING_PATTERN.finditer(text):
-        title = match.group("title").strip()
-        if title:
-            raw_content = extract_content_after_match(text, match)
+        title = match.group("title")
+        if not title:
+            continue
             
-            is_amanda = is_amanda_related_chat(raw_content)
-            
-            recognized.append(RecognizedContent(
-                content_type="AmandaMap",
-                title=title,
-                content=raw_content,
-                is_amanda_related=is_amanda,
-                confidence=0.8 if is_amanda else 0.6,
-                category="AmandaMap",
-                file_path=file_path
-            ))
+        title = title.strip()
+        raw_content = extract_content_after_match(text, match)
+        
+        is_amanda = is_amanda_related_chat(raw_content)
+        
+        recognized.append(RecognizedContent(
+            content_type="AmandaMap",
+            title=title,
+            content=raw_content,
+            is_amanda_related=is_amanda,
+            confidence=0.8 if is_amanda else 0.6,
+            category="AmandaMap",
+            file_path=file_path
+        ))
     
     # Extract Field Pulse entries
     for match in _FIELD_PULSE_PATTERN.finditer(text):
         number_str = match.group("number")
-        title = match.group("title").strip()
+        title = match.group("title")
+        
+        if not title:
+            continue
+            
+        title = title.strip()
         raw_content = extract_content_after_match(text, match)
         
         number = int(number_str) if number_str else None
@@ -390,7 +410,12 @@ def recognize_amandamap_content(text: str, file_path: str = "") -> List[Recogniz
     # Extract Whispered Flame entries
     for match in _WHISPERED_FLAME_PATTERN.finditer(text):
         number_str = match.group("number")
-        title = match.group("title").strip()
+        title = match.group("title")
+        
+        if not title:
+            continue
+            
+        title = title.strip()
         raw_content = extract_content_after_match(text, match)
         
         number = int(number_str) if number_str else None
