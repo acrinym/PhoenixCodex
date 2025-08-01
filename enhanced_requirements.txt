@@ -1,0 +1,28 @@
+# Enhanced Dataset Builder Requirements
+# Core dependencies
+numpy>=1.21.0
+psutil>=5.8.0
+pathlib2>=2.3.0
+
+# Optional CUDA/GPU support (install if you have CUDA)
+# cupy-cuda11x>=11.0.0  # Uncomment for CUDA 11.x
+# cupy-cuda12x>=12.0.0  # Uncomment for CUDA 12.x
+# torch>=1.12.0  # Uncomment for PyTorch support
+
+# GUI dependencies
+tkinter  # Usually comes with Python
+
+# File processing
+chardet>=4.0.0  # For encoding detection
+
+# Performance monitoring
+memory-profiler>=0.60.0  # Optional: for detailed memory profiling
+
+# Data processing
+pandas>=1.3.0  # Optional: for advanced data analysis
+matplotlib>=3.5.0  # Optional: for performance visualization
+
+# Development dependencies (optional)
+pytest>=6.2.0  # For testing
+black>=21.0.0  # For code formatting
+flake8>=3.9.0  # For linting 
