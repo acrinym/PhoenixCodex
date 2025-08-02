@@ -1147,63 +1147,10 @@ class FileProcessor:
         existing.extend(entries)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(existing, f, indent=2, ensure_ascii=False)
-    
-    def export_to_separate_files(self, amandamap_entries: List[DatasetEntry], phoenix_entries: List[DatasetEntry], 
-                                amandamap_file: str = "amandamapexportfile.json", 
-                                phoenix_file: str = "phoenixcodexexport.json"):
-        """Export entries to separate files with append functionality."""
-        
-        # Export AmandaMap entries
-        amandamap_data = []
-        for entry in amandamap_entries:
-            entry_dict = asdict(entry)
-            amandamap_data.append(entry_dict)
-        
-        # Load existing AmandaMap data if file exists
-        existing_amandamap = []
-        if Path(amandamap_file).exists():
-            try:
-                with open(amandamap_file, 'r', encoding='utf-8') as f:
-                    existing_amandamap = json.load(f)
-                print(f"📄 Loaded {len(existing_amandamap)} existing AmandaMap entries")
-            except Exception as e:
-                print(f"⚠️ Error loading existing AmandaMap file: {e}")
-        
-        # Append new entries
-        existing_amandamap.extend(amandamap_data)
-        
-        # Save AmandaMap file
-        with open(amandamap_file, 'w', encoding='utf-8') as f:
-            json.dump(existing_amandamap, f, indent=2, ensure_ascii=False)
-        print(f"💾 Exported {len(amandamap_entries)} AmandaMap entries to {amandamap_file}")
-        
-        # Export Phoenix Codex entries
-        phoenix_data = []
-        for entry in phoenix_entries:
-            entry_dict = asdict(entry)
-            phoenix_data.append(entry_dict)
-        
-        # Load existing Phoenix Codex data if file exists
-        existing_phoenix = []
-        if Path(phoenix_file).exists():
-            try:
-                with open(phoenix_file, 'r', encoding='utf-8') as f:
-                    existing_phoenix = json.load(f)
-                print(f"📄 Loaded {len(existing_phoenix)} existing Phoenix Codex entries")
-            except Exception as e:
-                print(f"⚠️ Error loading existing Phoenix Codex file: {e}")
-        
-        # Append new entries
-        existing_phoenix.extend(phoenix_data)
-        
-        # Save Phoenix Codex file
-        with open(phoenix_file, 'w', encoding='utf-8') as f:
-            json.dump(existing_phoenix, f, indent=2, ensure_ascii=False)
-        print(f"💾 Exported {len(phoenix_entries)} Phoenix Codex entries to {phoenix_file}")
-    
+            
     def cleanup(self):
         """Clean up resources."""
         self.file_cache.clear()
         self.result_cache.clear()
         self.cuda_processor.cleanup()
-        self.memory_manager.force_garbage_collection() 
+        self.memory_manager.force_garbage_collection()
