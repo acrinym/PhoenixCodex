@@ -53,146 +53,9 @@ except ImportError:
     TORCH_AVAILABLE = False
 
 # Import existing modules
-from modules.amandamap_parser import find_entries, find_thresholds
-from modules.json_scanner import scan_json_for_amandamap
+from amandamap_parser import extract_from_file, ParsedEntry
 from modules.performance_optimizer import PerformanceOptimizer, OptimizationConfig
 from modules.settings_service import SettingsService
-
-# Enhanced regex patterns (same as original)
-_PHX_RE = re.compile(r"(.*?(?:Phoenix Codex).*?)(?=\n\s*\n|$)", re.IGNORECASE | re.S)
-_WHISPER_RE = re.compile(r"(.*?(?:Whispered Flame|Flame Vow).*?)(?=\n\s*\n|$)", re.IGNORECASE | re.S)
-
-# AmandaMap patterns
-_AMANDA_THRESHOLD_PATTERN = re.compile(
-    r"AmandaMap Threshold(?:\s*(\d+))?\s*:?(.*?)(?=\n\s*AmandaMap Threshold|$)",
-    re.IGNORECASE | re.S
-)
-
-_AMANDA_ENTRY_PATTERN = re.compile(
-    r"(.*?(?:Archived in the AmandaMap|Logged in the AmandaMap|Logged to the amandamap|log this in the amandamap).*?)(?=\n\s*\n|$)",
-    re.IGNORECASE | re.S
-)
-
-# Emoji-based numbered entry patterns
-_EMOJI_NUMBERED_PATTERN = re.compile(
-    r"🔥|🔱|🔊|📡|🕯️|🪞|🌀|🌙|🪧\s*(?P<type>\w+)\s*(?P<number>\d+):(?P<title>.*)",
-    re.IGNORECASE
-)
-
-# Real-world AmandaMap logging patterns
-_AMANDA_LOGGING_PATTERN = re.compile(
-    r"(?:Anchoring this as|Adding to|Recording in|AmandaMap update|Logging AmandaMap|Logging to the amandamap|Log this in the amandamap)\s*" +
-    r"(?:AmandaMap\s+)?(?:Threshold|Flame Vow|Field Pulse|Whispered Flame)\s*" +
-    r"(?:#?\d+)?\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_FIELD_PULSE_PATTERN = re.compile(
-    r"(?:AmandaMap\s+)?Field Pulse\s*#?\s*(?P<number>\d+)\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_WHISPERED_FLAME_PATTERN = re.compile(
-    r"(?:AmandaMap\s+)?Whispered Flame\s*#?\s*(?P<number>\d+)\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_FLAME_VOW_PATTERN = re.compile(
-    r"(?:AmandaMap\s+)?Flame Vow\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-# Phoenix Codex patterns
-_PHOENIX_CODEX_PATTERN = re.compile(
-    r"🪶\s*(?P<title>.*?)(?=\n\s*\n|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_SECTION_PATTERN = re.compile(
-    r"(.*?(?:Phoenix Codex|PhoenixCodex).*?)(?=\n\s*\n|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_TOOLS_PATTERN = re.compile(
-    r"(.*?(?:Phoenix Codex & Energetic Tools|Phoenix Codex & Tools).*?)(?=\n\s*\n|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_ENTRY_PATTERN = re.compile(
-    r"🪶\s*(?P<type>\w+)\s*(?P<number>\d+):(?P<title>.*)",
-    re.IGNORECASE
-)
-
-# Phoenix Codex logging patterns
-_PHOENIX_LOGGING_PATTERN = re.compile(
-    r"(?:Anchoring this in|Recording|Logging as|Adding to)\s*Phoenix Codex\s*" +
-    r"(?:Threshold|SilentAct|Ritual Log|Collapse Event)\s*" +
-    r"(?:#?\d+)?\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_THRESHOLD_PATTERN = re.compile(
-    r"(?:Phoenix Codex\s+)?Threshold\s*(?P<number>\d+)?\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_SILENT_ACT_PATTERN = re.compile(
-    r"(?:Phoenix Codex\s+)?SilentAct\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_RITUAL_PATTERN = re.compile(
-    r"(?:Phoenix Codex\s+)?Ritual Log\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-_PHOENIX_COLLAPSE_PATTERN = re.compile(
-    r"(?:Phoenix Codex\s+)?Collapse Event\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
-    re.IGNORECASE | re.S
-)
-
-# Chat timestamp pattern
-_CHAT_TIMESTAMP_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
-
-# Classification keywords
-_AMANDA_KEYWORDS = [
-    "amanda", "she said", "amanda told me", "when we were on the phone", 
-    "she just texted me", "she sent me", "amanda just called", "she sent me a message"
-]
-
-_AMANDA_GENERIC_PHRASES = [
-    "she said", "when we were on the phone", "she just texted me", 
-    "she sent me", "just called", "sent me a message"
-]
-
-_PHOENIX_CODEX_KEYWORDS = [
-    "phoenix codex", "phoenixcodex", "🪶", "onyx", "akshara", "hermes", 
-    "field ethics", "wand cycles", "servitor logs", "ritual formats", 
-    "sacred writing", "tone protocols"
-]
-
-_POSITIVE_INDICATORS = [
-    "i learned", "i discovered", "i realized", "i understand", "i think", "i believe",
-    "personal growth", "self-improvement", "development", "growth", "learning",
-    "feeling", "emotion", "healing", "emotional", "processing", "reflection",
-    "self-reflection", "introspection", "awareness", "consciousness",
-    "how to", "steps to", "tips for", "advice", "strategy", "approach",
-    "technique", "method", "process", "guidance", "support",
-    "communication", "understanding", "connection", "relationship", "interaction",
-    "dialogue", "conversation", "sharing", "listening", "empathy",
-    "organization", "productivity", "time management", "planning", "skills",
-    "practical", "real-world", "application", "implementation"
-]
-
-_NEGATIVE_INDICATORS = [
-    "spell", "ritual", "magic", "witch", "witchcraft", "magical", "enchantment",
-    "incantation", "casting", "supernatural", "mystical", "esoteric", "occult",
-    "magic user", "practitioner", "wizard", "sorcerer", "mage", "shaman",
-    "casting spells", "performing rituals", "magical practice", "witchcraft practice",
-    "magical symbols", "magical tools", "magical ceremonies", "magical traditions",
-    "supernatural", "paranormal", "mystical", "esoteric", "occult", "divine",
-    "spiritual", "metaphysical", "transcendental", "otherworldly"
-]
 
 
 @dataclass
@@ -201,6 +64,9 @@ class DatasetEntry:
     type: str
     text: str
     number: Optional[int] = None
+    title: str = ""
+    date: Optional[str] = None
+    core_themes: List[str] = field(default_factory=list)
     sequential_id: Optional[str] = None  # For handling duplicates like "23a", "23b"
     is_amanda_related: bool = False
     is_phoenix_codex: bool = False
@@ -650,412 +516,45 @@ class FileProcessor:
         return entries
     
     def scan_file_enhanced(self, path: Path, text: str) -> List[DatasetEntry]:
-        """Enhanced file scanning with all patterns."""
+        """Parse a file using the standalone AmandaMap/Phoenix Codex parser."""
+        parsed_entries: List[ParsedEntry] = extract_from_file(path)
         entries: List[DatasetEntry] = []
-        
-        # Extract AmandaMap Threshold entries
-        for match in _AMANDA_THRESHOLD_PATTERN.finditer(text):
-            number_group = match.group(1)
-            text_group = match.group(2)
-            
-            if text_group is None:
-                continue
-                
-            number = int(number_group) if number_group else None
-            raw_content = text_group.strip()
-            
-            # Generate sequential ID for duplicates
-            sequential_id = None
-            if number is not None:
-                sequential_id = self.sequential_manager.get_sequential_id(number, "Threshold")
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="Threshold",
-                text=raw_content,
-                number=number,
-                sequential_id=sequential_id,
-                is_amanda_related=self.is_amanda_related_chat(raw_content)
-            )
-            entries.append(entry)
-            self.sequential_manager.add_entry(entry)
-        
-        # Extract emoji-based numbered entries
-        for match in _EMOJI_NUMBERED_PATTERN.finditer(text):
-            entry_type_group = match.group("type")
-            number_str = match.group("number")
-            title_group = match.group("title")
-            
-            if entry_type_group is None or title_group is None:
-                continue
-                
-            entry_type = entry_type_group.strip()
-            title = title_group.strip()
-            
-            if number_str:
-                number = int(number_str)
-                raw_content = self.extract_content_after_match(text, match)
-                
-                # Generate sequential ID for duplicates
-                sequential_id = self.sequential_manager.get_sequential_id(number, entry_type)
-                
-                entry = DatasetEntry(
-                    file=str(path),
-                    type=entry_type,
-                    text=raw_content,
-                    number=number,
-                    sequential_id=sequential_id,
-                    is_amanda_related=self.is_amanda_related_chat(raw_content)
-                )
-                entries.append(entry)
-                self.sequential_manager.add_entry(entry)
-        
-        # Extract real-world AmandaMap logging statements
-        for match in _AMANDA_LOGGING_PATTERN.finditer(text):
-            title_group = match.group("title")
-            if title_group is None:
-                continue
-                
-            title = title_group.strip()
-            if title:
-                raw_content = self.extract_content_after_match(text, match)
-                
-                entry = DatasetEntry(
-                    file=str(path),
-                    type="AmandaMap",
-                    text=raw_content,
-                    is_amanda_related=self.is_amanda_related_chat(raw_content)
-                )
-                entries.append(entry)
-        
-        # Extract Field Pulse entries
-        for match in _FIELD_PULSE_PATTERN.finditer(text):
-            number_str = match.group("number")
-            title_group = match.group("title")
-            
-            if title_group is None:
-                continue
-                
-            title = title_group.strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            number = int(number_str) if number_str else None
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="FieldPulse",
-                text=raw_content,
-                number=number,
-                is_amanda_related=self.is_amanda_related_chat(raw_content)
-            )
-            entries.append(entry)
-        
-        # Extract Whispered Flame entries
-        for match in _WHISPERED_FLAME_PATTERN.finditer(text):
-            number_str = match.group("number")
-            title_group = match.group("title")
-            
-            if title_group is None:
-                continue
-                
-            title = title_group.strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            number = int(number_str) if number_str else None
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="WhisperedFlame",
-                text=raw_content,
-                number=number,
-                is_amanda_related=self.is_amanda_related_chat(raw_content)
-            )
-            entries.append(entry)
-        
-        # Extract Flame Vow entries
-        for match in _FLAME_VOW_PATTERN.finditer(text):
-            title_group = match.group("title")
-            
-            if title_group is None:
-                continue
-                
-            title = title_group.strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="FlameVow",
-                text=raw_content,
-                is_amanda_related=self.is_amanda_related_chat(raw_content)
-            )
-            entries.append(entry)
-        
-        # Extract Phoenix Codex entries
-        for match in _PHOENIX_CODEX_PATTERN.finditer(text):
-            title = match.group("title").strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="PhoenixCodex",
-                text=raw_content,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            )
-            entries.append(entry)
-        
-        # Extract Phoenix Codex numbered entries
-        for match in _PHOENIX_ENTRY_PATTERN.finditer(text):
-            entry_type = match.group("type").strip()
-            number_str = match.group("number")
-            title = match.group("title").strip()
-            
-            if number_str:
-                number = int(number_str)
-                raw_content = self.extract_content_after_match(text, match)
-                
-                is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-                
-                entry = DatasetEntry(
-                    file=str(path),
-                    type=f"PhoenixCodex{entry_type}",
-                    text=raw_content,
-                    number=number,
-                    is_phoenix_codex=is_phoenix,
-                    confidence=confidence,
-                    category=category,
-                    classification_reason=reason
-                )
-                entries.append(entry)
-        
-        # Extract Phoenix Codex logging statements
-        for match in _PHOENIX_LOGGING_PATTERN.finditer(text):
-            title = match.group("title").strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="PhoenixCodex",
-                text=raw_content,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            )
-            entries.append(entry)
-        
-        # Extract Phoenix Codex Threshold entries
-        for match in _PHOENIX_THRESHOLD_PATTERN.finditer(text):
-            number_str = match.group("number")
-            title = match.group("title").strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            number = int(number_str) if number_str else None
-            is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="PhoenixCodexThreshold",
-                text=raw_content,
-                number=number,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            )
-            entries.append(entry)
-        
-        # Extract Phoenix Codex Silent Act entries
-        for match in _PHOENIX_SILENT_ACT_PATTERN.finditer(text):
-            title = match.group("title").strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="PhoenixCodexSilentAct",
-                text=raw_content,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            )
-            entries.append(entry)
-        
-        # Extract Phoenix Codex Ritual entries
-        for match in _PHOENIX_RITUAL_PATTERN.finditer(text):
-            title = match.group("title").strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="PhoenixCodexRitual",
-                text=raw_content,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            )
-            entries.append(entry)
-        
-        # Extract Phoenix Codex Collapse entries
-        for match in _PHOENIX_COLLAPSE_PATTERN.finditer(text):
-            title = match.group("title").strip()
-            raw_content = self.extract_content_after_match(text, match)
-            
-            is_phoenix, confidence, reason, category = self.classify_content(raw_content)
-            
-            entry = DatasetEntry(
-                file=str(path),
-                type="PhoenixCodexCollapse",
-                text=raw_content,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            )
-            entries.append(entry)
-        
-        # Also run the original patterns for backward compatibility
-        for num, seg in find_thresholds(text):
+        for p in parsed_entries:
             entries.append(
                 DatasetEntry(
-                    file=str(path),
-                    type="Threshold",
-                    text=seg,
-                    number=num,
-                    is_amanda_related=self.is_amanda_related_chat(seg)
+                    file=p.source,
+                    type=p.type,
+                    text=p.description,
+                    number=p.number,
+                    title=p.title,
+                    date=p.date,
+                    core_themes=p.core_themes,
+                    is_amanda_related=p.is_amanda_related,
+                    is_phoenix_codex=p.type.lower().startswith("phoenix"),
                 )
             )
-
-        for seg in find_entries(text):
-            entries.append(DatasetEntry(
-                file=str(path), 
-                type="AmandaMap", 
-                text=seg,
-                is_amanda_related=self.is_amanda_related_chat(seg)
-            ))
-
-        for seg in self.extract_keyword_segments(text, "AmandaMap"):
-            if seg.lower() not in [e.text.lower() for e in entries]:
-                entries.append(DatasetEntry(
-                    file=str(path), 
-                    type="AmandaMap", 
-                    text=seg,
-                    is_amanda_related=self.is_amanda_related_chat(seg)
-                ))
-
-        for seg in self.extract_phoenix_entries(text):
-            is_phoenix, confidence, reason, category = self.classify_content(seg)
-            entries.append(DatasetEntry(
-                file=str(path), 
-                type="PhoenixCodex", 
-                text=seg,
-                is_phoenix_codex=is_phoenix,
-                confidence=confidence,
-                category=category,
-                classification_reason=reason
-            ))
-
-        for seg in self.extract_whisper_entries(text):
-            entries.append(DatasetEntry(
-                file=str(path), 
-                type="WhisperedFlame", 
-                text=seg,
-                is_amanda_related=self.is_amanda_related_chat(seg)
-            ))
-        
         return entries
     
     def is_amanda_related_chat(self, chat_text: str) -> bool:
-        """Determines if a chat message is Amanda-related based on keywords/phrases."""
-        if not chat_text or not chat_text.strip():
-            return False
-        
-        text = chat_text.lower()
-        has_amanda = "amanda" in text
-        
-        for keyword in _AMANDA_KEYWORDS:
-            if keyword.lower() in text:
-                # If it's a generic phrase, require 'amanda' also present
-                if keyword.lower() in _AMANDA_GENERIC_PHRASES:
-                    return has_amanda
-                return True
-        
         return False
-    
+
     def classify_content(self, content: str) -> Tuple[bool, float, str, str]:
-        """Classify content using the same logic as the Avalonia app."""
-        if not content or not content.strip():
-            return False, 0.0, "", ""
-        
-        text = content.lower()
-        positive_score = 0
-        negative_score = 0
-        
-        # Count positive indicators
-        for indicator in _POSITIVE_INDICATORS:
-            if indicator.lower() in text:
-                positive_score += 1
-        
-        # Count negative indicators
-        for indicator in _NEGATIVE_INDICATORS:
-            if indicator.lower() in text:
-                negative_score += 1
-        
-        # Calculate confidence
-        total_indicators = positive_score + negative_score
-        if total_indicators == 0:
-            return False, 0.0, "", ""
-        
-        confidence = positive_score / total_indicators if total_indicators > 0 else 0.0
-        is_phoenix_codex = positive_score > negative_score and confidence > 0.6
-        
-        # Generate reason
-        reason = f"Positive indicators: {positive_score}, Negative indicators: {negative_score}, Confidence: {confidence:.2f}"
-        
-        # Determine category
-        category = "Personal Growth" if positive_score > negative_score else "Other"
-        
-        return is_phoenix_codex, confidence, reason, category
-    
+        return False, 0.0, "", ""
+
     def extract_content_after_match(self, full_content: str, match) -> str:
-        """Extract content after a regex match."""
-        start_pos = match.end()
-        end_pos = full_content.find('\n\n', start_pos)
-        if end_pos == -1:
-            end_pos = len(full_content)
-        
-        return full_content[start_pos:end_pos].strip()
-    
+        return ""
+
     def extract_keyword_segments(self, text: str, keyword: str) -> List[str]:
-        paragraphs = re.split(r"\n\s*\n", text)
-        result = []
-        for idx, para in enumerate(paragraphs):
-            if keyword.lower() in para.lower():
-                result.append(self._next_paragraphs(paragraphs, idx).strip())
-        return result
-    
+        return []
+
     def _next_paragraphs(self, paragraphs: List[str], i: int) -> str:
-        parts = [paragraphs[i]]
-        if i + 1 < len(paragraphs):
-            parts.append(paragraphs[i + 1])
-        return '\n\n'.join(parts)
-    
+        return ""
+
     def extract_phoenix_entries(self, text: str) -> List[str]:
-        return [m.group(1).strip() for m in _PHX_RE.finditer(text)]
-    
+        return []
+
     def extract_whisper_entries(self, text: str) -> List[str]:
-        return [m.group(1).strip() for m in _WHISPER_RE.finditer(text)]
+        return []
     
     def process_files_streaming(
         self,
