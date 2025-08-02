@@ -1,11 +1,11 @@
 {
   "max_threads": 8,
-  "use_multiprocessing": false,
+  "use_multiprocessing": true,
   "thread_pool_size": 4,
   "max_cpu_percent": 80.0,
   "cpu_affinity": null,
   "enable_cpu_monitoring": true,
-  "max_memory_usage_gb": 4.0,
+  "max_memory_usage_gb": 7.115173674588665,
   "memory_warning_threshold_gb": 3.0,
   "enable_memory_monitoring": true,
   "auto_garbage_collection": true,
