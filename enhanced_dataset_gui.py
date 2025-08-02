@@ -512,11 +512,10 @@ Total Samples: {summary.get('total_samples', 0)}
                 self.message_queue.put({'type': 'finished'})
                 return
             
-            # Process files in RAM
-            self.message_queue.put({'type': 'log', 'text': "💾 Loading files into RAM for processing..."})
-            
-            # Use RAM-based processing
-            amandamap_entries, phoenix_entries = self.file_processor.process_files_in_ram(all_files)
+            # Process files sequentially to avoid high RAM usage
+            self.message_queue.put({'type': 'log', 'text': "📄 Processing files sequentially..."})
+
+            amandamap_entries, phoenix_entries = self.file_processor.process_files_streaming(all_files)
             
             self.message_queue.put({'type': 'log', 'text': f"✅ Processing complete!"})
             self.message_queue.put({'type': 'log', 'text': f"🗺️ AmandaMap entries found: {len(amandamap_entries)}"})
