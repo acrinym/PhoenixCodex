@@ -301,7 +301,7 @@ class EnhancedDatasetBuilderGUI:
             self.update_progress(message['current'], message['total'], 
                                message.get('status', ''), message.get('file_name', ''))
         elif msg_type == 'stats':
-            self.update_stats(message['entries'], message['processed_files'])
+            self.update_stats(message.get('counts', {}), message.get('processed_files', 0))
         elif msg_type == 'performance':
             self.update_performance_stats(message['metrics'])
         elif msg_type == 'finished':
@@ -353,13 +353,10 @@ class EnhancedDatasetBuilderGUI:
         if file_name:
             self.file_label.config(text=f"📖 Processing: {file_name}")
     
-    def update_stats(self, entries, processed_files):
-        if entries:
-            entry_types = {}
-            for entry in entries:
-                entry_types[entry.type] = entry_types.get(entry.type, 0) + 1
-                
-            stats_text = f"📊 Results: {len(entries)} entries from {processed_files} files"
+    def update_stats(self, counts, processed_files):
+        if counts:
+            total = sum(counts.values())
+            stats_text = f"📊 Results: {total} entries from {processed_files} files"
             self.stats_label.config(text=stats_text)
         else:
             self.stats_label.config(text="")
@@ -512,28 +509,21 @@ Total Samples: {summary.get('total_samples', 0)}
                 self.message_queue.put({'type': 'finished'})
                 return
             
-            # Process files in RAM
-            self.message_queue.put({'type': 'log', 'text': "💾 Loading files into RAM for processing..."})
-            
-            # Use RAM-based processing
-            amandamap_entries, phoenix_entries = self.file_processor.process_files_in_ram(all_files)
-            
-            self.message_queue.put({'type': 'log', 'text': f"✅ Processing complete!"})
-            self.message_queue.put({'type': 'log', 'text': f"🗺️ AmandaMap entries found: {len(amandamap_entries)}"})
-            self.message_queue.put({'type': 'log', 'text': f"🪶 Phoenix Codex entries found: {len(phoenix_entries)}"})
-            
-            # Export to separate files
-            self.message_queue.put({'type': 'log', 'text': "💾 Exporting to separate files..."})
-            self.file_processor.export_to_separate_files(
-                amandamap_entries, 
-                phoenix_entries, 
-                amandamap_output, 
-                phoenix_output
+            # Process files sequentially to avoid high RAM usage
+            self.message_queue.put({'type': 'log', 'text': "📄 Processing files sequentially..."})
+
+            counts = self.file_processor.process_files_streaming(
+                all_files,
+                amandamap_output,
+                phoenix_output,
             )
-            
+
+            self.message_queue.put({'type': 'log', 'text': f"✅ Processing complete!"})
+            self.message_queue.put({'type': 'log', 'text': f"🗺️ AmandaMap entries found: {counts.get('AmandaMap', 0)}"})
+            self.message_queue.put({'type': 'log', 'text': f"🪶 Phoenix Codex entries found: {counts.get('PhoenixCodex', 0)}"})
+
             # Final statistics
-            total_entries = len(amandamap_entries) + len(phoenix_entries)
-            self.message_queue.put({'type': 'stats', 'entries': amandamap_entries + phoenix_entries, 'processed_files': len(all_files)})
+            self.message_queue.put({'type': 'stats', 'counts': counts, 'processed_files': len(all_files)})
             
             # Final performance summary
             self.metrics.end_time = time.time()
