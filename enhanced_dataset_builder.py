@@ -1057,57 +1057,46 @@ class FileProcessor:
     def extract_whisper_entries(self, text: str) -> List[str]:
         return [m.group(1).strip() for m in _WHISPER_RE.finditer(text)]
     
-    def process_files_in_ram(self, file_paths: List[Path]) -> Tuple[List[DatasetEntry], List[DatasetEntry]]:
-        """Process files in RAM and return separate AmandaMap and Phoenix Codex entries."""
-        all_entries = []
-        
-        # Load all files into RAM
-        ram_contents = {}
+    def process_files_streaming(self, file_paths: List[Path]) -> Tuple[List[DatasetEntry], List[DatasetEntry]]:
+        """Process files sequentially and free memory after each file."""
+        amandamap_entries: List[DatasetEntry] = []
+        phoenix_entries: List[DatasetEntry] = []
+
         for file_path in file_paths:
             should_process, reason = self.should_process_file(file_path)
             if not should_process:
                 print(f"⏭️ Skipping {file_path.name}: {reason}")
                 continue
-            
-            try:
-                content = self.read_file_optimized(file_path)
-                ram_contents[file_path] = content
-                print(f"📖 Loaded {file_path.name} into RAM ({len(content)} chars)")
-            except Exception as e:
-                print(f"❌ Error loading {file_path}: {e}")
-        
-        # Process all content in RAM
-        for file_path, content in ram_contents.items():
+
+            content = ""
             try:
                 start_time = time.time()
+                content = self.read_file_optimized(file_path)
                 file_entries = self.scan_file_enhanced(file_path, content)
-                
-                # Add processing metrics
+
                 processing_time = time.time() - start_time
                 memory_usage = self.memory_manager.get_memory_usage()
-                
+
                 for entry in file_entries:
                     entry.processing_time = processing_time
                     entry.memory_usage = int(memory_usage * 1024 * 1024)
-                
-                all_entries.extend(file_entries)
-                
+
+                    if entry.is_amanda_related or entry.type.lower().startswith('amandamap') or entry.type.lower() in ['threshold', 'fieldpulse', 'whisperedflame', 'flamevow']:
+                        amandamap_entries.append(entry)
+                    elif entry.is_phoenix_codex or entry.type.lower().startswith('phoenix'):
+                        phoenix_entries.append(entry)
+
                 if self.verbose_mode:
                     print(f"✅ Processed {file_path.name}: {len(file_entries)} entries")
-                
+
             except Exception as e:
                 print(f"❌ Error processing {file_path}: {e}")
-        
-        # Separate AmandaMap and Phoenix Codex entries
-        amandamap_entries = []
-        phoenix_entries = []
-        
-        for entry in all_entries:
-            if entry.is_amanda_related or entry.type.lower().startswith('amandamap') or entry.type.lower() in ['threshold', 'fieldpulse', 'whisperedflame', 'flamevow']:
-                amandamap_entries.append(entry)
-            elif entry.is_phoenix_codex or entry.type.lower().startswith('phoenix'):
-                phoenix_entries.append(entry)
-        
+            finally:
+                if self.settings.enable_file_cache:
+                    self.file_cache.pop(str(file_path), None)
+                del content
+                self.memory_manager.force_garbage_collection()
+
         return amandamap_entries, phoenix_entries
     
     def export_to_separate_files(self, amandamap_entries: List[DatasetEntry], phoenix_entries: List[DatasetEntry], 
