@@ -94,7 +94,7 @@ class EnhancedDatasetBuilderGUI:
         
         # Title
         title_label = ttk.Label(scrollable_frame, text="🚀 Enhanced AmandaMap Dataset Builder", 
-                               font=("Arial", 18, "bold"))
+                                font=("Arial", 18, "bold"))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
         # File selection frame
@@ -299,9 +299,9 @@ class EnhancedDatasetBuilderGUI:
             self.log_message(message['text'])
         elif msg_type == 'progress':
             self.update_progress(message['current'], message['total'], 
-                               message.get('status', ''), message.get('file_name', ''))
+                                 message.get('status', ''), message.get('file_name', ''))
         elif msg_type == 'stats':
-            self.update_stats(message['entries'], message['processed_files'])
+            self.update_stats(message.get('counts', {}), message.get('processed_files', 0))
         elif msg_type == 'performance':
             self.update_performance_stats(message['metrics'])
         elif msg_type == 'finished':
@@ -353,13 +353,10 @@ class EnhancedDatasetBuilderGUI:
         if file_name:
             self.file_label.config(text=f"📖 Processing: {file_name}")
     
-    def update_stats(self, entries, processed_files):
-        if entries:
-            entry_types = {}
-            for entry in entries:
-                entry_types[entry.type] = entry_types.get(entry.type, 0) + 1
-                
-            stats_text = f"📊 Results: {len(entries)} entries from {processed_files} files"
+    def update_stats(self, counts, processed_files):
+        if counts:
+            total = sum(counts.values())
+            stats_text = f"📊 Results: {total} entries from {processed_files} files"
             self.stats_label.config(text=stats_text)
         else:
             self.stats_label.config(text="")
@@ -368,7 +365,7 @@ class EnhancedDatasetBuilderGUI:
         """Update performance statistics display"""
         if metrics:
             stats_text = (f"⚡ Performance: {metrics.get('files_per_second', 0):.1f} files/sec, "
-                         f"{metrics.get('entries_per_second', 0):.1f} entries/sec")
+                          f"{metrics.get('entries_per_second', 0):.1f} entries/sec")
             self.perf_stats_label.config(text=stats_text)
     
     def save_settings(self):
@@ -485,12 +482,12 @@ Total Samples: {summary.get('total_samples', 0)}
             self.file_processor = FileProcessor(self.settings)
             
             self.message_queue.put({'type': 'log', 'text': f"⚙️ Performance Settings:"})
-            self.message_queue.put({'type': 'log', 'text': f"   • Max Threads: {self.settings.max_threads}"})
-            self.message_queue.put({'type': 'log', 'text': f"   • Max CPU: {self.settings.max_cpu_percent:.1f}%"})
-            self.message_queue.put({'type': 'log', 'text': f"   • Max Memory: {self.settings.max_memory_usage_gb:.1f}GB"})
-            self.message_queue.put({'type': 'log', 'text': f"   • CUDA Enabled: {self.settings.enable_cuda}"})
-            self.message_queue.put({'type': 'log', 'text': f"   • Batch Size: {self.settings.batch_size}"})
-            self.message_queue.put({'type': 'log', 'text': f"   • RAM Processing: {self.settings.use_ram_processing}"})
+            self.message_queue.put({'type': 'log', 'text': f"    • Max Threads: {self.settings.max_threads}"})
+            self.message_queue.put({'type': 'log', 'text': f"    • Max CPU: {self.settings.max_cpu_percent:.1f}%"})
+            self.message_queue.put({'type': 'log', 'text': f"    • Max Memory: {self.settings.max_memory_usage_gb:.1f}GB"})
+            self.message_queue.put({'type': 'log', 'text': f"    • CUDA Enabled: {self.settings.enable_cuda}"})
+            self.message_queue.put({'type': 'log', 'text': f"    • Batch Size: {self.settings.batch_size}"})
+            self.message_queue.put({'type': 'log', 'text': f"    • RAM Processing: {self.settings.use_ram_processing}"})
             
             folder = Path(input_folder)
             file_types = [ft.strip() for ft in self.file_types.get().split(",")]
@@ -515,24 +512,18 @@ Total Samples: {summary.get('total_samples', 0)}
             # Process files sequentially to avoid high RAM usage
             self.message_queue.put({'type': 'log', 'text': "📄 Processing files sequentially..."})
 
-            amandamap_entries, phoenix_entries = self.file_processor.process_files_streaming(all_files)
-            
-            self.message_queue.put({'type': 'log', 'text': f"✅ Processing complete!"})
-            self.message_queue.put({'type': 'log', 'text': f"🗺️ AmandaMap entries found: {len(amandamap_entries)}"})
-            self.message_queue.put({'type': 'log', 'text': f"🪶 Phoenix Codex entries found: {len(phoenix_entries)}"})
-            
-            # Export to separate files
-            self.message_queue.put({'type': 'log', 'text': "💾 Exporting to separate files..."})
-            self.file_processor.export_to_separate_files(
-                amandamap_entries, 
-                phoenix_entries, 
-                amandamap_output, 
-                phoenix_output
+            counts = self.file_processor.process_files_streaming(
+                all_files,
+                amandamap_output,
+                phoenix_output,
             )
-            
+
+            self.message_queue.put({'type': 'log', 'text': f"✅ Processing complete!"})
+            self.message_queue.put({'type': 'log', 'text': f"🗺️ AmandaMap entries found: {counts.get('AmandaMap', 0)}"})
+            self.message_queue.put({'type': 'log', 'text': f"🪶 Phoenix Codex entries found: {counts.get('PhoenixCodex', 0)}"})
+
             # Final statistics
-            total_entries = len(amandamap_entries) + len(phoenix_entries)
-            self.message_queue.put({'type': 'stats', 'entries': amandamap_entries + phoenix_entries, 'processed_files': len(all_files)})
+            self.message_queue.put({'type': 'stats', 'counts': counts, 'processed_files': len(all_files)})
             
             # Final performance summary
             self.metrics.end_time = time.time()
@@ -566,4 +557,4 @@ Total Samples: {summary.get('total_samples', 0)}
 if __name__ == "__main__":
     root = tk.Tk()
     app = EnhancedDatasetBuilderGUI(root)
-    root.mainloop() 
+    root.mainloop()

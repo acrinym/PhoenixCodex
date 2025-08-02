@@ -1057,10 +1057,21 @@ class FileProcessor:
     def extract_whisper_entries(self, text: str) -> List[str]:
         return [m.group(1).strip() for m in _WHISPER_RE.finditer(text)]
     
-    def process_files_streaming(self, file_paths: List[Path]) -> Tuple[List[DatasetEntry], List[DatasetEntry]]:
-        """Process files sequentially and free memory after each file."""
-        amandamap_entries: List[DatasetEntry] = []
-        phoenix_entries: List[DatasetEntry] = []
+    def process_files_streaming(
+        self,
+        file_paths: List[Path],
+        amandamap_file: str = "amandamapexportfile.json",
+        phoenix_file: str = "phoenixcodexexport.json",
+    ) -> Dict[str, int]:
+        """Process files sequentially, exporting results as we go.
+
+        This avoids building huge in-memory lists that previously stalled
+        processing after ~30 files.  Instead, entries are written to disk
+        immediately and only lightweight counters are kept in RAM.
+        """
+
+        # Track counts for final reporting
+        entry_counts: Dict[str, int] = defaultdict(int)
 
         for file_path in file_paths:
             should_process, reason = self.should_process_file(file_path)
@@ -1077,17 +1088,38 @@ class FileProcessor:
                 processing_time = time.time() - start_time
                 memory_usage = self.memory_manager.get_memory_usage()
 
+                # Temporary holders for this file's results so we can flush
+                amandamap_batch: List[Dict[str, Any]] = []
+                phoenix_batch: List[Dict[str, Any]] = []
+
                 for entry in file_entries:
                     entry.processing_time = processing_time
                     entry.memory_usage = int(memory_usage * 1024 * 1024)
 
-                    if entry.is_amanda_related or entry.type.lower().startswith('amandamap') or entry.type.lower() in ['threshold', 'fieldpulse', 'whisperedflame', 'flamevow']:
-                        amandamap_entries.append(entry)
-                    elif entry.is_phoenix_codex or entry.type.lower().startswith('phoenix'):
-                        phoenix_entries.append(entry)
+                    entry_counts[entry.type] += 1
+
+                    if (
+                        entry.is_amanda_related
+                        or entry.type.lower().startswith("amandamap")
+                        or entry.type.lower()
+                        in ["threshold", "fieldpulse", "whisperedflame", "flamevow"]
+                    ):
+                        amandamap_batch.append(asdict(entry))
+                        entry_counts["AmandaMap"] += 1
+                    elif entry.is_phoenix_codex or entry.type.lower().startswith("phoenix"):
+                        phoenix_batch.append(asdict(entry))
+                        entry_counts["PhoenixCodex"] += 1
+
+                # Immediately write batches to disk to free RAM
+                if amandamap_batch:
+                    self.append_entries_to_file(amandamap_batch, amandamap_file)
+                if phoenix_batch:
+                    self.append_entries_to_file(phoenix_batch, phoenix_file)
 
                 if self.verbose_mode:
-                    print(f"✅ Processed {file_path.name}: {len(file_entries)} entries")
+                    print(
+                        f"✅ Processed {file_path.name}: {len(file_entries)} entries"
+                    )
 
             except Exception as e:
                 print(f"❌ Error processing {file_path}: {e}")
@@ -1097,64 +1129,28 @@ class FileProcessor:
                 del content
                 self.memory_manager.force_garbage_collection()
 
-        return amandamap_entries, phoenix_entries
-    
-    def export_to_separate_files(self, amandamap_entries: List[DatasetEntry], phoenix_entries: List[DatasetEntry], 
-                                amandamap_file: str = "amandamapexportfile.json", 
-                                phoenix_file: str = "phoenixcodexexport.json"):
-        """Export entries to separate files with append functionality."""
-        
-        # Export AmandaMap entries
-        amandamap_data = []
-        for entry in amandamap_entries:
-            entry_dict = asdict(entry)
-            amandamap_data.append(entry_dict)
-        
-        # Load existing AmandaMap data if file exists
-        existing_amandamap = []
-        if Path(amandamap_file).exists():
+        return dict(entry_counts)
+
+    def append_entries_to_file(self, entries: List[Dict[str, Any]], file_path: str) -> None:
+        """Append entries to a JSON file, creating it if needed."""
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        existing: List[Dict[str, Any]] = []
+        if path.exists():
             try:
-                with open(amandamap_file, 'r', encoding='utf-8') as f:
-                    existing_amandamap = json.load(f)
-                print(f"📄 Loaded {len(existing_amandamap)} existing AmandaMap entries")
-            except Exception as e:
-                print(f"⚠️ Error loading existing AmandaMap file: {e}")
-        
-        # Append new entries
-        existing_amandamap.extend(amandamap_data)
-        
-        # Save AmandaMap file
-        with open(amandamap_file, 'w', encoding='utf-8') as f:
-            json.dump(existing_amandamap, f, indent=2, ensure_ascii=False)
-        print(f"💾 Exported {len(amandamap_entries)} AmandaMap entries to {amandamap_file}")
-        
-        # Export Phoenix Codex entries
-        phoenix_data = []
-        for entry in phoenix_entries:
-            entry_dict = asdict(entry)
-            phoenix_data.append(entry_dict)
-        
-        # Load existing Phoenix Codex data if file exists
-        existing_phoenix = []
-        if Path(phoenix_file).exists():
-            try:
-                with open(phoenix_file, 'r', encoding='utf-8') as f:
-                    existing_phoenix = json.load(f)
-                print(f"📄 Loaded {len(existing_phoenix)} existing Phoenix Codex entries")
-            except Exception as e:
-                print(f"⚠️ Error loading existing Phoenix Codex file: {e}")
-        
-        # Append new entries
-        existing_phoenix.extend(phoenix_data)
-        
-        # Save Phoenix Codex file
-        with open(phoenix_file, 'w', encoding='utf-8') as f:
-            json.dump(existing_phoenix, f, indent=2, ensure_ascii=False)
-        print(f"💾 Exported {len(phoenix_entries)} Phoenix Codex entries to {phoenix_file}")
-    
+                with open(path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            except Exception:
+                existing = []
+
+        existing.extend(entries)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(existing, f, indent=2, ensure_ascii=False)
+            
     def cleanup(self):
         """Clean up resources."""
         self.file_cache.clear()
         self.result_cache.clear()
         self.cuda_processor.cleanup()
-        self.memory_manager.force_garbage_collection() 
+        self.memory_manager.force_garbage_collection()
