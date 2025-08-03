@@ -36,6 +36,8 @@ from collections import defaultdict, deque
 import pickle
 import tempfile
 import shutil
+from tempfile import SpooledTemporaryFile
+import orjson
 
 # Try to import CUDA-related libraries
 try:
@@ -53,7 +55,13 @@ except ImportError:
     TORCH_AVAILABLE = False
 
 # Import existing modules
-from amandamap_parser import extract_from_file, ParsedEntry
+from amandamap_parser import (
+    extract_from_file,
+    extract_from_text,
+    extract_from_json,
+    extract_chat_timestamps,
+    ParsedEntry,
+)
 from modules.performance_optimizer import PerformanceOptimizer, OptimizationConfig
 from modules.settings_service import SettingsService
 
@@ -75,6 +83,48 @@ class DatasetEntry:
     classification_reason: str = ""
     processing_time: float = 0.0
     memory_usage: int = 0
+
+
+def _process_file(args):
+    """Worker function to parse a single file's content.
+
+    This uses the standalone AmandaMap/Phoenix Codex parser so each process can
+    operate independently without touching disk again. It returns the index of
+    the file along with a list of serialized entry dictionaries ready for
+    streaming to the RAM-backed temporary store.
+    """
+
+    idx, path_str, content = args
+    start_time = time.time()
+    p = Path(path_str)
+
+    first, _ = extract_chat_timestamps(content)
+    default_date = first.strftime("%Y-%m-%d") if first else None
+
+    if p.suffix.lower() == ".json":
+        parsed: List[ParsedEntry] = extract_from_json(content, str(p), default_date)
+    else:
+        parsed = extract_from_text(content, str(p), default_date)
+
+    processing_time = time.time() - start_time
+    entries: List[Dict[str, Any]] = []
+
+    for pe in parsed:
+        entry = DatasetEntry(
+            file=pe.source,
+            type=pe.type,
+            text=pe.description,
+            number=pe.number,
+            title=pe.title,
+            date=pe.date,
+            core_themes=pe.core_themes,
+            is_amanda_related=pe.is_amanda_related,
+            is_phoenix_codex=pe.type.lower().startswith("phoenix"),
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+
+    return idx, entries
 
 
 @dataclass
@@ -559,74 +609,56 @@ class FileProcessor:
     def process_files_streaming(
         self,
         file_paths: List[Path],
-        amandamap_file: str = "amandamapexportfile.json",
-        phoenix_file: str = "phoenixcodexexport.json",
+        output_file: str = "AmandaMap_PhoenixCodex_Output.json",
+        num_workers: Optional[int] = None,
     ) -> Dict[str, int]:
-        """Process files sequentially, exporting results as we go.
+        """Process files using an in-RAM multiprocessing pipeline.
 
-        This avoids building huge in-memory lists that previously stalled
-        processing after ~30 files.  Instead, entries are written to disk
-        immediately and only lightweight counters are kept in RAM.
+        All input files are first read fully into memory. A worker pool then
+        parses them in parallel, streaming each resulting entry into a
+        RAM-backed ``SpooledTemporaryFile``. Memory for a file is released as
+        soon as its entries are written. After all workers finish, the temporary
+        file is flushed once to ``output_file`` as a single JSON array.
         """
 
-        # Track counts for final reporting
+        if num_workers is None:
+            num_workers = max(1, multiprocessing.cpu_count() - 1)
+
         entry_counts: Dict[str, int] = defaultdict(int)
 
-        for file_path in file_paths:
+        files_in_memory: List[Tuple[int, str, str]] = []
+        for idx, file_path in enumerate(file_paths):
             should_process, reason = self.should_process_file(file_path)
             if not should_process:
                 print(f"⏭️ Skipping {file_path.name}: {reason}")
                 continue
-
-            content = ""
             try:
-                start_time = time.time()
-                content = self.read_file_optimized(file_path)
-                file_entries = self.scan_file_enhanced(file_path, content)
-
-                processing_time = time.time() - start_time
-                memory_usage = self.memory_manager.get_memory_usage()
-
-                # Temporary holders for this file's results so we can flush
-                amandamap_batch: List[Dict[str, Any]] = []
-                phoenix_batch: List[Dict[str, Any]] = []
-
-                for entry in file_entries:
-                    entry.processing_time = processing_time
-                    entry.memory_usage = int(memory_usage * 1024 * 1024)
-
-                    entry_counts[entry.type] += 1
-
-                    if (
-                        entry.is_amanda_related
-                        or entry.type.lower().startswith("amandamap")
-                        or entry.type.lower()
-                        in ["threshold", "fieldpulse", "whisperedflame", "flamevow"]
-                    ):
-                        amandamap_batch.append(asdict(entry))
-                        entry_counts["AmandaMap"] += 1
-                    elif entry.is_phoenix_codex or entry.type.lower().startswith("phoenix"):
-                        phoenix_batch.append(asdict(entry))
-                        entry_counts["PhoenixCodex"] += 1
-
-                # Immediately write batches to disk to free RAM
-                if amandamap_batch:
-                    self.append_entries_to_file(amandamap_batch, amandamap_file)
-                if phoenix_batch:
-                    self.append_entries_to_file(phoenix_batch, phoenix_file)
-
-                if self.verbose_mode:
-                    print(
-                        f"✅ Processed {file_path.name}: {len(file_entries)} entries"
-                    )
-
+                with file_path.open("r", encoding="utf-8", errors="ignore") as f:
+                    files_in_memory.append((len(files_in_memory), str(file_path), f.read()))
             except Exception as e:
-                print(f"❌ Error processing {file_path}: {e}")
-            finally:
-                if self.settings.enable_file_cache:
-                    self.file_cache.pop(str(file_path), None)
-                del content
-                self.memory_manager.force_garbage_collection()
+                print(f"❌ Error reading {file_path}: {e}")
+
+        with SpooledTemporaryFile(max_size=1024 * 1024 * 200, mode="w+b") as tmpfile:
+            with multiprocessing.Pool(processes=num_workers) as pool:
+                for idx, entries in pool.imap_unordered(_process_file, files_in_memory):
+                    for entry in entries:
+                        tmpfile.write(orjson.dumps(entry))
+                        tmpfile.write(b"\n")
+                        entry_counts[entry["type"]] += 1
+                    files_in_memory[idx] = None
+                    self.memory_manager.force_garbage_collection()
+
+            tmpfile.seek(0)
+            with open(output_file, "wb") as out:
+                out.write(b"[")
+                first = True
+                for line in tmpfile:
+                    if not first:
+                        out.write(b",")
+                    else:
+                        first = False
+                    out.write(line.strip())
+                out.write(b"]")
 
         return dict(entry_counts)
 
