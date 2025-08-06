@@ -21,7 +21,7 @@
 
                 <TabItem Header="Index &amp; Search">
                     <controls:ErrorBoundary>
-                        <views:MainWindowView/>
+                        <views:MainWindowView DataContext="{Binding}"/>
                     </controls:ErrorBoundary>
                 </TabItem>
 
