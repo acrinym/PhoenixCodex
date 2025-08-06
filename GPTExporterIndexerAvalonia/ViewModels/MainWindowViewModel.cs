@@ -47,6 +47,7 @@ public partial class MainWindowViewModel : ObservableObject
     public ChatLogViewModel ChatLogViewModel { get; }
     public RitualBuilderViewModel RitualBuilderViewModel { get; }
     public SettingsViewModel SettingsViewModel { get; }
+    public ChatFileManagementViewModel ChatFileManagementViewModel { get; }
     
     // Properties for the UI
     [ObservableProperty] private string _indexFolder = string.Empty;
@@ -96,7 +97,8 @@ public partial class MainWindowViewModel : ObservableObject
         YamlInterpreterViewModel yamlInterpreterViewModel,
         ChatLogViewModel chatLogViewModel,
         RitualBuilderViewModel ritualBuilderViewModel,
-        SettingsViewModel settingsViewModel)
+        SettingsViewModel settingsViewModel,
+        ChatFileManagementViewModel chatFileManagementViewModel)
     {
         DebugLogger.Log("=== MainWindowViewModel constructor START ===");
         
@@ -144,9 +146,10 @@ public partial class MainWindowViewModel : ObservableObject
             PhoenixCodexTimelineViewModel = phoenixCodexTimelineViewModel;
             TagMapViewModel = tagMapViewModel;
             YamlInterpreterViewModel = yamlInterpreterViewModel;
-            ChatLogViewModel = chatLogViewModel;
-            RitualBuilderViewModel = ritualBuilderViewModel;
-            SettingsViewModel = settingsViewModel;
+                    ChatLogViewModel = chatLogViewModel;
+        RitualBuilderViewModel = ritualBuilderViewModel;
+        SettingsViewModel = settingsViewModel;
+        ChatFileManagementViewModel = chatFileManagementViewModel;
             
             DebugLogger.Log("5. Constructor completed successfully");
             DebugLogger.Log("=== MainWindowViewModel constructor END ===");
@@ -223,36 +226,92 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var indexPath = Path.Combine(folderPath, "index.json");
             
-            // Load index in background with timeout
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)); // 30 second timeout for loading
+            // Check file size first
+            var fileInfo = new FileInfo(indexPath);
+            var fileSizeMB = fileInfo.Length / (1024 * 1024);
             
-            await Task.Run(() =>
+            DebugLogger.Log($"Loading index: {fileSizeMB}MB from {indexPath}");
+            
+            // Update UI for large files
+            if (fileSizeMB > 50)
+            {
+                Status = $"Loading large index ({fileSizeMB}MB) - this may take a moment...";
+                ProgressMessage = "Loading large index...";
+                ProgressDetails = $"File size: {fileSizeMB}MB";
+            }
+            else
+            {
+                Status = "Loading index...";
+                ProgressMessage = "Loading index...";
+                ProgressDetails = $"File size: {fileSizeMB}MB";
+            }
+            
+            // Use streaming JSON reader for large files
+            await Task.Run(async () =>
             {
                 try
                 {
-                    var json = File.ReadAllText(indexPath);
-                    var index = JsonSerializer.Deserialize<AdvancedIndexer.Index>(json);
+                                    using var fileStream = File.OpenRead(indexPath);
+                var jsonDocument = await JsonDocument.ParseAsync(fileStream);
                     
-                    if (index != null)
+                    var root = jsonDocument.RootElement;
+                    
+                    // Parse files array
+                    var files = new List<string>();
+                    if (root.TryGetProperty("Files", out var filesElement) && filesElement.ValueKind == JsonValueKind.Array)
                     {
-                        DebugLogger.Log($"Successfully loaded index with {index.Files.Count} files and {index.Tokens.Count} tokens");
-                        
-                        // Update UI on main thread
-                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                        foreach (var file in filesElement.EnumerateArray())
                         {
-                            Status = $"Index loaded: {index.Files.Count} files, {index.Tokens.Count} tokens";
-                            IsOperationInProgress = false;
-                            ProgressMessage = "Ready";
-                            ProgressDetails = "";
-                        });
+                            files.Add(file.GetString() ?? string.Empty);
+                        }
                     }
+                    
+                    // Parse tokens (streaming for large token collections)
+                    var tokens = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                    if (root.TryGetProperty("Tokens", out var tokensElement) && tokensElement.ValueKind == JsonValueKind.Object)
+                    {
+                        foreach (var token in tokensElement.EnumerateObject())
+                        {
+                            var fileSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            if (token.Value.ValueKind == JsonValueKind.Array)
+                            {
+                                foreach (var file in token.Value.EnumerateArray())
+                                {
+                                    var fileName = file.GetString();
+                                    if (!string.IsNullOrEmpty(fileName))
+                                    {
+                                        fileSet.Add(fileName);
+                                    }
+                                }
+                            }
+                            tokens[token.Name] = fileSet;
+                        }
+                    }
+                    
+                    // Create index object
+                    var index = new AdvancedIndexer.Index
+                    {
+                        Files = files.ToDictionary(f => f, f => new AdvancedIndexer.FileDetail()),
+                        Tokens = tokens
+                    };
+                    
+                    DebugLogger.Log($"Successfully loaded index with {index.Files.Count} files and {index.Tokens.Count} tokens");
+                    
+                    // Update UI on main thread
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        Status = $"Index loaded: {index.Files.Count} files, {index.Tokens.Count} tokens ({fileSizeMB}MB)";
+                        IsOperationInProgress = false;
+                        ProgressMessage = "Ready";
+                        ProgressDetails = "";
+                    });
                 }
                 catch (Exception ex)
                 {
                     DebugLogger.Log($"Error loading index: {ex.Message}");
                     
                     // Update UI on main thread
-                    Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         Status = "Error loading index";
                         IsOperationInProgress = false;
@@ -260,22 +319,15 @@ public partial class MainWindowViewModel : ObservableObject
                         ProgressDetails = ex.Message;
                     });
                 }
-            }, cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            DebugLogger.Log("Index loading timed out");
-            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Status = "Index loading timed out - you can load it manually";
-                IsOperationInProgress = false;
-                ProgressMessage = "Ready";
-                ProgressDetails = "Index loading timed out";
             });
         }
         catch (Exception ex)
         {
             DebugLogger.Log($"Error in LoadExistingIndexAsync: {ex.Message}");
+            Status = "Error loading index";
+            IsOperationInProgress = false;
+            ProgressMessage = "Error";
+            ProgressDetails = ex.Message;
         }
     }
 

@@ -85,6 +85,12 @@
                     </controls:ErrorBoundary>
                 </TabItem>
 
+                <TabItem Header="📁 Chat Files">
+                    <controls:ErrorBoundary>
+                        <views:ChatFileManagementView DataContext="{Binding ChatFileManagementViewModel}"/>
+                    </controls:ErrorBoundary>
+                </TabItem>
+
                 <TabItem Header="🎨 Theme">
                     <controls:ErrorBoundary>
                         <views:ThemeSettingsView/>

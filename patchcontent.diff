@@ -1,0 +1,45 @@
+diff --git a/enhanced_dataset_builder.py b/enhanced_dataset_builder.py
+--- a/enhanced_dataset_builder.py
++++ b/enhanced_dataset_builder.py
+@@ def process_files_streaming(self,
+                 for entry in file_entries:
+                     entry.processing_time = processing_time
+                     entry.memory_usage = int(memory_usage * 1024 * 1024)
+
+-                    entry_counts[entry.type] += 1
+-
+-                    if (
+-                        entry.is_amanda_related
+-                        or entry.type.lower().startswith("amandamap")
+-                        or entry.type.lower()
+-                        in ["threshold", "fieldpulse", "whisperedflame", "flamevow"]
+-                    ):
+-                        amandamap_batch.append(asdict(entry))
+-                        entry_counts["AmandaMap"] += 1
+-                    elif entry.is_phoenix_codex or entry.type.lower().startswith("phoenix"):
+-                        phoenix_batch.append(asdict(entry))
+-                        entry_counts["PhoenixCodex"] += 1
++                    # Increment count for specific entry type
++                    entry_counts[entry.type] += 1
++
++                    # Determine category
++                    is_amanda = (
++                        entry.is_amanda_related
++                        or entry.type.lower().startswith("amandamap")
++                        or entry.type.lower() in [
++                            "threshold", "fieldpulse", "whisperedflame", "flamevow"
++                        ]
++                    )
++                    is_phoenix = (
++                        entry.is_phoenix_codex
++                        or entry.type.lower().startswith("phoenix")
++                        or entry.type.lower().startswith("phoenixcodex")
++                    )
++
++                    # Separate into respective batches
++                    if is_amanda:
++                        amandamap_batch.append(asdict(entry))
++                        entry_counts["AmandaMap"] += 1
++                    elif is_phoenix:
++                        phoenix_batch.append(asdict(entry))
++                        entry_counts["PhoenixCodex"] += 1

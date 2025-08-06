@@ -120,83 +120,94 @@ public partial class App : Application
             // THIS IS THE REQUIRED LINE TO FIX THE CRASH
             services.AddSingleton<IEntryParserService, EntryParserService>();
             DebugLogger.Log("10. IEntryParserService registered.");
+            
+            // Register ChatFileManager
+            services.AddSingleton<CodexEngine.Services.ChatFileManager>();
+            DebugLogger.Log("11. ChatFileManager registered.");
 
-            DebugLogger.Log("11. Registering Renderers...");
+            DebugLogger.Log("12. Registering Renderers...");
             // Register Renderers
             services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-            DebugLogger.Log("12. IMarkdownRenderer registered.");
+            DebugLogger.Log("13. IMarkdownRenderer registered.");
 
-            DebugLogger.Log("13. Registering ViewModels...");
+            DebugLogger.Log("14. Registering ViewModels...");
             // Register ViewModels
             services.AddSingleton<GrimoireManagerViewModel>();
-            DebugLogger.Log("14. GrimoireManagerViewModel registered.");
+            DebugLogger.Log("15. GrimoireManagerViewModel registered.");
             services.AddTransient<TimelineViewModel>();
-            DebugLogger.Log("15. TimelineViewModel registered.");
+            DebugLogger.Log("16. TimelineViewModel registered.");
             services.AddTransient<AmandaMapViewModel>(provider => 
                 new AmandaMapViewModel(
                     provider.GetRequiredService<IMessenger>(),
                     provider.GetRequiredService<IDialogService>(),
                     provider.GetRequiredService<ISettingsService>()));
-            DebugLogger.Log("16. AmandaMapViewModel registered.");
+            DebugLogger.Log("17. AmandaMapViewModel registered.");
             services.AddTransient<PhoenixCodexViewModel>(provider => 
                 new PhoenixCodexViewModel(
                     provider.GetRequiredService<IMessenger>(),
                     provider.GetRequiredService<IDialogService>(),
                     provider.GetRequiredService<ISettingsService>()));
-            DebugLogger.Log("17. PhoenixCodexViewModel registered.");
+            DebugLogger.Log("18. PhoenixCodexViewModel registered.");
             services.AddTransient<AmandaMapTimelineViewModel>(provider => 
                 new AmandaMapTimelineViewModel(
                     provider.GetRequiredService<IMessenger>(),
                     provider.GetRequiredService<AmandaMapViewModel>()));
-            DebugLogger.Log("18. AmandaMapTimelineViewModel registered.");
+            DebugLogger.Log("19. AmandaMapTimelineViewModel registered.");
             services.AddTransient<PhoenixCodexTimelineViewModel>(provider => 
                 new PhoenixCodexTimelineViewModel(
                     provider.GetRequiredService<IMessenger>(),
                     provider.GetRequiredService<PhoenixCodexViewModel>()));
-            DebugLogger.Log("19. PhoenixCodexTimelineViewModel registered.");
+            DebugLogger.Log("20. PhoenixCodexTimelineViewModel registered.");
             services.AddTransient<ChatLogViewModel>();
-            DebugLogger.Log("20. ChatLogViewModel registered.");
+            DebugLogger.Log("21. ChatLogViewModel registered.");
             services.AddTransient<RitualBuilderViewModel>();
-            DebugLogger.Log("21. RitualBuilderViewModel registered.");
+            DebugLogger.Log("22. RitualBuilderViewModel registered.");
             services.AddTransient<TagMapViewModel>();
-            DebugLogger.Log("22. TagMapViewModel registered.");
+            DebugLogger.Log("23. TagMapViewModel registered.");
             services.AddTransient<YamlInterpreterViewModel>();
-            DebugLogger.Log("23. YamlInterpreterViewModel registered.");
+            DebugLogger.Log("24. YamlInterpreterViewModel registered.");
             services.AddTransient<SettingsViewModel>();
-            DebugLogger.Log("24. SettingsViewModel registered.");
+            DebugLogger.Log("25. SettingsViewModel registered.");
+            services.AddTransient<ChatFileManagementViewModel>(provider => 
+                new ChatFileManagementViewModel(
+                    provider.GetRequiredService<IDialogService>(),
+                    provider.GetRequiredService<CodexEngine.Services.ChatFileManager>()));
+            DebugLogger.Log("26. ChatFileManagementViewModel registered.");
             services.AddTransient<MainWindowViewModel>();
-            DebugLogger.Log("25. MainWindowViewModel registered.");
+            DebugLogger.Log("27. MainWindowViewModel registered.");
 
-            DebugLogger.Log("26. Registering Views...");
+            DebugLogger.Log("28. Registering Views...");
             // Register Views (for the ViewLocator)
             services.AddTransient<MainWindow>();
-            DebugLogger.Log("27. MainWindow registered.");
+            DebugLogger.Log("28. MainWindow registered.");
             services.AddTransient<GrimoireManagerView>();
-            DebugLogger.Log("28. GrimoireManagerView registered.");
+            DebugLogger.Log("29. GrimoireManagerView registered.");
             services.AddTransient<TimelineView>();
-            DebugLogger.Log("29. TimelineView registered.");
+            DebugLogger.Log("30. TimelineView registered.");
             services.AddTransient<AmandaMapView>();
-            DebugLogger.Log("30. AmandaMapView registered.");
+            DebugLogger.Log("31. AmandaMapView registered.");
             services.AddTransient<AmandaMapTimelineView>();
-            DebugLogger.Log("31. AmandaMapTimelineView registered.");
+            DebugLogger.Log("32. AmandaMapTimelineView registered.");
             services.AddTransient<PhoenixCodexTimelineView>();
-            DebugLogger.Log("32. PhoenixCodexTimelineView registered.");
+            DebugLogger.Log("33. PhoenixCodexTimelineView registered.");
             services.AddTransient<TagMapView>();
-            DebugLogger.Log("33. TagMapView registered.");
+            DebugLogger.Log("34. TagMapView registered.");
             services.AddTransient<YamlInterpreterView>();
-            DebugLogger.Log("34. YamlInterpreterView registered.");
+            DebugLogger.Log("35. YamlInterpreterView registered.");
             services.AddTransient<ChatLogView>();
-            DebugLogger.Log("35. ChatLogView registered.");
+            DebugLogger.Log("36. ChatLogView registered.");
             services.AddTransient<RitualBuilderView>();
-            DebugLogger.Log("36. RitualBuilderView registered.");
+            DebugLogger.Log("37. RitualBuilderView registered.");
             services.AddTransient<SettingsView>();
-            DebugLogger.Log("37. SettingsView registered.");
+            DebugLogger.Log("38. SettingsView registered.");
             services.AddTransient<ThemeSettingsView>();
-            DebugLogger.Log("38. ThemeSettingsView registered.");
+            DebugLogger.Log("39. ThemeSettingsView registered.");
+            services.AddTransient<ChatFileManagementView>();
+            DebugLogger.Log("40. ChatFileManagementView registered.");
 
-            DebugLogger.Log("39. Building service provider...");
+            DebugLogger.Log("41. Building service provider...");
             var serviceProvider = services.BuildServiceProvider();
-            DebugLogger.Log("40. Service provider built successfully.");
+            DebugLogger.Log("42. Service provider built successfully.");
             DebugLogger.Log("=== ConfigureServices END ===");
             return serviceProvider;
         }

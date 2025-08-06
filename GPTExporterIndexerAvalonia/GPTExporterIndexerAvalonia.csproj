@@ -36,7 +36,6 @@
     <PackageReference Include="VersOne.Epub" Version="3.3.4" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="WebView.Avalonia.Desktop" Version="11.0.0" />
-    <PackageReference Include="MessageBox.Avalonia" Version="1.0.0" />
     <PackageReference Include="YamlDotNet" Version="15.1.2" />
     
     <!-- 

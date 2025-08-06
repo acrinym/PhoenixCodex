@@ -55,15 +55,12 @@ except ImportError:
     TORCH_AVAILABLE = False
 
 # Import existing modules
-from amandamap_parser import (
-    extract_from_file,
-    extract_from_text,
-    extract_from_json,
-    extract_chat_timestamps,
-    ParsedEntry,
-)
 from modules.performance_optimizer import PerformanceOptimizer, OptimizationConfig
 from modules.settings_service import SettingsService
+
+# Import working patterns from original dataset_builder.py
+from modules.amandamap_parser import find_entries, find_thresholds
+from modules.json_scanner import scan_json_for_amandamap
 
 
 @dataclass
@@ -86,40 +83,337 @@ class DatasetEntry:
 
 
 def _process_file(args):
-    """Worker function to parse a single file's content.
-
-    This uses the standalone AmandaMap/Phoenix Codex parser so each process can
-    operate independently without touching disk again. It returns the index of
-    the file along with a list of serialized entry dictionaries ready for
-    streaming to the RAM-backed temporary store.
-    """
+    """Worker function to parse a single file's content using working patterns."""
 
     idx, path_str, content = args
     start_time = time.time()
     p = Path(path_str)
 
-    first, _ = extract_chat_timestamps(content)
-    default_date = first.strftime("%Y-%m-%d") if first else None
-
-    if p.suffix.lower() == ".json":
-        parsed: List[ParsedEntry] = extract_from_json(content, str(p), default_date)
-    else:
-        parsed = extract_from_text(content, str(p), default_date)
-
     processing_time = time.time() - start_time
     entries: List[Dict[str, Any]] = []
 
-    for pe in parsed:
+    # Use the working patterns from original dataset_builder.py
+    import re
+    
+    # AmandaMap patterns
+    _AMANDA_THRESHOLD_PATTERN = re.compile(
+        r"AmandaMap Threshold(?:\s*(\d+))?\s*:?(.*?)(?=\n\s*AmandaMap Threshold|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _AMANDA_LOGGING_PATTERN = re.compile(
+        r"(?:Anchoring this as|Adding to|Recording in|AmandaMap update|Logging AmandaMap|Logging to the amandamap|Log this in the amandamap)\s*" +
+        r"(?:AmandaMap\s+)?(?:Threshold|Flame Vow|Field Pulse|Whispered Flame)\s*" +
+        r"(?:#?\d+)?\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _FIELD_PULSE_PATTERN = re.compile(
+        r"(?:AmandaMap\s+)?Field Pulse\s*#?\s*(?P<number>\d+)\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _WHISPERED_FLAME_PATTERN = re.compile(
+        r"(?:AmandaMap\s+)?Whispered Flame\s*#?\s*(?P<number>\d+)\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _FLAME_VOW_PATTERN = re.compile(
+        r"(?:AmandaMap\s+)?Flame Vow\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    # Phoenix Codex patterns
+    _PHOENIX_CODEX_PATTERN = re.compile(
+        r"🪶\s*(?P<title>.*?)(?=\n\s*\n|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _PHOENIX_THRESHOLD_PATTERN = re.compile(
+        r"(?:Phoenix Codex\s+)?Threshold\s*(?P<number>\d+)?\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _PHOENIX_SILENT_ACT_PATTERN = re.compile(
+        r"(?:Phoenix Codex\s+)?SilentAct\s*:?\s*(?P<title>.*?)(?:\s*Status:|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    _PHOENIX_RITUAL_PATTERN = re.compile(
+        r"(?:Phoenix Codex\s+)?Ritual Log\s*:?\s*(?P<title>.*?)(?=\n\s*\n|$)",
+        re.IGNORECASE | re.S
+    )
+    
+    # Emoji-based entries
+    _EMOJI_NUMBERED_PATTERN = re.compile(
+        r"🔥|🔱|🔊|📡|🕯️|🪞|🌀|🌙|🪧\s*(?P<type>\w+)\s*(?P<number>\d+):(?P<title>.*)",
+        re.IGNORECASE
+    )
+    
+    def extract_date_from_text(text: str) -> str:
+        """Extract date from text using various patterns."""
+        from datetime import datetime
+        
+        date_patterns = [
+            r'(\d{4}-\d{2}-\d{2})',  # YYYY-MM-DD
+            r'(\d{2}/\d{2}/\d{4})',   # MM/DD/YYYY
+            r'(\d{1,2}/\d{1,2}/\d{2,4})',  # M/D/YY or M/D/YYYY
+        ]
+        
+        for pattern in date_patterns:
+            match = re.search(pattern, text)
+            if match:
+                try:
+                    date_str = match.group(1)
+                    if len(date_str.split('/')[0]) == 4:  # YYYY/MM/DD
+                        return datetime.strptime(date_str, '%Y/%m/%d').strftime('%Y-%m-%d')
+                    elif len(date_str.split('/')[-1]) == 4:  # MM/DD/YYYY
+                        return datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
+                    elif len(date_str.split('/')[-1]) == 2:  # MM/DD/YY
+                        return datetime.strptime(date_str, '%m/%d/%y').strftime('%Y-%m-%d')
+                    else:
+                        return datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+                except:
+                    continue
+        
+        return ""
+    
+    # Process AmandaMap entries
+    for match in _AMANDA_THRESHOLD_PATTERN.finditer(content):
+        number = int(match.group(1)) if match.group(1) else None
+        text = match.group(2).strip()
+        title = f"AmandaMap Threshold {number}" if number else "AmandaMap Threshold"
+        
         entry = DatasetEntry(
-            file=pe.source,
-            type=pe.type,
-            text=pe.description,
-            number=pe.number,
-            title=pe.title,
-            date=pe.date,
-            core_themes=pe.core_themes,
-            is_amanda_related=pe.is_amanda_related,
-            is_phoenix_codex=pe.type.lower().startswith("phoenix"),
+            file=str(p),
+            type="AmandaMap",
+            text=text,
+            number=number,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=True,
+            is_phoenix_codex=False,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process AmandaMap logging entries
+    for match in _AMANDA_LOGGING_PATTERN.finditer(content):
+        title_group = match.group("title")
+        if title_group is None:
+            continue
+        title = title_group.strip()
+        text = match.group(0)
+        number_match = re.search(r"\b(\d+)\b", text)
+        number = int(number_match.group(1)) if number_match else None
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="AmandaMap",
+            text=text,
+            number=number,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=True,
+            is_phoenix_codex=False,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Field Pulse entries
+    for match in _FIELD_PULSE_PATTERN.finditer(content):
+        number_group = match.group("number")
+        title_group = match.group("title")
+        if number_group is None or title_group is None:
+            continue
+        number = int(number_group)
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="AmandaMap",
+            text=text,
+            number=number,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=True,
+            is_phoenix_codex=False,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Whispered Flame entries
+    for match in _WHISPERED_FLAME_PATTERN.finditer(content):
+        number_group = match.group("number")
+        title_group = match.group("title")
+        if number_group is None or title_group is None:
+            continue
+        number = int(number_group)
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="AmandaMap",
+            text=text,
+            number=number,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=True,
+            is_phoenix_codex=False,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Flame Vow entries
+    for match in _FLAME_VOW_PATTERN.finditer(content):
+        title_group = match.group("title")
+        if title_group is None:
+            continue
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="AmandaMap",
+            text=text,
+            number=None,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=True,
+            is_phoenix_codex=False,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Phoenix Codex entries
+    for match in _PHOENIX_CODEX_PATTERN.finditer(content):
+        title_group = match.group("title")
+        if title_group is None:
+            continue
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="PhoenixCodex",
+            text=text,
+            number=None,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=False,
+            is_phoenix_codex=True,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Phoenix Codex Threshold entries
+    for match in _PHOENIX_THRESHOLD_PATTERN.finditer(content):
+        number_group = match.group("number")
+        title_group = match.group("title")
+        if title_group is None:
+            continue
+        number = int(number_group) if number_group else None
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="PhoenixCodex",
+            text=text,
+            number=number,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=False,
+            is_phoenix_codex=True,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Phoenix Codex Silent Act entries
+    for match in _PHOENIX_SILENT_ACT_PATTERN.finditer(content):
+        title_group = match.group("title")
+        if title_group is None:
+            continue
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="PhoenixCodex",
+            text=text,
+            number=None,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=False,
+            is_phoenix_codex=True,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process Phoenix Codex Ritual entries
+    for match in _PHOENIX_RITUAL_PATTERN.finditer(content):
+        title_group = match.group("title")
+        if title_group is None:
+            continue
+        title = title_group
+        text = match.group(0)
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type="PhoenixCodex",
+            text=text,
+            number=None,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=False,
+            is_phoenix_codex=True,
+        )
+        entry.processing_time = processing_time
+        entries.append(asdict(entry))
+    
+    # Process emoji-based entries
+    for match in _EMOJI_NUMBERED_PATTERN.finditer(content):
+        type_group = match.group("type")
+        number_group = match.group("number")
+        title_group = match.group("title")
+        if type_group is None or number_group is None or title_group is None:
+            continue
+        typ = type_group.strip()
+        number = int(number_group)
+        title = title_group.strip()
+        text = match.group(0)
+        
+        # Determine if it's AmandaMap or Phoenix Codex based on emoji
+        if "🪶" in text:
+            entry_type = "PhoenixCodex"
+            is_amanda_related = False
+            is_phoenix_codex = True
+        else:
+            entry_type = "AmandaMap"
+            is_amanda_related = True
+            is_phoenix_codex = False
+        
+        entry = DatasetEntry(
+            file=str(p),
+            type=entry_type,
+            text=text,
+            number=number,
+            title=title,
+            date=extract_date_from_text(text),
+            core_themes=[],
+            is_amanda_related=is_amanda_related,
+            is_phoenix_codex=is_phoenix_codex,
         )
         entry.processing_time = processing_time
         entries.append(asdict(entry))
@@ -609,16 +903,17 @@ class FileProcessor:
     def process_files_streaming(
         self,
         file_paths: List[Path],
-        output_file: str = "AmandaMap_PhoenixCodex_Output.json",
+        amandamap_output: str = "amandamap_sequential_file.json",
+        phoenix_output: str = "phoenix_codex_sequential_file.json",
         num_workers: Optional[int] = None,
     ) -> Dict[str, int]:
         """Process files using an in-RAM multiprocessing pipeline.
 
         All input files are first read fully into memory. A worker pool then
-        parses them in parallel, streaming each resulting entry into a
-        RAM-backed ``SpooledTemporaryFile``. Memory for a file is released as
-        soon as its entries are written. After all workers finish, the temporary
-        file is flushed once to ``output_file`` as a single JSON array.
+        parses them in parallel, streaming each resulting entry into separate
+        RAM-backed ``SpooledTemporaryFile``s for AmandaMap and Phoenix Codex entries.
+        Memory for a file is released as soon as its entries are written. After all
+        workers finish, the temporary files are flushed to separate output files.
         """
 
         if num_workers is None:
@@ -638,21 +933,48 @@ class FileProcessor:
             except Exception as e:
                 print(f"❌ Error reading {file_path}: {e}")
 
-        with SpooledTemporaryFile(max_size=1024 * 1024 * 200, mode="w+b") as tmpfile:
+        # Create separate temporary files for AmandaMap and Phoenix Codex entries
+        with SpooledTemporaryFile(max_size=1024 * 1024 * 200, mode="w+b") as amandamap_tmpfile, \
+             SpooledTemporaryFile(max_size=1024 * 1024 * 200, mode="w+b") as phoenix_tmpfile:
+            
             with multiprocessing.Pool(processes=num_workers) as pool:
                 for idx, entries in pool.imap_unordered(_process_file, files_in_memory):
                     for entry in entries:
-                        tmpfile.write(orjson.dumps(entry))
-                        tmpfile.write(b"\n")
-                        entry_counts[entry["type"]] += 1
+                        # Determine which file to write to based on entry type
+                        if entry["type"] == "AmandaMap":
+                            amandamap_tmpfile.write(orjson.dumps(entry))
+                            amandamap_tmpfile.write(b"\n")
+                            entry_counts["AmandaMap"] += 1
+                        elif entry["type"] == "PhoenixCodex":
+                            phoenix_tmpfile.write(orjson.dumps(entry))
+                            phoenix_tmpfile.write(b"\n")
+                            entry_counts["PhoenixCodex"] += 1
+                        else:
+                            # Handle other entry types (if any)
+                            entry_counts[entry["type"]] += 1
+                    
                     files_in_memory[idx] = None
                     self.memory_manager.force_garbage_collection()
 
-            tmpfile.seek(0)
-            with open(output_file, "wb") as out:
+            # Write AmandaMap entries to output file
+            amandamap_tmpfile.seek(0)
+            with open(amandamap_output, "wb") as out:
                 out.write(b"[")
                 first = True
-                for line in tmpfile:
+                for line in amandamap_tmpfile:
+                    if not first:
+                        out.write(b",")
+                    else:
+                        first = False
+                    out.write(line.strip())
+                out.write(b"]")
+
+            # Write Phoenix Codex entries to output file
+            phoenix_tmpfile.seek(0)
+            with open(phoenix_output, "wb") as out:
+                out.write(b"[")
+                first = True
+                for line in phoenix_tmpfile:
                     if not first:
                         out.write(b",")
                     else:

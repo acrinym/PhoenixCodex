@@ -3,7 +3,6 @@ using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using MessageBox.Avalonia;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -507,7 +506,42 @@ namespace GPTExporterIndexerAvalonia.Services
             if (window is null)
                 return;
 
-            var msgBox = MessageBoxManager.GetMessageBoxStandardWindow(title, message);
+            // Use Avalonia's built-in message box instead of MessageBox.Avalonia
+            var msgBox = new Window
+            {
+                Title = title,
+                Width = 400,
+                Height = 200,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Content = new StackPanel
+                {
+                    Margin = new Avalonia.Thickness(20),
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = message,
+                            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                        },
+                        new Button
+                        {
+                            Content = "OK",
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            Margin = new Avalonia.Thickness(0, 20, 0, 0)
+                        }
+                    }
+                }
+            };
+
+            var button = msgBox.Content as StackPanel;
+            if (button?.Children.Count > 1 && button.Children[1] is Button okButton)
+            {
+                okButton.Click += (sender, e) => msgBox.Close();
+            }
+
             await msgBox.ShowDialog(window);
         }
 
