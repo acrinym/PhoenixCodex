@@ -12,7 +12,7 @@ namespace GPTExporterIndexerAvalonia.Reading;
 
 public class BookReader
 {
-    public ObservableCollection<Bitmap> Pages { get; } = new();
+    public ObservableCollection<Bitmap> Pages { get; } = [];
 
     public void Load(string path)
     {

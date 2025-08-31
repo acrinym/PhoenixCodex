@@ -14,10 +14,10 @@ public partial class GrimoireManagerViewModel : ObservableObject, IRecipient<Add
 {
     private readonly IMessenger _messenger;
 
-    public ObservableCollection<Ritual> Rituals { get; } = new();
-    public ObservableCollection<Ingredient> Ingredients { get; } = new();
-    public ObservableCollection<Servitor> Servitors { get; } = new();
-    public ObservableCollection<Spirit> Spirits { get; } = new();
+    public ObservableCollection<Ritual> Rituals { get; } = [];
+    public ObservableCollection<Ingredient> Ingredients { get; } = [];
+    public ObservableCollection<Servitor> Servitors { get; } = [];
+    public ObservableCollection<Spirit> Spirits { get; } = [];
 
     public GrimoireManagerViewModel(IMessenger messenger)
     {

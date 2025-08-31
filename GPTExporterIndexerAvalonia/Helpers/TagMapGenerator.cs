@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Text.RegularExpressions.Generated;
 using GPTExporterIndexerAvalonia.Services;
 
 namespace GPTExporterIndexerAvalonia.Helpers;
@@ -13,71 +14,111 @@ public class TagMapEntry
     public string? Document { get; set; }
     public string? Category { get; set; }
     public string? Preview { get; set; }
-    public List<string> Tags { get; set; } = new();
+    public List<string> Tags { get; set; } = [];
     public DateTime? Date { get; set; }
     public string? Title { get; set; }
     public int Line { get; set; } // This is the key field for line-level markers
     public string? Context { get; set; } // Additional context from surrounding lines
-    public List<string> RelatedEntries { get; set; } = new(); // Cross-references to other entries
+    public List<string> RelatedEntries { get; set; } = []; // Cross-references to other entries
 }
 
-public static class TagMapGenerator
+public static partial class TagMapGenerator
 {
-    private static readonly Regex AmandaMapPattern = new(@"#(\d+)\s*[-:]\s*(.+)", RegexOptions.Compiled);
-    private static readonly Regex DatePattern = new(@"(\d{4}-\d{2}-\d{2})", RegexOptions.Compiled);
-    private static readonly Regex TitlePattern = new(@"title[:\s]+(.+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
+    [GeneratedRegex(@"#(\d+)\s*[-:]\s*(.+)", RegexOptions.Compiled)]
+    private static partial Regex AmandaMapPatternRegex();
+    [GeneratedRegex(@"(\d{4}-\d{2}-\d{2})", RegexOptions.Compiled)]
+    private static partial Regex DatePatternRegex();
+    [GeneratedRegex(@"title[:\s]+(.+)", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex TitlePatternRegex();
+
+    // Contextual patterns for capturing conversational flow
+    [GeneratedRegex(@"would you like me to (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern1Regex();
+    [GeneratedRegex(@"amandamap entry \d+", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern2Regex();
+    [GeneratedRegex(@"amandamap threshold", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern3Regex();
+    [GeneratedRegex(@"mike[^a-zA-Z]", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern4Regex();
+    [GeneratedRegex(@"onyx[^a-zA-Z]", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern5Regex();
+    [GeneratedRegex(@"chatgpt[^a-zA-Z]", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern6Regex();
+    [GeneratedRegex(@"let me (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern7Regex();
+    [GeneratedRegex(@"i'll (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern8Regex();
+    [GeneratedRegex(@"do you want me to", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern9Regex();
+    [GeneratedRegex(@"should i (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex ContextualPattern10Regex();
+
+    // Marker patterns for identifying significant lines
+    [GeneratedRegex(@"#\d+\s*[-:]\s*.+", RegexOptions.Compiled)]
+    private static partial Regex MarkerPattern1Regex();
+    [GeneratedRegex(@"^[A-Z][^.!?]*[.!?]$", RegexOptions.Compiled | RegexOptions.Multiline)]
+    private static partial Regex MarkerPattern2Regex();
+    [GeneratedRegex(@"\*\*[^*]+\*\*", RegexOptions.Compiled)]
+    private static partial Regex MarkerPattern3Regex();
+    [GeneratedRegex(@"^[A-Z][a-z]+:", RegexOptions.Compiled | RegexOptions.Multiline)]
+    private static partial Regex MarkerPattern4Regex();
+    [GeneratedRegex(@"Chapter\s+\w+", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+    private static partial Regex MarkerPattern5Regex();
+    [GeneratedRegex(@"^\d+\.\s+", RegexOptions.Compiled | RegexOptions.Multiline)]
+    private static partial Regex MarkerPattern6Regex();
+    [GeneratedRegex(@"^- ", RegexOptions.Compiled | RegexOptions.Multiline)]
+    private static partial Regex MarkerPattern7Regex();
     
     // Contextual patterns for capturing conversational flow
-    private static readonly Regex[] ContextualPatterns = new[]
-    {
-        new Regex(@"would you like me to (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-        new Regex(@"amandamap entry \d+", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-        new Regex(@"amandamap threshold", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-        new Regex(@"mike[^a-zA-Z]", RegexOptions.Compiled | RegexOptions.IgnoreCase), // Mike mentions
-        new Regex(@"onyx[^a-zA-Z]", RegexOptions.Compiled | RegexOptions.IgnoreCase), // Onyx mentions
-        new Regex(@"chatgpt[^a-zA-Z]", RegexOptions.Compiled | RegexOptions.IgnoreCase), // ChatGPT mentions
-        new Regex(@"let me (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-        new Regex(@"i'll (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-        new Regex(@"do you want me to", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-        new Regex(@"should i (log|create|document|record)", RegexOptions.Compiled | RegexOptions.IgnoreCase),
-    };
-    
+    private static readonly Regex[] ContextualPatterns = [
+        ContextualPattern1Regex(),
+        ContextualPattern2Regex(),
+        ContextualPattern3Regex(),
+        ContextualPattern4Regex(),
+        ContextualPattern5Regex(),
+        ContextualPattern6Regex(),
+        ContextualPattern7Regex(),
+        ContextualPattern8Regex(),
+        ContextualPattern9Regex(),
+        ContextualPattern10Regex(),
+    ];
+
     // Patterns to identify significant lines that should be marked
-    private static readonly Regex[] MarkerPatterns = new[]
-    {
-        new Regex(@"#\d+\s*[-:]\s*.+", RegexOptions.Compiled), // AmandaMap entries
-        new Regex(@"^[A-Z][^.!?]*[.!?]$", RegexOptions.Compiled | RegexOptions.Multiline), // Complete sentences starting with capital
-        new Regex(@"\*\*[^*]+\*\*", RegexOptions.Compiled), // Bold text
-        new Regex(@"^[A-Z][a-z]+:", RegexOptions.Compiled | RegexOptions.Multiline), // Section headers
-        new Regex(@"Chapter\s+\w+", RegexOptions.Compiled | RegexOptions.IgnoreCase), // Chapter markers
-        new Regex(@"^\d+\.\s+", RegexOptions.Compiled | RegexOptions.Multiline), // Numbered lists
-        new Regex(@"^- ", RegexOptions.Compiled | RegexOptions.Multiline), // Bullet points
-    };
+    private static readonly Regex[] MarkerPatterns = [
+        MarkerPattern1Regex(),
+        MarkerPattern2Regex(),
+        MarkerPattern3Regex(),
+        MarkerPattern4Regex(),
+        MarkerPattern5Regex(),
+        MarkerPattern6Regex(),
+        MarkerPattern7Regex(),
+    ];
     
     // Common AmandaMap categories and their keywords
     private static readonly Dictionary<string, string[]> CategoryKeywords = new()
     {
-        ["Rituals"] = new[] { "ritual", "ceremony", "spell", "incantation", "magic", "enchantment", "conjuration" },
-        ["Thresholds"] = new[] { "threshold", "gate", "portal", "boundary", "liminal", "transition" },
-        ["Entities"] = new[] { "entity", "spirit", "being", "creature", "presence", "manifestation" },
-        ["Cosmic"] = new[] { "cosmic", "cosmos", "universe", "galaxy", "stellar", "celestial", "astral" },
-        ["Transformation"] = new[] { "transform", "change", "metamorphosis", "evolution", "transcend" },
-        ["Consciousness"] = new[] { "consciousness", "awareness", "mind", "psychic", "mental", "cognitive" },
-        ["Energy"] = new[] { "energy", "force", "power", "vibration", "frequency", "resonance" },
-        ["Time"] = new[] { "time", "temporal", "chronos", "moment", "duration", "timeline" },
-        ["Space"] = new[] { "space", "spatial", "dimension", "realm", "plane", "location" },
-        ["Technology"] = new[] { "technology", "tech", "digital", "virtual", "cyber", "electronic" },
-        ["Nature"] = new[] { "nature", "natural", "earth", "organic", "biological", "ecological" },
-        ["Philosophy"] = new[] { "philosophy", "theory", "concept", "principle", "doctrine", "belief" },
-        ["Emotional"] = new[] { "love", "feel", "emotion", "heart", "soul", "passion", "desire" },
-        ["General Insights"] = new[] { "insight", "realization", "understanding", "awareness", "recognition" },
-        ["Mike"] = new[] { "mike" },
-        ["Amandamap"] = new[] { "amandamap", "amanda map", "amanda-map" },
-        ["Onyx"] = new[] { "onyx" },
-        ["ChatGPT"] = new[] { "chatgpt", "gpt" }
+        ["Rituals"] = ["ritual", "ceremony", "spell", "incantation", "magic", "enchantment", "conjuration"],
+        ["Thresholds"] = ["threshold", "gate", "portal", "boundary", "liminal", "transition"],
+        ["Entities"] = ["entity", "spirit", "being", "creature", "presence", "manifestation"],
+        ["Cosmic"] = ["cosmic", "cosmos", "universe", "galaxy", "stellar", "celestial", "astral"],
+        ["Transformation"] = ["transform", "change", "metamorphosis", "evolution", "transcend"],
+        ["Consciousness"] = ["consciousness", "awareness", "mind", "psychic", "mental", "cognitive"],
+        ["Energy"] = ["energy", "force", "power", "vibration", "frequency", "resonance"],
+        ["Time"] = ["time", "temporal", "chronos", "moment", "duration", "timeline"],
+        ["Space"] = ["space", "spatial", "dimension", "realm", "plane", "location"],
+        ["Technology"] = ["technology", "tech", "digital", "virtual", "cyber", "electronic"],
+        ["Nature"] = ["nature", "natural", "earth", "organic", "biological", "ecological"],
+        ["Philosophy"] = ["philosophy", "theory", "concept", "principle", "doctrine", "belief"],
+        ["Emotional"] = ["love", "feel", "emotion", "heart", "soul", "passion", "desire"],
+        ["General Insights"] = ["insight", "realization", "understanding", "awareness", "recognition"],
+        ["Mike"] = ["mike"],
+        ["Amandamap"] = ["amandamap", "amanda map", "amanda-map"],
+        ["Onyx"] = ["onyx"],
+        ["ChatGPT"] = ["chatgpt", "gpt"]
     };
 
-    public static List<TagMapEntry> GenerateTagMap(string folderPath, bool overwriteExisting = false, IProgressService? progressService = null)
+    public static List<TagMapEntry> GenerateTagMap(string folderPath, IProgressService? progressService = null)
     {
         var tagMapPath = Path.Combine(folderPath, "tagmap.json");
         var entries = new List<TagMapEntry>();
@@ -125,8 +166,7 @@ public static class TagMapGenerator
         progressService?.ReportProgress(98, "Saving tagmap");
 
         // Save the tagmap
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var json = JsonSerializer.Serialize(entries, options);
+        var json = JsonSerializer.Serialize(entries, s_jsonOptions);
         File.WriteAllText(tagMapPath, json);
 
         DebugLogger.Log($"TagMapGenerator: Generated tagmap with {entries.Count} contextual markers");
@@ -228,7 +268,7 @@ public static class TagMapGenerator
         var contextualKeywords = new[] { "mike", "amandamap", "onyx", "chatgpt", "log", "create", "document", "record" };
         foreach (var keyword in contextualKeywords)
         {
-            if (trimmedLine.Contains(keyword))
+            if (trimmedLine.Contains(keyword, StringComparison.Ordinal))
                 return true;
         }
         
@@ -247,14 +287,14 @@ public static class TagMapGenerator
             // Find AmandaMap entry references and link them
             var amandamapEntries = documentEntries.Where(e => 
                 e.Category == "Amandamap" || 
-                e.Tags.Contains("amandamap") ||
+                e.Tags.Any(t => t.Contains("amandamap", StringComparison.OrdinalIgnoreCase)) ||
                 (e.Preview?.ToLowerInvariant().Contains("amandamap") ?? false)
             ).ToList();
             
             // Find contextual mentions and link them to AmandaMap entries
             var contextualMentions = documentEntries.Where(e =>
                 e.Category == "Mike" || e.Category == "Onyx" || e.Category == "ChatGPT" ||
-                e.Tags.Any(t => t.Contains("mike") || t.Contains("onyx") || t.Contains("chatgpt"))
+                e.Tags.Any(t => t.Contains("mike", StringComparison.OrdinalIgnoreCase) || t.Contains("onyx", StringComparison.OrdinalIgnoreCase) || t.Contains("chatgpt", StringComparison.OrdinalIgnoreCase))
             ).ToList();
             
             // Link contextual mentions to nearby AmandaMap entries
@@ -332,20 +372,20 @@ public static class TagMapGenerator
     {
         var trimmed = line.Trim();
         // Limit preview to 200 characters
-        return trimmed.Length > 200 ? trimmed.Substring(0, 200) + "..." : trimmed;
+        return trimmed.Length > 200 ? string.Concat(trimmed.AsSpan(0, 200), "...") : trimmed;
     }
 
     private static string? ExtractTitleFromLine(string line)
     {
         // Try to find AmandaMap entry numbers and titles
-        var match = AmandaMapPattern.Match(line);
+        var match = AmandaMapPatternRegex().Match(line);
         if (match.Success)
         {
             return $"#{match.Groups[1].Value} - {match.Groups[2].Value.Trim()}";
         }
 
         // Try to find explicit title
-        var titleMatch = TitlePattern.Match(line);
+        var titleMatch = TitlePatternRegex().Match(line);
         if (titleMatch.Success)
         {
             return titleMatch.Groups[1].Value.Trim();
@@ -365,7 +405,7 @@ public static class TagMapGenerator
     private static DateTime? ExtractDateFromLine(string line, string filePath)
     {
         // Try to extract date from the line
-        var match = DatePattern.Match(line);
+        var match = DatePatternRegex().Match(line);
         if (match.Success && DateTime.TryParse(match.Value, out var date))
         {
             return date;
@@ -414,7 +454,7 @@ public static class TagMapGenerator
         }
 
         // Extract AmandaMap entry numbers
-        var entryMatches = AmandaMapPattern.Matches(line);
+        var entryMatches = AmandaMapPatternRegex().Matches(line);
         foreach (Match match in entryMatches)
         {
             tags.Add($"entry-{match.Groups[1].Value}");
@@ -451,7 +491,7 @@ public static class TagMapGenerator
         if (!File.Exists(tagMapPath))
         {
             DebugLogger.Log($"TagMapGenerator: No existing tagmap found at '{tagMapPath}'");
-            return new List<TagMapEntry>();
+            return [];
         }
 
         try
@@ -459,18 +499,18 @@ public static class TagMapGenerator
             var json = File.ReadAllText(tagMapPath);
             var entries = JsonSerializer.Deserialize<List<TagMapEntry>>(json);
             DebugLogger.Log($"TagMapGenerator: Loaded existing tagmap with {entries?.Count ?? 0} entries");
-            return entries ?? new List<TagMapEntry>();
+            return entries ?? [];
         }
         catch (Exception ex)
         {
             DebugLogger.Log($"TagMapGenerator: Error loading tagmap: {ex.Message}");
-            return new List<TagMapEntry>();
+            return [];
         }
     }
 
     public static void UpdateTagMap(string folderPath, IProgressService? progressService = null)
     {
         DebugLogger.Log($"TagMapGenerator: Updating tagmap for folder '{folderPath}'");
-        GenerateTagMap(folderPath, true, progressService);
+        GenerateTagMap(folderPath, progressService);
     }
 } 

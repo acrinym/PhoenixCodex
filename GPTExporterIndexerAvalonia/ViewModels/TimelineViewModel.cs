@@ -16,7 +16,7 @@ public partial class TimelineViewModel : ObservableObject, IRecipient<RitualsCha
     [ObservableProperty]
     private DateTime? _selectedDate = DateTime.Today;
 
-    public ObservableCollection<Ritual> Upcoming { get; } = new();
+    public ObservableCollection<Ritual> Upcoming { get; } = [];
 
     public TimelineViewModel(IMessenger messenger, GrimoireManagerViewModel grimoireManager)
     {

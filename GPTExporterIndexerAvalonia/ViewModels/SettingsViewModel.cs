@@ -35,37 +35,11 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _confirmDelete;
 
-    public ObservableCollection<string> AvailableThemes { get; } = new()
-    {
-        "Magic",
-        "Light", 
-        "Dark",
-        "Custom"
-    };
+    public ObservableCollection<string> AvailableThemes { get; } = ["Magic", "Light", "Dark", "Custom"];
 
-    public ObservableCollection<string> AvailableFonts { get; } = new()
-    {
-        "Inter",
-        "Segoe UI",
-        "Arial",
-        "Consolas",
-        "Georgia",
-        "Times New Roman"
-    };
+    public ObservableCollection<string> AvailableFonts { get; } = ["Inter", "Segoe UI", "Arial", "Consolas", "Georgia", "Times New Roman"];
 
-    public ObservableCollection<string> AvailableColors { get; } = new()
-    {
-        "#7B68EE", // Purple
-        "#FF6B6B", // Red
-        "#4ECDC4", // Teal
-        "#45B7D1", // Blue
-        "#96CEB4", // Green
-        "#FFEAA7", // Yellow
-        "#DDA0DD", // Plum
-        "#98D8C8", // Mint
-        "#F7DC6F", // Gold
-        "#BB8FCE"  // Lavender
-    };
+    public ObservableCollection<string> AvailableColors { get; } = ["#7B68EE", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE"];
 
     public SettingsViewModel(ISettingsService settingsService, IDialogService dialogService)
     {

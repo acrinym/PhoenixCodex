@@ -39,9 +39,9 @@ public class AppSettings
     public string DefaultExtensionFilter { get; set; } = "*.md,*.txt,*.json";
     
     // Content Filtering
-    public List<string> HiddenCategories { get; set; } = new();
-    public List<string> HiddenTags { get; set; } = new();
-    public List<string> HiddenDocuments { get; set; } = new();
+    public List<string> HiddenCategories { get; set; } = [];
+    public List<string> HiddenTags { get; set; } = [];
+    public List<string> HiddenDocuments { get; set; } = [];
     
     // Advanced Settings
     public bool EnableDebugLogging { get; set; } = false;
@@ -54,16 +54,16 @@ public class AppSettings
     // Custom Magic Terms (for privacy mode)
     public Dictionary<string, string> MagicTermReplacements { get; set; } = new()
     {
-        { "ritual", "activity" },
-        { "spell", "technique" },
-        { "magic", "energy work" },
-        { "grimoire", "journal" },
-        { "servitor", "helper" },
-        { "spirit", "presence" },
-        { "threshold", "milestone" },
-        { "whispered flame", "quiet moment" },
-        { "field pulse", "energy shift" },
-        { "symbolic moment", "meaningful event" }
+        ["ritual"] = "activity",
+        ["spell"] = "technique",
+        ["magic"] = "energy work",
+        ["grimoire"] = "journal",
+        ["servitor"] = "helper",
+        ["spirit"] = "presence",
+        ["threshold"] = "milestone",
+        ["whispered flame"] = "quiet moment",
+        ["field pulse"] = "energy shift",
+        ["symbolic moment"] = "meaningful event"
     };
 
     // File Operation Settings

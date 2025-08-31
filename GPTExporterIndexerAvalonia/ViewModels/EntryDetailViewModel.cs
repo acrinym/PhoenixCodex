@@ -22,7 +22,7 @@ public partial class EntryDetailViewModel : ObservableObject
 
     public FieldEncoding FieldEncoding { get; set; } = new();
 
-    public ObservableCollection<string> Tags { get; } = new();
+    public ObservableCollection<string> Tags { get; } = [];
 
     [ObservableProperty]
     private EntryStatus _status;

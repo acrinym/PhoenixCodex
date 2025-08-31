@@ -11,7 +11,7 @@ namespace GPTExporterIndexerAvalonia.Helpers;
 public class SearchResult
 {
     public required string File { get; init; }
-    public List<string> Snippets { get; init; } = new();
+    public List<string> Snippets { get; init; } = [];
     public string? Category { get; init; }
     public string? Preview { get; init; }
 }

@@ -76,10 +76,10 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _progressMessage = "Ready";
     [ObservableProperty] private string _progressDetails = "";
 
-    public ObservableCollection<Bitmap> Pages { get; } = new();
+    public ObservableCollection<Bitmap> Pages { get; } = [];
     private readonly BookReader _reader = new();
-    public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = new();
-    public ObservableCollection<SearchResult> Results { get; } = new();
+    public ObservableCollection<BaseMapEntry> ParsedEntries { get; } = [];
+    public ObservableCollection<SearchResult> Results { get; } = [];
 
     public MainWindowViewModel(
         IMessenger messenger, // <-- INJECT THE MESSENGER
@@ -88,7 +88,7 @@ public partial class MainWindowViewModel : ObservableObject
         IFileParsingService fileParsingService,
         IDialogService dialogService,
         IEntryParserService entryParserService,
-        IProgressService progressService,
+
         GrimoireManagerViewModel grimoireViewModel,
         TimelineViewModel timelineViewModel,
         AmandaMapViewModel amandaMapViewModel,
@@ -846,7 +846,7 @@ public partial class MainWindowViewModel : ObservableObject
         
         try
         {
-            var entries = await Task.Run(() => TagMapGenerator.GenerateTagMap(folderPath, false, _progressService));
+            var entries = await Task.Run(() => TagMapGenerator.GenerateTagMap(folderPath, _progressService));
             Status = $"TagMap generation complete. Generated {entries.Count} entries.";
             DebugLogger.Log($"MainWindowViewModel: TagMap generation complete with {entries.Count} entries.");
         }

@@ -47,8 +47,8 @@ public partial class ChatFileManagementViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasAnalyzedFiles;
 
-    public ObservableCollection<ChatFileManager.ChatFileInfo> AnalyzedFiles { get; } = new();
-    public ObservableCollection<string> PreviewChanges { get; } = new();
+    public ObservableCollection<ChatFileManager.ChatFileInfo> AnalyzedFiles { get; } = [];
+    public ObservableCollection<string> PreviewChanges { get; } = [];
 
     public ChatFileManagementViewModel(IDialogService dialogService, ChatFileManager chatFileManager)
     {

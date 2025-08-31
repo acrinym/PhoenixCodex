@@ -45,28 +45,28 @@ public partial class AmandaMapViewModel : ObservableObject,
     /// Collection of structured, numbered entries that have been processed and validated.
     /// This is the primary data source for the AmandaMap functionality.
     /// </summary>
-    public ObservableCollection<NumberedMapEntry> ProcessedEntries { get; } = new();
+    public ObservableCollection<NumberedMapEntry> ProcessedEntries { get; } = [];
 
     /// <summary>
     /// Legacy collection of base map entries. Kept for backward compatibility
     /// but no longer used in the new workflow.
     /// </summary>
-    public ObservableCollection<BaseMapEntry> Entries { get; } = new();
+    public ObservableCollection<BaseMapEntry> Entries { get; } = [];
 
     /// <summary>
     /// Collection of entries grouped by their <see cref="NumberedMapEntry.EntryType"/>.
     /// </summary>
-    public ObservableCollection<EntryTypeGroup> GroupedEntries { get; } = new();
+    public ObservableCollection<EntryTypeGroup> GroupedEntries { get; } = [];
 
     /// <summary>
     /// Flattened display items for the ListView
     /// </summary>
-    public ObservableCollection<DisplayItem> DisplayItems { get; } = new();
+    public ObservableCollection<DisplayItem> DisplayItems { get; } = [];
 
     /// <summary>
     /// Entry groups for internal management
     /// </summary>
-    public ObservableCollection<EntryTypeGroup> EntryGroups { get; } = new();
+    public ObservableCollection<EntryTypeGroup> EntryGroups { get; } = [];
     
     [ObservableProperty]
     private BaseMapEntry? _selectedEntry;

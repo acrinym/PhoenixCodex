@@ -17,7 +17,7 @@ public partial class PhoenixCodexViewModel : ObservableObject, IRecipient<AddNew
     [ObservableProperty]
     private string _status = "Ready";
 
-    public ObservableCollection<PhoenixCodexEntry> ProcessedEntries { get; } = new();
+    public ObservableCollection<PhoenixCodexEntry> ProcessedEntries { get; } = [];
 
     public PhoenixCodexViewModel(IMessenger messenger, IDialogService dialogService, ISettingsService settingsService)
     {

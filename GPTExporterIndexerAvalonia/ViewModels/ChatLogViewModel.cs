@@ -15,8 +15,8 @@ namespace GPTExporterIndexerAvalonia.ViewModels;
 // This ViewModel now implements IRecipient to receive messages
 public partial class ChatLogViewModel : ObservableObject, IRecipient<SelectedMapEntryChangedMessage>
 {
-    public ObservableCollection<ChatMessage> Logs { get; } = new();
-    public ObservableCollection<ChatMessage> FilteredLogs { get; } = new();
+    public ObservableCollection<ChatMessage> Logs { get; } = [];
+    public ObservableCollection<ChatMessage> FilteredLogs { get; } = [];
 
     // Constructor now takes the messenger and registers for messages
     public ChatLogViewModel(IMessenger messenger)

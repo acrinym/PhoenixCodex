@@ -27,14 +27,15 @@ public partial class TagMapEntry
 public partial class TagMapDocument : ObservableObject
 {
     public string Name { get; set; } = string.Empty;
-    public ObservableCollection<TagMapEntry> Entries { get; } = new();
-    public ObservableCollection<TagMapEntry> FilteredEntries { get; } = new();
+    public ObservableCollection<TagMapEntry> Entries { get; } = [];
+    public ObservableCollection<TagMapEntry> FilteredEntries { get; } = [];
 }
 
-public partial class TagMapViewModel : ObservableObject
+public partial class TagMapViewModel(IDialogService dialogService) : ObservableObject
 {
-    // Add the service field
-    private readonly IDialogService _dialogService;
+    private readonly IDialogService _dialogService = dialogService;
+    private static readonly string[] s_supportedExtensions = ["json", "csv", "xlsx"];
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
 
     [ObservableProperty]
     private string _filePath = "tagmap.json";
@@ -45,14 +46,8 @@ public partial class TagMapViewModel : ObservableObject
     [ObservableProperty]
     private string? _categoryFilter;
 
-    public ObservableCollection<TagMapDocument> Documents { get; } = new();
-    public ObservableCollection<TagMapDocument> FilteredDocuments { get; } = new();
-    
-    // Inject the service in the constructor
-    public TagMapViewModel(IDialogService dialogService)
-    {
-        _dialogService = dialogService;
-    }
+    public ObservableCollection<TagMapDocument> Documents { get; } = [];
+    public ObservableCollection<TagMapDocument> FilteredDocuments { get; } = [];
 
     partial void OnDocumentFilterChanged(string? value) => FilterDocuments();
     partial void OnCategoryFilterChanged(string? value) => FilterDocuments();
@@ -61,7 +56,7 @@ public partial class TagMapViewModel : ObservableObject
     [RelayCommand]
     private async Task BrowseAndLoad()
     {
-        var filter = new FileFilter("TagMap Files", new[] { "json", "csv", "xlsx" });
+        var filter = new FileFilter("TagMap Files", s_supportedExtensions);
         var path = await _dialogService.ShowOpenFileDialogAsync("Select TagMap File", filter);
 
         if (!string.IsNullOrWhiteSpace(path))
@@ -113,7 +108,7 @@ public partial class TagMapViewModel : ObservableObject
             Line = e.Line,
             Preview = e.Preview
         })).ToList();
-        var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(list, s_jsonOptions);
         File.WriteAllText(FilePath, json);
     }
 
@@ -178,7 +173,7 @@ public partial class TagMapViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenEntryInEditor(TagMapEntry? entry)
+    private static void OpenEntryInEditor(TagMapEntry? entry)
     {
         if (entry == null || string.IsNullOrWhiteSpace(entry.Document)) return;
         try

@@ -25,9 +25,9 @@ public partial class AmandaMapTimelineViewModel : ObservableObject, IRecipient<A
     [ObservableProperty]
     private bool _showOnlyDatedEntries = false;
 
-    public ObservableCollection<NumberedMapEntry> TimelineEntries { get; } = new();
-    public ObservableCollection<NumberedMapEntry> SelectedDateEntries { get; } = new();
-    public ObservableCollection<string> AvailableEntryTypes { get; } = new();
+    public ObservableCollection<NumberedMapEntry> TimelineEntries { get; } = [];
+    public ObservableCollection<NumberedMapEntry> SelectedDateEntries { get; } = [];
+    public ObservableCollection<string> AvailableEntryTypes { get; } = [];
 
     public AmandaMapTimelineViewModel(IMessenger messenger, AmandaMapViewModel amandaMapViewModel)
     {

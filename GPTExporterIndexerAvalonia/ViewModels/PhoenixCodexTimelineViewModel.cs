@@ -25,9 +25,9 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     [ObservableProperty]
     private bool _showOnlyDatedEntries = false;
 
-    public ObservableCollection<PhoenixCodexEntry> TimelineEntries { get; } = new();
-    public ObservableCollection<PhoenixCodexEntry> SelectedDateEntries { get; } = new();
-    public ObservableCollection<string> AvailableEntryTypes { get; } = new();
+    public ObservableCollection<PhoenixCodexEntry> TimelineEntries { get; } = [];
+    public ObservableCollection<PhoenixCodexEntry> SelectedDateEntries { get; } = [];
+    public ObservableCollection<string> AvailableEntryTypes { get; } = [];
 
     public PhoenixCodexTimelineViewModel(IMessenger messenger, PhoenixCodexViewModel phoenixCodexViewModel)
     {
@@ -244,7 +244,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     }
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task ViewEntryDetailsAsync(PhoenixCodexEntry entry)
+    private void ViewEntryDetailsAsync(PhoenixCodexEntry entry)
     {
         DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: ViewEntryDetailsAsync called for entry: {entry.Title}");
         
@@ -264,7 +264,7 @@ public partial class PhoenixCodexTimelineViewModel : ObservableObject, IRecipien
     }
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task EditEntryAsync(PhoenixCodexEntry entry)
+    private void EditEntryAsync(PhoenixCodexEntry entry)
     {
         DebugLogger.Log($"🪶 PhoenixCodexTimelineViewModel: EditEntryAsync called for entry: {entry.Title}");
         

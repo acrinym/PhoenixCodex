@@ -19,6 +19,7 @@ namespace GPTExporterIndexerAvalonia.Services
     {
         private static ControlPanel? _instance;
         public static ControlPanel Instance => _instance ??= new ControlPanel();
+        private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
 
         private string _selectedTheme;
         private IBrush _customBackground;
@@ -172,8 +173,8 @@ namespace GPTExporterIndexerAvalonia.Services
             }
         }
 
-        public string[] AvailableThemes { get; } = new[] { "Magic", "Light", "Dark", "Custom" };
-        public string[] AvailableFonts { get; } = new[] { "Segoe UI", "Arial", "Calibri", "Consolas", "Georgia", "Times New Roman", "Verdana" };
+        public string[] AvailableThemes { get; } = ["Magic", "Light", "Dark", "Custom"];
+        public string[] AvailableFonts { get; } = ["Segoe UI", "Arial", "Calibri", "Consolas", "Georgia", "Times New Roman", "Verdana"];
 
         // Commands
         public ICommand SetThemeCommand { get; }
@@ -243,7 +244,7 @@ namespace GPTExporterIndexerAvalonia.Services
             }
         }
 
-        private void ApplyLightTheme(IResourceDictionary resources)
+        private static void ApplyLightTheme(IResourceDictionary resources)
         {
             resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(255, 255, 255));
             resources["ForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33));
@@ -254,7 +255,7 @@ namespace GPTExporterIndexerAvalonia.Services
             resources["MutedBrush"] = new SolidColorBrush(Color.FromRgb(117, 117, 117));
         }
 
-        private void ApplyDarkTheme(IResourceDictionary resources)
+        private static void ApplyDarkTheme(IResourceDictionary resources)
         {
             resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33));
             resources["ForegroundBrush"] = new SolidColorBrush(Color.FromRgb(255, 255, 255));
@@ -265,7 +266,7 @@ namespace GPTExporterIndexerAvalonia.Services
             resources["MutedBrush"] = new SolidColorBrush(Color.FromRgb(189, 189, 189));
         }
 
-        private void ApplyMagicTheme(IResourceDictionary resources)
+        private static void ApplyMagicTheme(IResourceDictionary resources)
         {
             resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(18, 18, 30));
             resources["ForegroundBrush"] = new SolidColorBrush(Color.FromRgb(230, 230, 250));
@@ -295,7 +296,7 @@ namespace GPTExporterIndexerAvalonia.Services
         }
 
 
-        private IBrush CreateSecondaryBrush(IBrush background)
+        private static IBrush CreateSecondaryBrush(IBrush background)
         {
             if (background is SolidColorBrush solidBrush)
             {
@@ -322,7 +323,7 @@ namespace GPTExporterIndexerAvalonia.Services
             return Brushes.Gray;
         }
 
-        private IBrush CreateBorderBrush(IBrush background)
+        private static IBrush CreateBorderBrush(IBrush background)
         {
             if (background is SolidColorBrush solidBrush)
             {
@@ -349,7 +350,7 @@ namespace GPTExporterIndexerAvalonia.Services
             return Brushes.Gray;
         }
 
-        private IBrush CreateCardBackground(IBrush background)
+        private static IBrush CreateCardBackground(IBrush background)
         {
             if (background is SolidColorBrush solidBrush)
             {
@@ -376,7 +377,7 @@ namespace GPTExporterIndexerAvalonia.Services
             return Brushes.Gray;
         }
 
-        private IBrush CreateMutedBrush(IBrush foreground)
+        private static IBrush CreateMutedBrush(IBrush foreground)
         {
             if (foreground is SolidColorBrush solidBrush)
             {
@@ -462,7 +463,7 @@ namespace GPTExporterIndexerAvalonia.Services
                     UseGradients = UseGradients
                 };
                 
-                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(settings, s_jsonOptions);
                 File.WriteAllText(settingsPath, json);
             }
             catch (Exception)
@@ -471,7 +472,7 @@ namespace GPTExporterIndexerAvalonia.Services
             }
         }
 
-        private IBrush? ParseBrush(string? brushString)
+        private static IBrush? ParseBrush(string? brushString)
         {
             if (string.IsNullOrEmpty(brushString))
                 return null;
@@ -491,7 +492,7 @@ namespace GPTExporterIndexerAvalonia.Services
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private Window? GetMainWindow()
+        private static Window? GetMainWindow()
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -552,17 +553,17 @@ namespace GPTExporterIndexerAvalonia.Services
 
             var fileType = new FilePickerFileType(filterName)
             {
-                Patterns = extensions.Select(ext => $"*.{ext}").ToList()
+                Patterns = [..extensions.Select(ext => $"*.{ext}")]
             };
 
             var result = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = title,
                 AllowMultiple = false,
-                FileTypeFilter = new[] { fileType }
+                FileTypeFilter = [fileType]
             });
 
-            return result.FirstOrDefault()?.Path.LocalPath;
+            return result.Count > 0 ? result[0].Path.LocalPath : null;
         }
 
         private void ResetToDefaults()
@@ -595,7 +596,7 @@ namespace GPTExporterIndexerAvalonia.Services
                     UseGradients = UseGradients
                 };
                 
-                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(settings, s_jsonOptions);
                 var fileName = $"PhoenixCodex_Theme_{SelectedTheme}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
                 var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
                 
@@ -613,7 +614,7 @@ namespace GPTExporterIndexerAvalonia.Services
         {
             try
             {
-                var filePath = await ShowOpenFileDialogAsync("Import Theme", "JSON Files", new[] { "json" });
+                var filePath = await ShowOpenFileDialogAsync("Import Theme", "JSON Files", ["json"]);
                 if (string.IsNullOrWhiteSpace(filePath))
                     return;
 

@@ -12,7 +12,7 @@ public class YamlNode : ObservableObject
 {
     public string Name { get; set; } = string.Empty;
     public string? Value { get; set; }
-    public ObservableCollection<YamlNode> Children { get; } = new();
+    public ObservableCollection<YamlNode> Children { get; } = [];
 
     public string Display => string.IsNullOrEmpty(Value) ? Name : $"{Name}: {Value}";
 }
@@ -22,7 +22,7 @@ public partial class YamlInterpreterViewModel : ObservableObject
     [ObservableProperty]
     private string _filePath = string.Empty;
 
-    public ObservableCollection<YamlNode> Items { get; } = new();
+    public ObservableCollection<YamlNode> Items { get; } = [];
 
     [RelayCommand]
     private void Load()
