@@ -162,10 +162,15 @@ public partial class App : Application
             DebugLogger.Log("21. ChatLogViewModel registered.");
             services.AddTransient<RitualBuilderViewModel>();
             DebugLogger.Log("22. RitualBuilderViewModel registered.");
+            services.AddTransient<JournalEntryViewModel>(provider =>
+                new JournalEntryViewModel(
+                    provider.GetRequiredService<IDialogService>(),
+                    provider.GetRequiredService<ISettingsService>()));
+            DebugLogger.Log("23. JournalEntryViewModel registered.");
             services.AddTransient<TagMapViewModel>();
-            DebugLogger.Log("23. TagMapViewModel registered.");
+            DebugLogger.Log("24. TagMapViewModel registered.");
             services.AddTransient<YamlInterpreterViewModel>();
-            DebugLogger.Log("24. YamlInterpreterViewModel registered.");
+            DebugLogger.Log("25. YamlInterpreterViewModel registered.");
             services.AddTransient<SettingsViewModel>();
             DebugLogger.Log("25. SettingsViewModel registered.");
             services.AddTransient<ChatFileManagementViewModel>(provider => 

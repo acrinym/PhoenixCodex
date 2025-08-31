@@ -25,8 +25,8 @@ A comprehensive suite of tools for managing AmandaMap and Phoenix Codex content 
 
 ### **🖥️ Avalonia C# Edition** (`GPTExporterIndexerAvalonia/`)
 - **Native Windows application** with modern UI
-- **13 comprehensive tabs** for different functionalities
-- **Advanced features**: Chat file management, Phoenix Codex, TagMap, YAML processing
+- **14 comprehensive tabs** for different functionalities
+- **Advanced features**: Journal Entry, Chat file management, Phoenix Codex, TagMap, YAML processing
 - **Professional interface** with error boundaries and progress tracking
 - **High performance** for large datasets with optimization features
 
@@ -47,7 +47,7 @@ A comprehensive suite of tools for managing AmandaMap and Phoenix Codex content 
 
 ## 🚀 **Avalonia Edition - Complete Feature Set**
 
-The Avalonia C# edition provides **13 specialized tabs** with comprehensive functionality:
+The Avalonia C# edition provides **14 specialized tabs** with comprehensive functionality:
 
 ### **📊 Core Tabs**
 - **Index & Search**: Advanced indexing with fuzzy search, semantic matching, and real-time progress
@@ -57,6 +57,7 @@ The Avalonia C# edition provides **13 specialized tabs** with comprehensive func
 - **Settings**: Comprehensive configuration with theme selection and performance tuning
 
 ### **🔧 Specialized Tools**
+- **🫂 Journal Entry**: Rich markdown journaling with Phoenix Codex prompts, emoji support, and file management
 - **📅 AmandaMap Timeline**: Timeline visualization for AmandaMap entries
 - **🪶 Phoenix Codex Timeline**: Advanced timeline with entry details and cross-referencing
 - **📁 Chat Files**: Chat file management with duplicate detection and date correction

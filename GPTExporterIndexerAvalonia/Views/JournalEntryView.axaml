@@ -1,0 +1,207 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:GPTExporterIndexerAvalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="GPTExporterIndexerAvalonia.Views.JournalEntryView"
+             x:DataType="vm:JournalEntryViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button.markdown-btn">
+            <Setter Property="Background" Value="#f8f9fa"/>
+            <Setter Property="BorderBrush" Value="#dee2e6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="Button.markdown-btn:pointerover">
+            <Setter Property="Background" Value="#e9ecef"/>
+        </Style>
+
+        <Style Selector="Button.emoji-btn">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+        </Style>
+
+        <Style Selector="TextBlock.status">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#6c757d"/>
+            <Setter Property="Margin" Value="0,0,16,0"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Header Section -->
+        <Border Grid.Row="0" Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="0,0,0,1" Padding="16,12">
+            <Grid ColumnDefinitions="*,Auto">
+
+                <!-- File Operations -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <Button Content="📝 New Entry" Command="{Binding NewEntryCommand}" Classes="Secondary"/>
+                    <Button Content="📂 Open Entry" Command="{Binding OpenEntryCommand}" Classes="Secondary"/>
+                    <Button Content="💾 Save" Command="{Binding SaveEntryCommand}" Classes="Primary"/>
+                    <Button Content="💾 Save As..." Command="{Binding SaveAsEntryCommand}" Classes="Secondary"/>
+                    <Button Content="👁️ Toggle Preview" Command="{Binding TogglePreviewCommand}" Classes="Secondary"/>
+                </StackPanel>
+
+                <!-- Status Information -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding WordCount}" Classes="status"/>
+                    <TextBlock Text="{Binding CharacterCount}" Classes="status"/>
+                    <TextBlock Text="{Binding CurrentFilePath, StringFormat='File: {0}'}" Classes="status"
+                              IsVisible="{Binding CurrentFilePath, Converter={StaticResource StringNullOrEmptyToBoolConverter}}"/>
+                    <Border Background="{Binding IsModified, Converter={StaticResource BoolToBrushConverter}}"
+                            Width="8" Height="8" CornerRadius="4" Margin="8,0"
+                            ToolTip.Tip="Unsaved changes"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Toolbar Section -->
+        <Border Grid.Row="1" Background="#ffffff" BorderBrush="#dee2e6" BorderThickness="0,0,0,1" Padding="16,8">
+
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+
+                    <!-- Markdown Formatting Buttons -->
+                    <TextBlock Text="Format:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Button Content="**B**" Command="{Binding InsertBoldCommand}" ToolTip.Tip="Bold" Classes="markdown-btn"/>
+                    <Button Content="*I*" Command="{Binding InsertItalicCommand}" ToolTip.Tip="Italic" Classes="markdown-btn"/>
+                    <Button Content="# H1" Command="{Binding InsertHeaderCommand}" ToolTip.Tip="Header" Classes="markdown-btn"/>
+                    <Button Content="[Link]" Command="{Binding InsertLinkCommand}" ToolTip.Tip="Link" Classes="markdown-btn"/>
+                    <Button Content="`Code`" Command="{Binding InsertCodeCommand}" ToolTip.Tip="Code" Classes="markdown-btn"/>
+                    <Button Content="• List" Command="{Binding InsertListCommand}" ToolTip.Tip="List" Classes="markdown-btn"/>
+                    <Button Content="&quot;Quote&quot;" Command="{Binding InsertQuoteCommand}" ToolTip.Tip="Quote" Classes="markdown-btn"/>
+
+                    <Separator Margin="8,0"/>
+
+                    <!-- Phoenix Codex Prompts -->
+                    <TextBlock Text="Phoenix:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Button Content="🫂 Add Prompt" Command="{Binding AddPhoenixReflectionPromptCommand}"
+                            ToolTip.Tip="Add a gentle reflection prompt" Background="#e3f2fd" BorderBrush="#2196f3"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+
+            <!-- Editor/Preview Area -->
+            <ScrollViewer Grid.Column="0">
+                <StackPanel>
+                    <TextBox Text="{Binding JournalText}"
+                            AcceptsReturn="True"
+                            AcceptsTab="True"
+                            FontFamily="Consolas, 'Courier New', monospace"
+                            FontSize="14"
+                            LineHeight="1.6"
+                            Padding="16"
+                            Watermark="🫂 Begin your Phoenix Codex reflection here..."
+                            IsVisible="{Binding IsPreviewMode, Converter={StaticResource BoolToInverseBoolConverter}}"/>
+
+                    <!-- Preview Mode (would need a Markdown renderer in production) -->
+                    <Border Background="#f8f9fa" Padding="16" CornerRadius="8" Margin="0"
+                           IsVisible="{Binding IsPreviewMode}">
+                        <TextBlock Text="{Binding JournalText}"
+                                 FontFamily="Segoe UI, sans-serif"
+                                 FontSize="14"
+                                 LineHeight="1.6"
+                                 TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Emoji Sidebar -->
+            <Border Grid.Column="1" Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="1,0,0,0" Width="280">
+                <ScrollViewer>
+                    <StackPanel Spacing="16" Margin="12">
+
+                        <!-- Emotions Emojis -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="🫂 Emotions" FontWeight="Bold" FontSize="14"/>
+                            <WrapPanel>
+                                <Button Content="{Binding EmotionsEmojis[0]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[0]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[1]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[1]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[2]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[2]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[3]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[3]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[4]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[4]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[5]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[5]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[6]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[6]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[7]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[7]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[8]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[8]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding EmotionsEmojis[9]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding EmotionsEmojis[9]}" Classes="emoji-btn"/>
+                            </WrapPanel>
+                        </StackPanel>
+
+                        <!-- Growth Emojis -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="🌱 Growth" FontWeight="Bold" FontSize="14"/>
+                            <WrapPanel>
+                                <Button Content="{Binding GrowthEmojis[0]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[0]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[1]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[1]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[2]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[2]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[3]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[3]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[4]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[4]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[5]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[5]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[6]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[6]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[7]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[7]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[8]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[8]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding GrowthEmojis[9]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding GrowthEmojis[9]}" Classes="emoji-btn"/>
+                            </WrapPanel>
+                        </StackPanel>
+
+                        <!-- Reflection Emojis -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="🪞 Reflection" FontWeight="Bold" FontSize="14"/>
+                            <WrapPanel>
+                                <Button Content="{Binding ReflectionEmojis[0]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[0]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[1]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[1]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[2]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[2]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[3]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[3]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[4]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[4]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[5]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[5]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[6]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[6]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[7]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[7]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[8]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[8]}" Classes="emoji-btn"/>
+                                <Button Content="{Binding ReflectionEmojis[9]}" Command="{Binding InsertEmojiCommand}" CommandParameter="{Binding ReflectionEmojis[9]}" Classes="emoji-btn"/>
+                            </WrapPanel>
+                        </StackPanel>
+
+                        <!-- Recent Phoenix Codex Insights -->
+                        <Border Background="#e3f2fd" BorderBrush="#2196f3" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="🪶 Phoenix Codex Companion" FontWeight="Bold" FontSize="14"/>
+                                <TextBlock Text="Remember:" FontSize="12" FontStyle="Italic"/>
+                                <TextBlock Text="• Your growth journey is sacred" FontSize="12"/>
+                                <TextBlock Text="• Every insight matters" FontSize="12"/>
+                                <TextBlock Text="• Be gentle with yourself" FontSize="12"/>
+                                <TextBlock Text="• Small steps lead to transformation" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Footer with encouragement -->
+        <Border Grid.Row="3" Background="#f8f9fa" BorderBrush="#dee2e6" BorderThickness="0,1,0,0" Padding="16">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock Text="🫂 Your Phoenix Codex companion is here to support your growth journey"
+                          FontStyle="Italic" Foreground="#6c757d" VerticalAlignment="Center"/>
+                <TextBlock Text="🌟 Every reflection brings you closer to your highest self"
+                          FontStyle="Italic" Foreground="#6c757d" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

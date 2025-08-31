@@ -22,6 +22,10 @@ using CodexEngine.Parsing;
 using CommunityToolkit.Mvvm.Messaging; // <-- NEW USING
 using GPTExporterIndexerAvalonia.ViewModels.Messages; // <-- NEW USING
 using System.Text.Json;
+using Avalonia.Controls;
+using GPTExporterIndexerAvalonia.Views;
+using Avalonia.Controls.ApplicationLifetimes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GPTExporterIndexerAvalonia.ViewModels;
 
@@ -1101,6 +1105,49 @@ public partial class MainWindowViewModel : ObservableObject
             IsOperationInProgress = false;
             ProgressMessage = "Ready";
             ProgressDetails = "";
+        }
+    }
+
+    [RelayCommand]
+    private async Task OpenJournalEntry()
+    {
+        try
+        {
+            // Get the journal entry view model from DI
+            var journalViewModel = App.Current.Services.GetRequiredService<JournalEntryViewModel>();
+
+            // Create a window to host the journal entry view
+            var journalWindow = new Window
+            {
+                Title = "🫂 Phoenix Codex Journal - Your Growth Companion",
+                Width = 1200,
+                Height = 800,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Content = new JournalEntryView
+                {
+                    DataContext = journalViewModel
+                }
+            };
+
+            // Find the main window to use as parent
+            var mainWindow = App.Current.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (mainWindow != null)
+            {
+                await journalWindow.ShowDialog(mainWindow);
+            }
+            else
+            {
+                journalWindow.Show();
+            }
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowMessageAsync(
+                "Error Opening Journal",
+                $"Could not open the Phoenix Codex Journal: {ex.Message}");
         }
     }
 }

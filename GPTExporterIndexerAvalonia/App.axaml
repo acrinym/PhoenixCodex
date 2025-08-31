@@ -19,6 +19,7 @@
         <converters:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
         <converters:IsZeroConverter x:Key="IsZeroConverter"/>
         <converters:EntryTypeToIconConverter x:Key="EntryTypeToIconConverter"/>
+        <converters:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
     </Application.Resources>
     
     <Application.Styles>
