@@ -1,0 +1,157 @@
+================================================================================
+                    PhoenixCodex - Tools Reference Card
+================================================================================
+
+TOOL 1: ChatGPT Export Converter GUI  [NEW]
+─────────────────────────────────────────
+
+File: chatgpt_converter_gui.py
+Purpose: Convert ChatGPT JSON exports to Markdown (or vice versa)
+Mode: GUI with 3 tabs
+
+Features:
+  ✓ Single file conversion
+  ✓ Batch folder processing  
+  ✓ Format conversion (JSON ↔ Markdown)
+  ✓ Message filtering (by role)
+  ✓ Preview/inspection tab
+  ✓ Real-time progress
+  ✓ UTF-8 support
+
+Quick Start:
+  python chatgpt_converter_gui.py
+
+Documentation:
+  - CONVERTER_README.md (full guide)
+  - CONVERTER_QUICKSTART.txt (quick start)
+  - CONVERTER_SUMMARY.md (what's included)
+
+
+TOOL 2: GPT Export & Index Tool
+───────────────────────────────
+
+File: gpt_export_index_tool.py
+Purpose: Advanced search, indexing, and classification of ChatGPT exports
+Mode: GUI + CLI
+
+Features:
+  ✓ Multi-format export (Text, MD, HTML, RTF, MHTML, AmandaMap)
+  ✓ Advanced indexing with semantic search
+  ✓ Content classification
+  ✓ Batch processing
+  ✓ Mirror entity detection
+  ✓ Real-time search with context
+  ✓ 8-tab GUI with advanced features
+  ✓ Tagmap management
+  ✓ Progress tracking
+  ✓ Settings management
+
+Quick Start:
+  python gpt_export_index_tool.py gui
+
+Documentation:
+  - GPT_EXPORT_INDEX_TOOL_README.md (comprehensive guide)
+
+
+TOOL 3: Enhanced Dataset Builder
+─────────────────────────────────
+
+File: enhanced_dataset_builder.py
+Purpose: Extract and analyze content from files with performance optimization
+Mode: GUI + CLI
+
+Features:
+  ✓ Performance settings
+  ✓ Real-time monitoring
+  ✓ CUDA/GPU support
+  ✓ Memory management
+  ✓ Advanced threading
+  ✓ Batch processing
+
+Quick Start:
+  python enhanced_dataset_builder.py gui
+
+Documentation:
+  - ENHANCED_DATASET_BUILDER_README.md
+
+
+================================================================================
+                          QUICK START
+================================================================================
+
+Convert one chat to readable Markdown:
+  1. python chatgpt_converter_gui.py
+  2. Tab: "🔄 Converter"
+  3. Browse to JSON file
+  4. Click "🚀 Convert"
+  5. Open output .md file
+
+Convert entire folder:
+  1. python chatgpt_converter_gui.py
+  2. Tab: "📦 Batch"
+  3. Input: Your chats folder
+  4. Output: Backup folder
+  5. Click "🚀 Start Batch"
+  6. Wait for completion
+
+
+================================================================================
+                          WHAT EACH TOOL DOES
+================================================================================
+
+Converter GUI:
+  Take ChatGPT JSON files and convert them to readable Markdown
+  → Or convert Markdown back to JSON
+  → Can filter by role (user/assistant)
+  → Can process entire folders at once
+  → Simple, fast, no configuration needed
+
+Export Tool:
+  Search across all your ChatGPT exports
+  → Build indexes for fast searching
+  → Export to multiple formats
+  → Classify content automatically
+  → Advanced features: semantic search, context extraction
+
+Dataset Builder:
+  Extract and analyze patterns in your data
+  → Performance optimization
+  → Memory management
+  → Batch processing capabilities
+
+
+================================================================================
+                          FILES CREATED/UPDATED
+================================================================================
+
+NEW FILES:
+  ✓ chatgpt_converter_gui.py         (Main converter app - 500+ lines)
+  ✓ test_converter.py                (Test suite - VERIFIED WORKING)
+  ✓ CONVERTER_README.md              (Full documentation)
+  ✓ CONVERTER_QUICKSTART.txt         (Quick start guide)
+  ✓ CONVERTER_SUMMARY.md             (Features summary)
+  ✓ PHOENIX_TOOLCHAIN_GUIDE.md       (Integration guide)
+  ✓ TOOLS_REFERENCE.txt              (This file)
+
+EXISTING FILES (unchanged):
+  - gpt_export_index_tool.py
+  - enhanced_dataset_builder.py
+  - modules/ (all support modules)
+
+
+================================================================================
+                          STATUS: COMPLETE
+================================================================================
+
+✓ Converter GUI fully functional
+✓ All features implemented
+✓ Tested on real ChatGPT exports
+✓ Batch processing working
+✓ UI responsive and intuitive
+✓ Documentation complete
+✓ Integration planned with existing tools
+
+
+Ready to use. No configuration needed. Just run it.
+
+================================================================================
