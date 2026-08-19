@@ -38,5 +38,6 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace()
-            .UseReactiveUI();
+            .UseReactiveUI()
+            .UseDesktopWebView();
 }
